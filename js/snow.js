@@ -255,7 +255,16 @@
   }
 
   if(mobile&&!reduced.matches){
-    if(!window.isSecureContext)setSensorState("HTTPS-required");
+    if(!window.isSecureContext){
+      setSensorState("HTTPS-required");
+      if(!debug){
+        debug=document.createElement("output");
+        debug.className="snow-debug";
+        debug.setAttribute("role","status");
+        debug.textContent="Inclinación no disponible: se requiere HTTPS";
+        document.body.append(debug);
+      }else debug.textContent="Nieve · HTTPS requerido";
+    }
     else if(!orientationSensor&&!motionSensor)setSensorState("unsupported");
     else if(typeof orientationSensor?.requestPermission==="function"||typeof motionSensor?.requestPermission==="function"){
       setSensorState("permission-required");
