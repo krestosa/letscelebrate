@@ -100,3 +100,62 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 }
 @media(max-width:350px){#voucher-form{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.hero__video-stack{display:none}.button{transition:none}}
+
+/* Variant 07 — the split, scroll-joined Sushi Libre title. */
+.hero--motion {
+  display:block;
+  padding:0;
+  min-height:100vh;
+  min-height:100svh;
+  overflow:visible;
+}
+.hero__stage {
+  position:relative;
+  isolation:isolate;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-height:100vh;
+  min-height:100svh;
+  padding:clamp(90px,13svh,160px) var(--page-x) clamp(90px,13svh,160px);
+  background:#000;
+}
+.hero__stage .hero__video-stack,.hero__stage .hero__black-filter,
+.hero__stage .hero__gradient,.hero__stage .hero__grain {inset:0}
+.hero__stage .hero__gradient {
+  background:linear-gradient(0deg,#000 0%,rgba(0,0,0,.75) 9%,transparent 43%),
+    linear-gradient(180deg,#000 0%,rgba(0,0,0,.58) 16%,rgba(0,0,0,.08) 58%,transparent 70%);
+}
+.hero__stage .masthead {position:absolute;top:max(26px,env(safe-area-inset-top));left:var(--page-x);right:var(--page-x);width:auto;margin:0}
+.campaign-lockup {position:relative;width:min(1600px,100%);margin-inline:auto;z-index:2}
+.campaign-lockup .campaign-title {
+  display:flex;flex-direction:row;gap:0;align-items:center;justify-content:space-between;
+  margin:0;font-family:Gazzetta,Impact,sans-serif;font-weight:900;
+  font-size:clamp(72px,16.8vw,330px);font-size:var(--campaign-size,clamp(72px,16.8vw,330px));
+  line-height:.79;letter-spacing:normal;text-transform:uppercase;
+}
+.campaign-word {display:block;flex:none;white-space:nowrap;transform-origin:0 0;color:#fff;text-shadow:0 0 3px rgba(255,255,255,.64),0 0 18px rgba(255,255,255,.18)}
+.hero--motion .hero__layout {
+  width:min(1440px,100% - (2 * var(--page-x)));
+  padding-block:clamp(48px,8vh,104px);
+  gap:clamp(40px,7vh,82px) clamp(32px,7vw,120px);
+}
+.offer-lockup h2 {display:flex;flex-direction:column;align-items:flex-start;gap:12px;margin:0;text-transform:uppercase}
+.hero--motion .offer-lockup .title-word {font-size:min(25cqw,190px);line-height:.85}
+.hero--motion .legal {width:min(1440px,100% - (2 * var(--page-x)));padding-bottom:max(28px,env(safe-area-inset-bottom))}
+@media(max-width:720px){
+  .hero__stage {min-height:100vh;min-height:100svh;padding:88px 16px 84px}
+  .hero__stage .masthead {top:max(22px,env(safe-area-inset-top))}
+  .hero__stage .hero__video {object-position:53% center}
+  .campaign-lockup .campaign-title {flex-direction:column;align-items:stretch;gap:clamp(25px,7svh,66px);font-size:var(--campaign-size,clamp(60px,25vw,180px))}
+  .campaign-word--lets {align-self:flex-start}
+  .campaign-word--celebrate {align-self:flex-end}
+  .hero--motion .hero__layout {width:min(480px,100% - 32px);padding-block:28px 36px;gap:28px}
+  .offer-lockup h2 {align-items:center;text-align:center;gap:5px}
+  .hero--motion .offer-lockup .title-word {font-size:min(27cqw,150px)}
+  .hero--motion .legal {width:min(480px,100% - 32px)}
+  .hero--motion .proposal__header h2 {font-size:35px}
+  .hero--motion .instructions li,.hero--motion .conditions p {font-size:12px;line-height:1.35}
+  .hero--motion #voucher-form {grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){.campaign-word{transform:none!important}}

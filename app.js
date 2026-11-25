@@ -159,3 +159,86 @@
 
   submit.disabled = false;
 })();
+
+/* Scroll title: adapted from Sushi Libre's measured hero-title-scroll.
+   Keep the words separate at rest; join them without layout reflow. */
+(() => {
+  const stage = document.querySelector(".hero__stage");
+  const lockup = document.querySelector(".campaign-lockup");
+  const title = document.querySelector(".campaign-title");
+  const first = document.querySelector(".campaign-word--lets");
+  const second = document.querySelector(".campaign-word--celebrate");
+  if (!stage || !lockup || !title || !first || !second) return;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const clamp = n => Math.max(0, Math.min(1, n));
+  const ease = n => n * n * (3 - 2 * n);
+  let geometry, frame = 0, resizeFrame = 0;
+  function clear() {
+    first.style.transform = second.style.transform = "";
+    title.style.removeProperty("--campaign-size");
+  }
+  function measure() {
+    clear();
+    const compact = innerWidth <= 720;
+    const box = lockup.getBoundingClientRect();
+    let a = first.getBoundingClientRect();
+    let b = second.getBoundingClientRect();
+    if (!box.width || !a.width || !b.width) { geometry = null; return; }
+    const naturalSize = parseFloat(getComputedStyle(title).fontSize);
+    const initialGap = Math.max(18, Math.min(100, box.width * .07));
+    const fit = Math.min(1, compact
+      ? box.width / Math.max(a.width, b.width)
+      : (box.width - initialGap) / (a.width + b.width));
+    if (fit < 1) {
+      title.style.setProperty("--campaign-size", (naturalSize * fit) + "px");
+      a = first.getBoundingClientRect();
+      b = second.getBoundingClientRect();
+    }
+    const gap = compact
+      ? Math.max(4, Math.min(8, innerWidth * .012))
+      : Math.max(6, Math.min(14, innerWidth * .006));
+    const scale = Math.min(1, (box.width - gap) / (a.width + b.width));
+    const aw = a.width * scale, bw = b.width * scale;
+    const ah = a.height * scale, bh = b.height * scale;
+    const rowHeight = Math.max(ah, bh);
+    const left = box.left + (box.width - aw - bw - gap) / 2;
+    const top = Math.min(a.top, b.top) + (compact ? Math.min(24, innerWidth * .058) : 0);
+    const height = Math.max(stage.offsetHeight, innerHeight);
+    geometry = {
+      compact, scale, start: scrollY + stage.getBoundingClientRect().top + height * (compact ? .004 : .01),
+      distance: height * (compact ? .15 : innerWidth <= 900 ? .17 : .23),
+      ax: left - a.left, ay: top + (rowHeight - ah) / 2 - a.top,
+      bx: left + aw + gap - b.left, by: top + (rowHeight - bh) / 2 - b.top
+    };
+  }
+  function render() {
+    frame = 0;
+    if (!geometry || reduced.matches) { first.style.transform = second.style.transform = ""; return; }
+    const g = geometry;
+    const raw = clamp((scrollY - g.start) / Math.max(1, g.distance));
+    // On narrow screens first make room horizontally, then join vertically.
+    // This avoids the longer CELEBRATE crossing LET'S during convergence.
+    const x = g.compact ? ease(clamp(raw / .65)) : ease(raw);
+    const y = g.compact ? ease(clamp((raw - .65) / .35)) : ease(raw);
+    const scale = 1 + (g.scale - 1) * x;
+    first.style.transform = "translate3d(" + (g.ax*x) + "px," + (g.ay*y) + "px,0) scale(" + scale + ")";
+    second.style.transform = "translate3d(" + (g.bx*x) + "px," + (g.by*y) + "px,0) scale(" + scale + ")";
+  }
+  function schedule() {
+    if (!frame) frame = requestAnimationFrame(render);
+  }
+  function refresh() {
+    if (resizeFrame) return;
+    resizeFrame = requestAnimationFrame(() => {
+      resizeFrame = 0;
+      measure();
+      render();
+    });
+  }
+  addEventListener("scroll", schedule, {passive:true});
+  addEventListener("resize", refresh, {passive:true});
+  addEventListener("orientationchange", refresh, {passive:true});
+  reduced.addEventListener?.("change", refresh);
+  document.fonts?.ready.then(refresh).catch(() => {});
+  refresh();
+})();
