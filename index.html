@@ -6,19 +6,36 @@
   <meta name="theme-color" content="#000000">
   <meta name="description" content="Te regalamos $25.000 para Let’s Celebrate de Navidad o Año Nuevo.">
   <title>Let’s Celebrate · SushiClub</title>
+  <script>
+    // Subscribe before stylesheets, images and the deferred intro renderer.
+    (() => {
+      if (!window.isSecureContext || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const latest = Object.create(null), handlers = {};
+      const startedAt = performance.now();
+      const types = ["deviceorientation", "deviceorientationabsolute", "devicemotion"];
+      for (const type of types) {
+        handlers[type] = event => { latest[type] = event; };
+        window.addEventListener(type, handlers[type], { passive: true });
+      }
+      window.__snowSensorBootstrap = {
+        startedAt, latest,
+        stop() { for (const type of types) window.removeEventListener(type, handlers[type]); }
+      };
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=hero-webp-11"></script>
   <link rel="stylesheet" href="css/landing.css?v=copy-contrast-29">
   <link rel="stylesheet" href="css/loading.css?v=blue-modal-16">
-  <link rel="stylesheet" href="css/motion.css?v=gravity-auto-32">
+  <link rel="stylesheet" href="css/motion.css?v=document-snow-33">
   <link rel="preload" href="assets/loading.jpg" as="image">
   <link rel="preload" href="assets/hero_bg.jpg" as="image">
   <link rel="preload" href="assets/firma.svg" as="image">
   <link rel="preload" href="fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
   <script src="js/signature.js" defer></script>
-  <script src="js/snow.js?v=gravity-auto-32" defer></script>
+  <script src="js/snow.js?v=document-snow-33" defer></script>
   <script src="js/loading.js?v=release-9" defer></script>
   <script src="js/libphonenumber-min.js?v=1.13.17" defer></script>
   <script src="js/voucher.js?v=glass-state-28" defer></script>
