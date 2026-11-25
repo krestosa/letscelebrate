@@ -39,7 +39,7 @@
   // Keep all sensor sources independent. A constant legacy orientation
   // sample must not hide working Chromium accelerometer data.
   const samples=Object.create(null), sensors=new Map();
-  const sensorCounts={orientation:0,gravity:0,accelerometer:0,motion:0};
+  const sensorCounts={orientation:0,absolute:0,gravity:0,accelerometer:0,motion:0};
   const sensorErrors=Object.create(null), permissionStates=Object.create(null);
   let sensorSource="none",sensorCount=0,sensorStatus="waiting",permissionRequestRunning=false;
   const sensorStart=performance.now();
@@ -62,10 +62,10 @@
     sensorCounts[source]++;
     sensorStatus="active";
   }
-  function sampleOrientation(event){
+  function sampleOrientation(event,source="orientation"){
     if(!Number.isFinite(event.beta)||!Number.isFinite(event.gamma))return;
     const g=orientationGravity(event.beta,event.gamma);
-    noteSample("orientation",g.x,g.y,Math.cos(event.beta*radians)*Math.cos(event.gamma*radians));
+    noteSample(source,g.x,g.y,Math.cos(event.beta*radians)*Math.cos(event.gamma*radians));
   }
   function sampleAcceleration(source,a){
     if(!a||![a.x,a.y,a.z].every(Number.isFinite))return;
@@ -74,6 +74,7 @@
     // Android proper acceleration opposes physical gravity; CSS Y is down.
     noteSample(source,-a.x/norm,a.y/norm,a.z/norm);
   }
+  const sampleAbsolute=event=>sampleOrientation(event,"absolute");
   function sampleMotion(event){
     const a=event.accelerationIncludingGravity,linear=event.acceleration;
     if(a&&linear&&[a.x,a.y,a.z,linear.x,linear.y,linear.z].every(Number.isFinite)){
@@ -89,9 +90,9 @@
     for(const source of ["gravity","accelerometer"]){
       if(samples[source]&&now-samples[source].at<1800)return {source,sample:samples[source]};
     }
-    const o=samples.orientation,m=samples.motion;
-    if(o&&now-o.at<1800)return {source:"orientation",sample:o};
-    if(m&&now-m.at<1800)return {source:"motion",sample:m};
+    for(const source of ["orientation","absolute","motion"]){
+      if(samples[source]&&now-samples[source].at<1800)return {source,sample:samples[source]};
+    }
     // Do not reset gravity just because an event-driven device is still.
     const latest=Object.entries(samples).sort((a,b)=>b[1].at-a[1].at)[0];
     return latest?{source:latest[0],sample:latest[1]}:null;
@@ -104,7 +105,7 @@
     return snowDirection(g.x,g.y);
   }
   function startSensor(name,source){
-    if(disposed||permissionStates.accelerometer==="denied"||sensors.has(source)||typeof window[name]!=="function")return;
+    if(disposed||document.hidden||permissionStates.accelerometer==="denied"||sensors.has(source)||typeof window[name]!=="function")return;
     let sensor;
     try{
       sensor=new window[name]({frequency:30,referenceFrame:"device"});
@@ -129,10 +130,10 @@
   }
   function attachLegacy(){
     window.removeEventListener("deviceorientation",sampleOrientation);
-    window.removeEventListener("deviceorientationabsolute",sampleOrientation);
+    window.removeEventListener("deviceorientationabsolute",sampleAbsolute);
     window.removeEventListener("devicemotion",sampleMotion);
     window.addEventListener("deviceorientation",sampleOrientation,options);
-    window.addEventListener("deviceorientationabsolute",sampleOrientation,options);
+    window.addEventListener("deviceorientationabsolute",sampleAbsolute,options);
     window.addEventListener("devicemotion",sampleMotion,options);
   }
   // Chromium 151+ exposes requestPermission too. An already granted
@@ -180,6 +181,7 @@
             for(const source of Object.keys(samples))delete samples[source];
           }else{
             delete samples.orientation;
+            delete samples.absolute;
           }
           sensorStatus="denied";
         }
@@ -193,6 +195,8 @@
     attachLegacy();
     startGenericSensors();
     Promise.all(["accelerometer","gyroscope"].map(inspectPermission)).then(requestExistingPermission);
+    window.addEventListener("focus",startGenericSensors,options);
+    window.addEventListener("pageshow",startGenericSensors,options);
   }
   function updateDebug(now){
     if(!debug||now-debugLast<250)return;
@@ -203,9 +207,9 @@
       document.body.appendChild(debugPanel);
     }
     const status=sensorSource!=="none"?"active":Object.values(permissionStates).includes("denied")?"denied":sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
-    debugPanel.textContent="Snow | "+status+" | "+sensorSource+
+    debugPanel.textContent="Snow 32 | "+status+" | "+sensorSource+
       "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
-      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+
+      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+" | Abs: "+sensorCounts.absolute+
       "\npermission: "+Object.entries(permissionStates).map(([key,value])=>key+":"+value).join(" ")+
       "\nerrors: "+Object.entries(sensorErrors).map(([key,value])=>key+":"+value).join(" ")+
       "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
