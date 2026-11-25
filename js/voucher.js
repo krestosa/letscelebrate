@@ -40,7 +40,7 @@
 
   demoLabel.hidden = !demo;
   redeem.hidden = demo;
-  redeemInstruction.hidden = demo;
+  if (demo) redeemInstruction.textContent = "Cuando la promoción esté habilitada, ingresá tu código en “Código promocional” al finalizar la compra online.";
   if (demo) {
     form.autocomplete = "off";
     email.autocomplete = "off";

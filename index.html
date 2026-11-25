@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=hero-webp-11"></script>
-  <link rel="stylesheet" href="css/landing.css?v=responsive-dialog-20">
+  <link rel="stylesheet" href="css/landing.css?v=confirmation-copy-21">
   <link rel="stylesheet" href="css/loading.css?v=blue-modal-16">
   <link rel="stylesheet" href="css/motion.css?v=natural-17">
   <link rel="preload" href="assets/loading.jpg" as="image">
@@ -20,7 +20,7 @@
   <script src="js/signature.js" defer></script>
   <script src="js/snow.js?v=natural-17" defer></script>
   <script src="js/loading.js?v=release-9" defer></script>
-  <script src="js/voucher.js?v=responsive-dialog-20" defer></script>
+  <script src="js/voucher.js?v=confirmation-copy-21" defer></script>
 </head>
 <body>
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
@@ -106,13 +106,14 @@
       Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
     </footer>
   </main>
-  <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title">
+  <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-description redeem-instruction">
     <div class="confirmation__surface">
       <div class="confirmation__drag" id="confirmation-drag" aria-hidden="true"><span></span></div>
       <button type="button" class="confirmation__close" id="close-confirmation" aria-label="Cerrar confirmación">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
       </button>
-      <h2 id="confirmation-title" tabindex="-1">Tu código</h2>
+      <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
+      <p id="confirmation-description" class="confirmation__description">Este es tu código de $25.000 para Let’s Celebrate.</p>
       <div class="code-box">
         <label for="voucher-code" class="sr-only">Tu código promocional</label>
         <input id="voucher-code" readonly aria-label="Tu código promocional" spellcheck="false">
@@ -120,7 +121,7 @@
       </div>
       <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
       <p id="confirmation-demo" class="confirmation__demo" hidden>No válido para compras.</p>
-      <p id="redeem-instruction" class="confirmation__instruction">Ingresalo al finalizar tu compra.</p>
+      <p id="redeem-instruction" class="confirmation__instruction">Copiá el código e ingresalo en “Código promocional” al finalizar tu compra online.</p>
       <a id="redeem-code" class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
     </div>
   </dialog>
