@@ -19,7 +19,12 @@ html.intro-active:not(.intro-revealing) { overflow: hidden; }
   inset: 0;
   display: none;
   place-items: center;
-  background: #000;
+  /* Static, preloaded photographic backdrop; dim it without a filter pass. */
+  background-color: #000;
+  background-image: linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.48)), url("../assets/loading.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
   opacity: 1;
   transition: opacity 360ms var(--ease-out);
   min-height: 100vh;

@@ -18,8 +18,11 @@
   let orientationReading = null, motionReading = null, orientationAt = -Infinity, motionAt = -Infinity;
   let motionSign = 1, sensorState = "waiting", debug = null;
   let targetX = 0, targetY = 1, flowX = 0, flowY = 1;
+  let flowAngle=0, targetAngle=0, targetStrength=1, flowStrength=1;
+  let filteredX=0, filteredY=1, sensorInitialized=false, source="", debugAt=0;
   let landing = false, landingBlend = 0;
-  let lastTick = 0, frameDebt = 0, step = mobile ? 1000/30 : 1000/60;
+  let lastTick = 0, frameDebt = 0, nextPaint = 0, step = 1000/60;
+  const TAU=2*Math.PI;
   const dragFactors = [0,0,0];
 
   function setSensorState(state) {
@@ -54,26 +57,45 @@
     motionAt = performance.now();
     if(!orientationReading)setSensorState("motion");
   }
-  function updateGravity(now) {
-    const useOrientation=orientationReading && (now-orientationAt<1000 || !motionReading);
-    const reading = useOrientation
-      ? orientationReading
-      : motionReading ? motionReading.map(v=>v*motionSign) : null;
-    if (!reading) return;
-    setSensorState(useOrientation?"orientation":"motion");
+  function updateGravity(now,dt) {
+    // Prefer orientation; only switch to motion if orientation has genuinely
+    // stopped and fresh accelerometer data is available. Avoid alternating
+    // sources on adjacent frames when their delivery frequencies differ.
+    const useOrientation=orientationReading &&
+      (now-orientationAt<1800 || !motionReading || now-motionAt>500);
+    const reading=useOrientation ? orientationReading : motionReading;
+    if(!reading)return;
+    const nextSource=useOrientation?"orientation":"motion";
+    const sign=useOrientation?1:motionSign;
     const angle=(screen.orientation?.angle ?? Number(window.orientation ?? 0))*Math.PI/180;
-    gravityX=reading[0]*Math.cos(angle)+reading[1]*Math.sin(angle);
-    gravityY=-reading[0]*Math.sin(angle)+reading[1]*Math.cos(angle);
+    const gx=(reading[0]*Math.cos(angle)+reading[1]*Math.sin(angle))*sign;
+    const gy=(-reading[0]*Math.sin(angle)+reading[1]*Math.cos(angle))*sign;
+    if(!sensorInitialized){
+      filteredX=gx;filteredY=gy;sensorInitialized=true;
+    }
+    // Low-pass the input vector before converting it into a direction.
+    // Do not reset the filter on a source switch.
+    const inputMix=1-Math.exp(-dt*(source===nextSource?15:8));
+    filteredX+=(gx-filteredX)*inputMix;
+    filteredY+=(gy-filteredY)*inputMix;
+    gravityX=filteredX;gravityY=filteredY;source=nextSource;
+    setSensorState(nextSource);
     const planar=Math.hypot(gravityX,gravityY);
-    // Amplify the horizontal component, not just an additive wind.
-    // Flat devices retain a soft downward snowfall.
-    const x=Math.abs(gravityX)<.008?0:gravityX*3.2;
-    const y=gravityY+Math.max(0,1-planar*2.5)*.8;
+    const x=gravityX*2.35;
+    const y=gravityY+Math.max(0,1-planar*2.15)*.72;
     const norm=Math.hypot(x,y);
-    targetX=norm>.06?x/norm:0;
-    targetY=norm>.06?y/norm:1;
-    if(debug)debug.textContent="Nieve · "+sensorState+" · "+Math.round(Math.atan2(targetX,targetY)*180/Math.PI)+"°";
+    // Hold the preceding angle near zero gravity instead of allowing an
+    // unstable atan2 reading to flip the entire field.
+    if(norm>.075)targetAngle=Math.atan2(x,y);
+    targetStrength=.82+.18*smooth(norm/.5);
+    targetX=Math.sin(targetAngle);
+    targetY=Math.cos(targetAngle);
+    if(debug&&now-debugAt>160){
+      debugAt=now;
+      debug.textContent="Nieve · "+sensorState+" · "+Math.round(targetAngle*180/Math.PI)+"° · "+Math.round(1000/step)+" FPS";
+    }
   }
+
   function listenSensors() {
     if(disposed||sensorListening||!mobile||reduced.matches)return;
     sensorListening=true;
@@ -177,9 +199,9 @@
     const y = initial ? Math.random()*h*(Math.random()<.68?.48:1) : -12 - Math.random()*32;
     return {
       layer, x: Math.random()*w, y, radius, speed,
-      opacity: near ? .16 + depth*.18 : middle ? .28 + depth*.36 : .18 + depth*.23,
+      opacity: near ? .20 + depth*.20 : middle ? .32 + depth*.38 : .22 + depth*.24,
       phase: Math.random()*Math.PI*2, frequency: .45+Math.random()*1.05,
-      sway: (near?14:middle?8:4)+Math.random()*8,
+      sway: (near?10:middle?6:3)+Math.random()*5,
       age: initial ? -(Math.random()*.64) : 0,
       fade: .45 + Math.random()*.45,
       vx: 0, vy: speed
@@ -217,7 +239,7 @@
     const pad=next.radius*3;
     if(side){next.x=flowX>=0?-pad:w+pad;next.y=Math.random()*h;}
     else{next.x=Math.random()*w;next.y=flowY>=0?-pad:h+pad;}
-    const speed=next.speed*(1+Math.abs(flowX)*2.4);
+    const speed=next.speed*(1+Math.abs(flowX)*1.45)*flowStrength;
     next.vx=flowX*speed;next.vy=flowY*speed;
     next.fade=.18+Math.random()*.25;
     Object.assign(p,next);
@@ -226,25 +248,34 @@
   function render(now) {
     if (!active || disposed) return;
     const gap=now-(lastTick||now);lastTick=now;
-    if(mobile){step=Math.abs(flowX)>.12?1000/60:1000/30;}else{
-      frameDebt=gap>24?Math.min(12,frameDebt+1):Math.max(0,frameDebt-.25);
-      step=frameDebt>=6?1000/30:1000/60;
-    }
-    if(last&&now-last<step-1.5){frame=requestAnimationFrame(render);return;}
+    // Stable 60-Hz target independent of tilt. Only lower the rate when
+    // sustained frame misses indicate that the device cannot keep up.
+    frameDebt=gap>26?Math.min(24,frameDebt+1):Math.max(0,frameDebt-.12);
+    const nextStep=frameDebt>=12?1000/30:frameDebt<=3?1000/60:step;
+    if(nextStep!==step){step=nextStep;nextPaint=now;}
+    if(!nextPaint)nextPaint=now;
+    if(now+1.5<nextPaint){frame=requestAnimationFrame(render);return;}
+    nextPaint+=step*Math.max(1,Math.floor((now+1.5-nextPaint)/step)+1);
     const dt=clamp((now-(last||now))/1000,0,.067);
     last=now;time+=dt;
-    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(4.5+layer*1.1));
-    updateGravity(now);
+    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(6.2+layer*1.1));
+    updateGravity(now,dt);
+    // Interpolate the shortest arc rather than lerping Cartesian components.
+    // The unit vector keeps its magnitude when the phone reverses direction.
+    const delta=((targetAngle-flowAngle+Math.PI)%TAU+TAU)%TAU-Math.PI;
     const response=1-Math.exp(-dt*12);
-    flowX+=(targetX-flowX)*response;
-    flowY+=(targetY-flowY)*response;
-    const air = Math.sin(time*.75)*6+Math.sin(time*.27+1.3)*4;
+    flowAngle+=delta*response;
+    flowAngle=((flowAngle+Math.PI)%TAU+TAU)%TAU-Math.PI;
+    flowStrength+=(targetStrength-flowStrength)*response;
+    flowX=Math.sin(flowAngle);
+    flowY=Math.cos(flowAngle);
+    const air=Math.sin(time*.72)*3.2+Math.sin(time*.24+1.3)*2.1;
     landingBlend += ((landing?1:0)-landingBlend)*(1-Math.exp(-dt*4));
     ctx.clearRect(0,0,w,h);
     for (const p of particles) {
       p.age+=dt;
       p.phase+=dt*p.frequency;
-      const speed=p.speed*(1+Math.abs(flowX)*2.4);
+      const speed=p.speed*(1+Math.abs(flowX)*1.45)*flowStrength;
       const sway=Math.sin(p.phase)*p.sway+air;
       const desiredX=flowX*speed+flowY*sway;
       const desiredY=flowY*speed-flowX*sway;
@@ -285,7 +316,7 @@
     if(disposed||active||reduced.matches)return;
     resize();
     if(!w||!h)return;
-    active=true;last=0;lastTick=0;time=0;
+    active=true;last=0;lastTick=0;nextPaint=0;frameDebt=0;time=0;
     root.classList.add("snow-active");
     if(!document.hidden)frame=requestAnimationFrame(render);
   }
@@ -298,6 +329,9 @@
       if(permissionApis.length)requestSensorPermission();
     }
   }else setSensorState("natural");
+  // Start with the photographic opening, before the first numeral enters.
+  // The spin event is only a fallback if the initial canvas has no dimensions.
+  start();
   document.addEventListener("loading-spin-start",start,{once:true,signal:lifetime.signal});
   const enterLanding=()=>{landing=true;start();};
   document.addEventListener("intro-revealing",enterLanding,{once:true,signal:lifetime.signal});
@@ -307,7 +341,7 @@
   document.addEventListener("visibilitychange",()=>{
     if(!active||disposed)return;
     cancelAnimationFrame(frame);
-    last=0;lastTick=0;
+    last=0;lastTick=0;nextPaint=0;frameDebt=0;
     if(!document.hidden)frame=requestAnimationFrame(render);
   },{signal:lifetime.signal});
   window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
