@@ -83,8 +83,10 @@
 /* One persistent viewport layer, independent of the intro overlay. */
 .site-snow {
   position: fixed;
-  inset: 0;
-  width: 100%; height: 100%;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100lvh; /* Stable height while mobile browser bars move. */
   z-index: 1001;
   pointer-events: none;
   contain: strict;
@@ -93,12 +95,6 @@
 }
 .snow-active .site-snow { opacity: 1; }
 .loading .year { position: relative; z-index: 1; }
-.snow-debug {
-  position: fixed; z-index: 1003; top: max(12px, env(safe-area-inset-top));
-  left: max(12px, env(safe-area-inset-left)); padding: 6px 9px;
-  border-radius: 4px; background: rgba(0,0,0,.85); color: #fff;
-  font: 500 11px/1.2 Inter, sans-serif; pointer-events: none;
-}
 
 /* The outgoing overlay reveals the image directly. Text follows its lead in
    a tightly overlapped gesture, rather than a second serial entrance. */
