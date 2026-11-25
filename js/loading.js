@@ -16,16 +16,13 @@
     duration:parseFloat(tokens.getPropertyValue("--digit-duration"))||340,
     offsets:wheels.map(w=>parseFloat(w.style.getPropertyValue("--digit-offset"))||0)
   };
-  // The last digit lands directly into the spin, with no stationary hold.
   const initialHold=entrance.delay+Math.max(...entrance.offsets)+entrance.duration;
   const durations=[1320,1760,2200,2640];
   const acceleration=140, braking=920;
   const clamp = v => Math.max(0,Math.min(1,v));
-  // Ten equally spaced digits on a complete circular reel.
   const step = Math.PI * 2 / 10;
   const radius = 1.45, camera = .65;
   const limit = Math.acos(radius / (camera + radius));
-  // Desktop glyph texture tracks the actual display pixel size; mobile retains 256px.
   let cell = mobile ? 256 : Math.max(512, Math.min(1024, Math.ceil((parseFloat(getComputedStyle(wheels[0]).fontSize)||512)*Math.min(devicePixelRatio||1,2)/128)*128));
   let atlasSize = cell*4;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
@@ -38,8 +35,6 @@
   });
   root.classList.add("loading-preparing");
 
-  // Rasterize the original Gazzetta glyphs once. The texture is wrapped
-  // around a genuinely curved cylindrical surface, not a stack of flat cards.
   function makeAtlas() {
     const a = document.createElement("canvas");
     a.width = a.height = atlasSize;
@@ -89,8 +84,6 @@
         vec2 uv=(vec2(mod(digit,4.0),floor(digit/4.0))*${cell}.0+
           vec2(0.5+vU*${cell-1}.0,0.5+fract(n)*${cell-1}.0))/${atlasSize}.0;
         vec4 sampleColor=texture2D(uAtlas,uv);
-        // Peripheral digits are deliberately gray. As the reel settles,
-        // only the exact central digit remains visible.
         float distanceToCenter=abs(floor(n)-uPhase);
         float focus=1.0-smoothstep(0.18,0.85,distanceToCenter);
         float central=1.0-step(0.5,distanceToCenter);
@@ -99,7 +92,6 @@
       }
       void main(){
         vec4 c;
-        // Resting and entering digits need one texture sample, not seven.
         if(uBlur<0.001){
           c=glyph(uPhase);
         }else{
@@ -128,7 +120,6 @@
     if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
     gl.useProgram(program);
     gl.deleteShader(vs); gl.deleteShader(fs);
-    // 96 connected curved segments per reel; perspective-correct texture mapping.
     const vertices=[];
     const segments=mobile?48:96;
     for(let i=0;i<=segments;i++){
@@ -162,8 +153,6 @@
     };
   }
 
-  // CPU fallback: project the same curved cylindrical mesh in narrow strips.
-  // This preserves curvature and depth even if WebGL is disabled.
   function cpuRenderer(atlas) {
     const ctx=canvas.getContext("2d");
     if(!ctx)return null;
@@ -237,8 +226,6 @@
     if(renderer && drawingStarted){
       renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));
       if(renderer.gpu&&mobile){
-        // Copy the final composited frame while the GL drawing buffer is valid.
-        // Release GPU resources before starting the signature.
         const still=canvas.cloneNode(false);
         still.width=canvas.width;still.height=canvas.height;
         const ctx=still.getContext("2d");
@@ -250,7 +237,6 @@
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
   }
-  // Match the existing CSS ease-out exactly.
   function entranceEase(t){
     if(t<=0||t>=1)return t;
     const bez=(u,a,b)=>3*(1-u)*(1-u)*u*a+3*(1-u)*u*u*b+u*u*u;
@@ -261,7 +247,6 @@
     }
     return bez((lo+hi)/2,1,1);
   }
-  // Continuous angular velocity and acceleration, exact landing without bounce.
   function motion(t,duration,steps){
     const speed=steps/(duration-(acceleration+braking)/2);
     if(t<acceleration){
@@ -294,7 +279,6 @@
     }
     renderer?.clear();
     if(elapsed<0){
-      // Keep the same texture and projection from the first frame to the last.
       if(renderer){
         for(const d of drums){
           const t=clamp((now-startedAt-entrance.delay-entrance.offsets[d.index])/entrance.duration);
@@ -316,7 +300,6 @@
         const landing=1-remaining*remaining*(3-2*remaining);
         const reveal=clamp(elapsed/acceleration);
         const opening=1-reveal*reveal*(3-2*reveal);
-        // Gray neighbors emerge with the spin, not with a hard state change.
         const isolation=Math.max(landing,opening);
         if(renderer)renderer.draw(d,d.start+m.p,m.v,1,0,isolation);
       }
@@ -325,8 +308,6 @@
     frame=requestAnimationFrame(render);
   }
 
-  // Release the counter's frame loop and listeners when the orchestrator
-  // removes the loading overlay, including watchdog and reduced-motion exits.
   const lifetime = new AbortController();
   document.addEventListener("intro-dismissed",()=>{
     finished=true;
@@ -365,7 +346,6 @@
     }catch{renderer=null;}
     frame=requestAnimationFrame(render);
   }
-  // Wait only for the local display font, not the unrelated remote UI font.
   const fallback=setTimeout(launch,1200);
   if(document.fonts?.load){
     document.fonts.load("900 32px Gazzetta","0123456789").then(

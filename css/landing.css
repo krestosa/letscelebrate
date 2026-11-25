@@ -380,8 +380,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 .button:disabled{opacity:.55;cursor:not-allowed}
 .feedback{font-size:13px;line-height:1.45;color:rgba(255,255,255,.66);margin:14px 0 0}
 .feedback[data-kind=error]{color:#ffb399}
-/* Keep the existing native dialog for modal accessibility and top-layer focus.
-   The sheet uses the Vaul drawer timing without adding a React runtime. */
+
 .claim-generated{text-align:center;display:grid;justify-items:center;gap:16px}
 .claim-generated__icon{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;color:var(--accent);background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.32)}
 .claim-generated h2{font-size:clamp(24px,2.2vw,34px);font-weight:650;line-height:1.08;letter-spacing:-.045em;margin:0}
@@ -396,8 +395,7 @@ html.voucher-modal-open{overflow:hidden}
   max-height:calc(100dvh - 16px);padding:0;
   color:#fff;background:var(--sheet-surface);
   border:1px solid rgba(255,255,255,.24);border-bottom:0;border-radius:24px 24px 0 0;
-  /* Opaque extension follows the sheet even while rubber-banding upward.
-     The extension exceeds the maximum overdrag and stays outside layout. */
+  
   box-shadow:0 64px 0 0 var(--sheet-surface),0 -12px 64px rgba(0,0,0,.38);
   overflow:auto;overscroll-behavior:contain;
   transform:translateY(100%);
@@ -441,8 +439,7 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation .feedback{margin:10px 0 0}
 .confirmation p.confirmation__instruction{margin:20px 0 12px;color:rgba(255,255,255,.8);font-size:13px}
 .confirmation .button+.button{margin-top:12px}
-/* Desktop: a centered dialog. Tablets and phones retain the bottom sheet,
-   including larger touch-first landscape layouts. */
+
 @media (min-width:1025px) and (pointer:fine) and (hover:hover){
   .confirmation{
     --sheet-duration:240ms;

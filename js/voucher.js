@@ -19,15 +19,9 @@
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const desktopDialog = matchMedia("(min-width:1025px) and (pointer:fine) and (hover:hover)");
 
-  // Integration contract: same-origin POST, JSON { email, phone, acceptedTerms: true }.
-  // Success: HTTP 200/201 { code: "issued-by-commerce-system" }.
-  // Duplicate of either identifier: HTTP 409 or { status: "already_claimed" }.
-  // The server must atomically enforce uniqueness and issue redeemable vouchers.
   const endpoint = "/api/lets-celebrate/voucher";
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
-  // GitHub Pages is a static preview, not the commerce backend.
-  // Explicit preview hosts issue non-redeemable sample codes only.
   const previewHost = location.hostname === "krestosa.github.io" &&
     /^\/letscelebrate(?:\/|$)/.test(location.pathname);
   const localPreview = location.protocol === "file:" ||
@@ -68,7 +62,6 @@
       delete confirmation.dataset.visible;
       confirmation.showModal();
       document.documentElement.classList.add("voucher-modal-open");
-      // Commit the off-screen starting position before enabling transition.
       confirmation.getBoundingClientRect();
     }
     confirmation.dataset.visible="";
@@ -107,8 +100,6 @@
   });
   viewCode.addEventListener("click",openConfirmation);
 
-  // A captured pointer tracks the sheet directly; release uses the same
-  // interruptible drawer transition for both dismissal and snap-back.
   dragHandle.addEventListener("pointerdown",event=>{
     if(!confirmation.open||drag||desktopDialog.matches||!event.isPrimary||event.button!==0||reducedMotion.matches)return;
     const style=getComputedStyle(confirmation);
@@ -132,8 +123,6 @@
     if(elapsed>0)drag.velocity=(event.clientY-drag.lastY)/elapsed;
     drag.lastY=event.clientY;drag.lastAt=now;
     const raw=drag.base+delta;
-    // Increasing resistance approaches a bounded upward extension without
-    // exposing the page underneath or pushing the sheet above the viewport.
     const limit=drag.maxOverdrag;
     drag.y=raw<0?(limit>0?-limit*(1-Math.exp(raw*.2/limit)):0):Math.min(raw,drag.height+Math.max(0,raw-drag.height)*.2);
     confirmation.style.transform="translateY("+drag.y+"px)";
@@ -144,7 +133,6 @@
     const current=drag;
     const velocity=performance.now()-current.lastAt<100?current.velocity:0;
     const dismiss=!cancelled&&(current.y>current.height*.42||(current.y>12&&velocity>.11));
-    // Flush the tracked position before restoring the transition.
     confirmation.getBoundingClientRect();
     clearDrag();
     if(dismiss)requestClose();
@@ -160,8 +148,6 @@
     element.hidden = !message;
   }
 
-  // Local-only phone metadata: libphonenumber-js 1.13.17 (MIT).
-  // Preserve the user's dialing style while typing; canonicalize at submit.
   function phoneDialString(value){
     const raw=String(value).trim();
     let digits=raw.replace(/\D/g,"");
@@ -175,13 +161,11 @@
     if(!dial||dial==="+")return dial;
     const api=window.libphonenumber;
     if(!api?.AsYouType)return dial;
-    // A bare Argentine mobile 9 + area code is a common pasted format.
     const bareMobile=!dial.startsWith("+")&&/^9\d/.test(dial);
     const formatter=new api.AsYouType("AR");
     let formatted=formatter.input(bareMobile?"+54"+dial:dial);
     if(bareMobile)formatted=formatted.replace(/^\+54\s*/,"");
     if(bareMobile||dial.startsWith("+54")||!dial.startsWith("+")){
-      // Argentine subscriber groups use a hyphen before the final block.
       if(bareMobile||dial.startsWith("+54")){
         const groups=formatted.split(" ");
         const last=groups.length-1;
@@ -205,8 +189,6 @@
     if(!api?.parsePhoneNumberFromString)return null;
     const parsed=api.parsePhoneNumberFromString(dial,"AR");
     if(!parsed?.isPossible())return null;
-    // Celular is the requested field: infer the mobile 9 for a complete
-    // local Argentine number without an explicit mobile marker.
     if(parsed.country==="AR"&&parsed.nationalNumber.length===10){
       return "+549"+parsed.nationalNumber;
     }
@@ -236,7 +218,6 @@
   }
 
   function claimDemo() {
-    // No identifier hashing, persistence, requests or commerce side effects.
     const bytes = crypto.getRandomValues(new Uint8Array(5));
     return { code: "DEMO-" + Array.from(bytes, b => b.toString(16).padStart(2,"0")).join("").toUpperCase() };
   }
@@ -278,8 +259,6 @@
   phone.addEventListener("input",updatePhoneFormat);
   phone.addEventListener("blur",updatePhoneFormat);
 
-  // Permanently finish the one-shot entrance on interaction; blur must
-  // never restart an opacity animation on the form.
   const claimSection=form.closest(".claim-section");
   function completeFormEntrance(){claimSection.dataset.entranceComplete="";}
   claimSection.addEventListener("pointerdown",completeFormEntrance,{once:true});
@@ -306,8 +285,6 @@
         return;
       }
       issuedCode=result.code;
-      // Commit the success state before the modal becomes visible. Closing
-      // the modal only restores focus; it never changes the form layout.
       completeFormEntrance();
       form.reset();
       form.hidden=true;
@@ -352,7 +329,7 @@
         await navigator.clipboard.writeText(issuedCode);
         copied=true;
       }
-    }catch{ /* Use selection-based clipboard support. */ }
+    }catch{  }
     if(version!==copyVersion||!confirmation.open)return;
     if(!copied){
       codeField.hidden=false;

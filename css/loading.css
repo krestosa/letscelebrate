@@ -20,7 +20,7 @@ html.intro-active:not(.intro-revealing) { overflow: hidden; }
   inset: 0;
   display: none;
   place-items: center;
-  /* Static, preloaded photographic backdrop; dim it without a filter pass. */
+  
   background-color: #000;
   background-image: linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.48)), url("../assets/loading.jpg");
   background-position: center;
@@ -48,7 +48,7 @@ html.intro-active:not(.intro-revealing) { overflow: hidden; }
   height: 1.46em;
   padding-inline: .035em;
   overflow: hidden;
-  /* Fade the projected curved surfaces before the shared aperture ends. */
+  
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 23%, #000 77%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 23%, #000 77%, transparent 100%);
 }

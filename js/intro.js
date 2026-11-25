@@ -13,8 +13,6 @@
     return Number.isFinite(n) ? n * (value.endsWith("ms") ? 1 : value.endsWith("s") ? 1000 : 1) : fallback;
   };
 
-  // Sequence follows actual transition completion. The timeout is only a
-  // safety net for background tabs, missing assets or disabled transitions.
   function afterMotion(element, property, duration, next, animation = false) {
     const endEvent = animation ? "animationend" : "transitionend";
     const cancelEvent = animation ? "animationcancel" : "transitioncancel";
@@ -85,7 +83,6 @@
       page.inert = false;
       animateSections(page);
     }
-    // Reveal the preloaded static hero through the overlay crossfade.
     root.classList.add("landing-enter");
     if (overlay) overlay.inert = true;
     if (!overlay || reduced.matches) { dismiss(); return; }
@@ -94,8 +91,6 @@
     document.dispatchEvent(new Event("intro-revealing"));
   }
 
-  // A short, intentional reading interval, counted only while the document
-  // is visible. This is not a transition delay between unfinished animations.
   function holdVisible(nextPhase, duration, next) {
     phase = nextPhase;
     let remaining = duration;
@@ -144,7 +139,6 @@
       done=true;cleanup();cancelTransition=()=>{};
       const art=document.getElementById("signature-art");
       if(art?.complete&&art.naturalWidth)signature.classList.add("signature-done");
-      // Keep the entire signature visible before starting the landing crossfade.
       holdVisible("reading", token("--signature-reading-time", 1000), reveal);
     }
     cancelTransition();
@@ -159,7 +153,6 @@
     if (phase !== "counter") return;
     clearTimeout(watchdog);
     if (reduced.matches) { reveal(); return; }
-    // Let the finished year remain legible before the overlapping handoff.
     holdVisible("year-hold", token("--year-reading-time", 450), writeSignature);
   }
 

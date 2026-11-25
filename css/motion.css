@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-/* Shared timeline: cylinder -> signature -> landing. */
+
 :root {
   --counter-size: min(37vw, 65svh, 620px);
   --year-reading-time: 450ms;
@@ -14,7 +14,7 @@
 .year { font-size: var(--counter-size); transition: opacity var(--signature-handoff) var(--ease-out), transform var(--signature-handoff) var(--ease-out); }
 .intro-signature .year { opacity: 0; transform: translateY(-.08em) scale(.97); }
 
-/* Individual medial trajectories clipped to the original vector contours. */
+
 .loading__signature {
   position: absolute;
   top: 50%; left: 50%;
@@ -29,7 +29,7 @@
 .intro-signature .loading__signature {
   opacity: 1;
 }
-/* Touch-only incremental canvas; final artwork stays the original SVG. */
+
 .loading__signature { aspect-ratio: 2316 / 804; contain: layout paint; }
 .signature-canvas, .signature-art {
   position: absolute; inset: 0; display: block;
@@ -39,8 +39,7 @@
 .signature-done .signature-art { opacity: 1; }
 .signature-done .signature-canvas { visibility: hidden; }
 
-/* Desktop uses the original SVG contour geometry throughout the reveal.
-   Only touch devices use the incremental canvas renderer. */
+
 .signature-vector {
   position: absolute;
   inset: 0;
@@ -80,8 +79,7 @@
 }
 
 
-/* One persistent document-space layer, independent of the intro overlay.
-   The canvas scrolls with the page, while its flakes keep their positions. */
+
 body { position: relative; }
 .site-snow {
   position: absolute;
@@ -97,10 +95,7 @@ body { position: relative; }
 .snow-active .site-snow { opacity: 1; }
 .loading .year { position: relative; z-index: 1; }
 
-/* Landing choreography: the offer leads; branding, supporting copy and the
-   form overlap the handoff. The photograph and frosted glass surface stay
-   static; animating the glass or its ancestors' opacity creates a backdrop
-   root and can temporarily remove the blur. Only the form content moves. */
+
 .landing-enter .title-lockup{
   --reveal-y:32px;
   animation:landing-rise 600ms var(--ease-out) 140ms backwards;
@@ -123,7 +118,7 @@ body { position: relative; }
 }
 @keyframes landing-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* Reveal lower sections once, never delay individual controls. */
+
 .section-motion-pending { opacity: 0; }
 .section-motion-enter { --reveal-y: 14px; animation: landing-rise 500ms var(--ease-out) both; }
 .section-motion-pending:focus-within, .section-motion-enter:focus-within { opacity: 1; animation: none; transform: none; }
@@ -139,7 +134,7 @@ body { position: relative; }
   .section-motion-pending, .section-motion-enter { opacity: 1; animation: none; transform: none; }
 }
 
-/* Avoid a full-screen soft-light blend on mobile. */
+
 @media (pointer: coarse), (max-width: 600px) {
   .hero__grain { mix-blend-mode: normal; opacity: .045; mask-image: none; -webkit-mask-image: none; }
 }

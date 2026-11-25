@@ -17,8 +17,9 @@
   let last=0, time=0, lastTick=0, nextPaint=0, frameDebt=0, step=1000/60;
   const particles=[];
   const dragFactors=[0,0,0];
+  let paintedTop=0,paintedBottom=0;
+  const genericSources=["gravity","accelerometer"],legacySources=["orientation","absolute","motion"],allSources=[...genericSources,...legacySources];
   const radians=Math.PI/180;
-  // Sensor axes are relative to the device's natural orientation, not CSS.
   function orientationGravity(beta,gamma){
     return {x:Math.cos(beta*radians)*Math.sin(gamma*radians),y:Math.sin(beta*radians)};
   }
@@ -28,8 +29,6 @@
   }
   function snowDirection(x,y){
     const magnitude=Math.hypot(x,y);
-    // When the phone lies flat, retain normal snowfall. A slight tilt
-    // produces visible diagonal fall instead of amplifying sensor noise.
     const weight=smooth((magnitude-.04)/.34);
     const gx=weight*x/Math.max(magnitude,.001)*1.9;
     const gy=1-weight+weight*y/Math.max(magnitude,.001);
@@ -37,8 +36,6 @@
     return {x:gx/length,y:gy/length};
   }
   let gravityX=0,gravityY=1;
-  // Keep all sensor sources independent. A constant legacy orientation
-  // sample must not hide working Chromium accelerometer data.
   const samples=Object.create(null), sensors=new Map();
   const sensorCounts={orientation:0,absolute:0,gravity:0,accelerometer:0,motion:0};
   const sensorErrors=Object.create(null), permissionStates=Object.create(null);
@@ -51,8 +48,6 @@
   function noteSample(source,x,y,z){
     if(![x,y,z].every(Number.isFinite))return;
     const prev=samples[source],now=performance.now();
-    // The raw accelerometer includes short linear impulses; low-pass
-    // only that source. Dedicated gravity and orientation are fused by OS.
     if(source==="accelerometer"&&prev&&now-prev.at<500){
       const k=1-Math.exp(-Math.max(1,now-prev.at)/85);
       x=prev.x+(x-prev.x)*k;
@@ -74,7 +69,6 @@
     if(!a||![a.x,a.y,a.z].every(Number.isFinite))return;
     const norm=Math.hypot(a.x,a.y,a.z);
     if(norm<3||norm>20)return;
-    // Android proper acceleration opposes physical gravity; CSS Y is down.
     noteSample(source,-a.x/norm,a.y/norm,a.z/norm);
   }
   const sampleAbsolute=event=>sampleOrientation(event,"absolute");
@@ -88,28 +82,26 @@
     sampleAcceleration("motion",a);
   }
   function chooseGravity(now=performance.now()){
-    // A dedicated gravity estimate or a streaming accelerometer wins over
-    // a frozen orientation event. Orientation remains the Firefox fallback.
-    for(const source of ["gravity","accelerometer"]){
+    for(const source of genericSources){
       if(samples[source]&&now-samples[source].at<1800)return {source,sample:samples[source]};
     }
-    const orientation=samples.orientation||samples.absolute;
+    const orientation=!samples.absolute||samples.orientation?.at>=samples.absolute.at?samples.orientation:samples.absolute;
     const motion=samples.motion;
-    // Firefox motion streams continuously; do not wait for an Euler
-    // update or keep an old orientation while the phone is moving.
     if(motion&&now-motion.at<500&&(!orientation||
        now-orientation.at>180||
        (Math.hypot(orientation.x,orientation.y)<.035&&Math.hypot(motion.x,motion.y)>.12))){
       return {source:"motion",sample:motion};
     }
-    const legacy=["orientation","absolute","motion"].filter(key=>samples[key]&&now-samples[key].at<1800);
-    if(legacy.length){
-      const source=legacy[0];
-      return {source,sample:samples[source]};
+    for(const source of legacySources){
+      const sample=samples[source];
+      if(sample&&now-sample.at<1800)return {source,sample};
     }
-    // Do not reset gravity just because an event-driven device is still.
-    const latest=Object.entries(samples).sort((a,b)=>b[1].at-a[1].at)[0];
-    return latest?{source:latest[0],sample:latest[1]}:null;
+    let latest=null,source=null;
+    for(const key of allSources){
+      const sample=samples[key];
+      if(sample&&(!latest||sample.at>latest.at)){latest=sample;source=key;}
+    }
+    return latest?{source,sample:latest}:null;
   }
   function getGravity(){
     const selected=chooseGravity();
@@ -150,8 +142,6 @@
     window.addEventListener("deviceorientationabsolute",sampleAbsolute,options);
     window.addEventListener("devicemotion",sampleMotion,options);
   }
-  // Chromium 151+ exposes requestPermission too. An already granted
-  // permission can be queried without a gesture; a prompt cannot.
   async function requestExistingPermission(){
     if(disposed||permissionRequestRunning||chooseGravity())return;
     const apis=[["orientation",window.DeviceOrientationEvent],["motion",window.DeviceMotionEvent]]
@@ -188,8 +178,6 @@
           startGenericSensors();
           requestExistingPermission();
         }else if(permission.state==="denied"){
-          // Revoking gyroscope access need not disable an independently
-          // granted accelerometer. The browser enforces each permission.
           if(name==="accelerometer"){
             for(const [source,sensor] of sensors){try{sensor.stop();}catch{} sensors.delete(source);}
             for(const source of Object.keys(samples))delete samples[source];
@@ -203,8 +191,6 @@
     }catch{permissionStates[name]="unsupported";}
   }
   function initSensors(){
-    // Do not depend on touch detection: Chromium desktop-site mode can
-    // report a fine pointer despite running on a phone.
     if(!window.isSecureContext){sensorStatus="HTTPS required";return;}
     attachLegacy();
     const bootstrap=window.__snowSensorBootstrap;
@@ -231,7 +217,7 @@
       document.body.appendChild(debugPanel);
     }
     const status=sensorSource!=="none"?"active":Object.values(permissionStates).includes("denied")?"denied":sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
-    debugPanel.textContent="Snow 33 | "+status+" | "+sensorSource+
+    debugPanel.textContent="Snow 34 | "+status+" | "+sensorSource+
       "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
       "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+" | Abs: "+sensorCounts.absolute+
       "\npermission: "+Object.entries(permissionStates).map(([key,value])=>key+":"+value).join(" ")+
@@ -240,7 +226,6 @@
       "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
   }
 
-  // Paint the soft depth-of-field sprites once, not a blur on every frame.
   const sprites = [0,1,2].map(layer => {
     const image = document.createElement("canvas");
     image.width = image.height = 48;
@@ -281,12 +266,9 @@
     };
   }
   function layerFor(i) {
-    // Far field dominates; only a handful of larger foreground flakes.
     return i%13===0?2:i%3===0?1:0;
   }
 
-  // World coordinates span the document, not the visible viewport.
-  // Limit backing-store allocation on tall pages and preserve the field.
   function resize() {
     if (disposed) return false;
     const width=canvas.clientWidth, height=canvas.clientHeight;
@@ -300,8 +282,8 @@
     canvas.width=Math.max(1,Math.round(w*dpr));
     canvas.height=Math.max(1,Math.round(h*dpr));
     ctx.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
+    paintedTop=paintedBottom=0;
     if (oldW && oldH) {
-      // Height growth must not move existing flakes in document space.
       if(oldW!==w)for(const p of particles)p.x*=w/oldW;
       if(h<oldH)for(let i=particles.length-1;i>=0;i--)if(particles[i].y>h+44)particles.splice(i,1);
     }
@@ -319,7 +301,6 @@
     const next=particle(false,p.layer);
     next.fade=.18+Math.random()*.25;
     const pad=next.radius*4+12;
-    // Inject from the upstream edge in proportion to incoming flux.
     const horizontal=Math.abs(gravityX)*h,vertical=Math.abs(gravityY)*w;
     if(Math.random()*(horizontal+vertical)<horizontal){
       next.x=gravityX>0?-pad:w+pad;
@@ -345,8 +326,6 @@
     for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(10+layer*1.3));
     const target=getGravity();
     if(!firstDirectionApplied&&sensorSource!=="none"){
-      // Apply the first physical reading immediately. Flakes still retain
-      // inertia, but no second gravity ramp delays the initial response.
       gravityX=target.x;gravityY=target.y;firstDirectionApplied=true;
     }else{
       const gravityBlend=1-Math.exp(-dt*18);
@@ -355,13 +334,16 @@
     }
     const air=Math.sin(time*.72)*3.2+Math.sin(time*.24+1.3)*2.1;
     updateDebug(now);
-    ctx.clearRect(0,0,w,h);
+    const viewHeight=window.innerHeight||h;
+    const scrollTop=window.scrollY||0;
+    const visibleTop=clamp(Math.floor(scrollTop-viewHeight*.6-32),0,h);
+    const visibleBottom=clamp(Math.ceil(scrollTop+viewHeight*1.6+32),0,h);
+    if(paintedBottom>paintedTop)ctx.clearRect(0,Math.max(0,paintedTop-16),w,Math.min(h,paintedBottom+16)-Math.max(0,paintedTop-16));
+    paintedTop=visibleTop;paintedBottom=visibleBottom;
     for(const p of particles){
       p.age+=dt;
       p.phase+=dt*p.frequency;
       const sway=Math.sin(p.phase)*p.sway+air;
-      // Each flake steers gradually instead of rotating/teleporting the
-      // canvas. Different depth layers retain different inertia.
       const targetX=gravityX*p.speed+sway*gravityY;
       const targetY=gravityY*p.speed-sway*gravityX;
       p.vx+=(targetX-p.vx)*dragFactors[p.layer];
@@ -371,6 +353,7 @@
       const pad=p.radius*4+44;
       if((p.x<-pad&&p.vx<0)||(p.x>w+pad&&p.vx>0)||
          (p.y<-pad&&p.vy<0)||(p.y>h+pad&&p.vy>0))recycle(p);
+      if(p.y<visibleTop||p.y>visibleBottom)continue;
       const alpha=p.opacity*smooth(p.age/p.fade);
       if(alpha<.01)continue;
       ctx.globalAlpha=alpha;
@@ -396,7 +379,6 @@
     if(active)resize();
     else start();
   }
-  // Observe document layout changes, never scroll events.
   if("ResizeObserver" in window){
     observer=new ResizeObserver(onSizeChange);
     observer.observe(canvas);
@@ -430,7 +412,6 @@
   },options);
   window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
   reduced.addEventListener?.("change",()=>{if(reduced.matches)dispose();},{signal:lifetime.signal});
-  // A single field persists from the opening through the entire landing.
   initSensors();
   if(sensorCount){const target=getGravity();gravityX=target.x;gravityY=target.y;firstDirectionApplied=true;}
   start();
