@@ -14,10 +14,12 @@
   const smooth = v => { const t = clamp(v, 0, 1); return t*t*(3-2*t); };
   const root = document.documentElement;
   let w = 0, h = 0, active = false, disposed = false, frame = 0, last = 0, time = 0;
-  let gravityX = 0, gravityY = 1, particles = [], sensorListening = false;
+  let gravityX = 0, gravityY = 1, particles = [];
   let orientationReading = null, motionReading = null, gravityReading = null;
   let orientationAt = -Infinity, motionAt = -Infinity, gravityAt = -Infinity;
-  let gravitySensor=null, gravityStarting=false, permissionDenied=false, permissionWatches=[];
+  let gravitySensor=null, gravityStarting=false, permissionDenied=false;
+  let sensorListeners=null, sensorPermission=null, permissionGranted=false, permissionBusy=false, gestureArmed=false;
+  let permissionState="unknown", nullEvents=0, genericKind="", genericError="";
   let motionSign = 1, sensorState = "waiting", debug = null;
   let targetX = 0, targetY = 1, flowX = 0, flowY = 1;
   let flowAngle=0, targetAngle=0, targetStrength=1, flowStrength=1;
@@ -35,7 +37,7 @@
   }
   function onOrientation(event) {
     if(permissionDenied)return;
-    if (!Number.isFinite(event.gamma) || !Number.isFinite(event.beta)) return;
+    if (!Number.isFinite(event.gamma) || !Number.isFinite(event.beta)) { nullEvents++; return; }
     const gamma = event.gamma * Math.PI / 180;
     const beta = event.beta * Math.PI / 180;
     // Gravity projected into the original device axes (screen y points down).
@@ -47,10 +49,15 @@
   function onMotion(event) {
     if(permissionDenied)return;
     const g = event.accelerationIncludingGravity;
-    if (!g || !Number.isFinite(g.x) || !Number.isFinite(g.y)) return;
+    if (!g || !Number.isFinite(g.x) || !Number.isFinite(g.y)) { nullEvents++; return; }
     const a = event.acceleration;
-    const ax = g.x-(Number.isFinite(a?.x)?a.x:0);
-    const ay = g.y-(Number.isFinite(a?.y)?a.y:0);
+    const rawZ=Number.isFinite(g.z)?g.z:0;
+    const dx=g.x-(Number.isFinite(a?.x)?a.x:0);
+    const dy=g.y-(Number.isFinite(a?.y)?a.y:0);
+    const dz=rawZ-(Number.isFinite(a?.z)?a.z:0);
+    const corrected=Math.hypot(dx,dy,dz);
+    const ax=corrected>3&&corrected<16?dx:g.x;
+    const ay=corrected>3&&corrected<16?dy:g.y;
     const reading = [clamp(-ax/9.81,-1,1),clamp(ay/9.81,-1,1)];
     if (orientationReading && performance.now()-orientationAt<800) {
       // Match older implementations with reversed accelerometer polarity.
@@ -67,14 +74,13 @@
     // sources on adjacent frames when their delivery frequencies differ.
     // Direct gravity is independent of Euler-angle delivery and avoids
     // choosing a stale orientation event over a live accelerometer.
-    const useGravity=gravityReading && now-gravityAt<1000;
-    const useOrientation=!useGravity && orientationReading &&
-      (now-orientationAt<1800 || !motionReading || now-motionAt>500) &&
-      !(motionReading && now-motionAt<500 &&
-        Math.hypot(...orientationReading)<.025 && Math.hypot(...motionReading)>.18);
-    const reading=useGravity?gravityReading:useOrientation?orientationReading:motionReading||gravityReading;
+    const useGravity=gravityReading && now-gravityAt<1000 && genericKind==="gravity";
+    const useMotion=!useGravity && motionReading && now-motionAt<1000;
+    const useGeneric=!useGravity&&!useMotion&&gravityReading&&now-gravityAt<1000;
+    const useOrientation=!useGravity&&!useMotion&&!useGeneric&&orientationReading;
+    const reading=useGravity||useGeneric?gravityReading:useMotion?motionReading:useOrientation?orientationReading:null;
     if(!reading)return;
-    const nextSource=useGravity||(!useOrientation&&!motionReading)?"gravity":useOrientation?"orientation":"motion";
+    const nextSource=useGravity||useGeneric?genericKind:useMotion?"motion":"orientation";
     const sign=nextSource==="orientation"?1:motionSign;
     const angle=(screen.orientation?.angle ?? Number(window.orientation ?? 0))*Math.PI/180;
     const gx=(reading[0]*Math.cos(angle)+reading[1]*Math.sin(angle))*sign;
@@ -90,7 +96,7 @@
     gravityX=filteredX;gravityY=filteredY;source=nextSource;
     setSensorState(nextSource);
     const planar=Math.hypot(gravityX,gravityY);
-    const x=gravityX*2.35;
+    const x=gravityX*3.2;
     const y=gravityY+Math.max(0,1-planar*2.15)*.72;
     const norm=Math.hypot(x,y);
     // Hold the preceding angle near zero gravity instead of allowing an
@@ -101,127 +107,172 @@
     targetY=Math.cos(targetAngle);
     if(debug&&now-debugAt>160){
       debugAt=now;
-      debug.textContent="Nieve · "+sensorState+" · "+Math.round(targetAngle*180/Math.PI)+"° · "+Math.round(1000/step)+" FPS";
+      debug.textContent="Nieve · "+sensorState+" · "+Math.round(targetAngle*180/Math.PI)+"° · "+Math.round(1000/step)+" FPS · "+permissionState;
     }
   }
 
-  function listenSensors() {
-    if(disposed||sensorListening||!mobile||reduced.matches)return;
-    sensorListening=true;
-    window.addEventListener("deviceorientation",onOrientation,options);
-    window.addEventListener("deviceorientationabsolute",event=>{
-      if(performance.now()-orientationAt>1000)onOrientation(event);
-    },options);
-    window.addEventListener("devicemotion",onMotion,options);
-    setSensorState("waiting");
-    setTimeout(()=>{
-      if(!disposed&&!hasSensorData()&&sensorState==="waiting")setSensorState("no-data");
-    },2500);
-  }
-  // Chromium exposes requestPermission() too: its presence does not mean
-  // the user needs to tap an activation button. Read any already-authorized
-  // sensor immediately and query its permission state without a gesture.
   const permissionApis = [...new Set([orientationSensor,motionSensor])]
     .filter(api=>typeof api?.requestPermission==="function");
-  let permissionBusy=false, permissionGranted=false, gestureArmed=false;
+
   function hasSensorData(){return !!(orientationReading||motionReading||gravityReading);}
-  function stopGravity(){try{gravitySensor?.stop();}catch{}gravitySensor=null;gravityStarting=false;}
+  function reportState(state){
+    setSensorState(state);
+    if(debug)debug.textContent="Nieve · "+state+" · permiso: "+permissionState+" · nulos: "+nullEvents+(genericError?" · "+genericError:"");
+  }
+  function listenSensors(restart=false) {
+    if(disposed||permissionDenied||!mobile||reduced.matches)return;
+    if(sensorListeners&&!restart)return;
+    sensorListeners?.abort();
+    sensorListeners=new AbortController();
+    const opts={passive:true,signal:sensorListeners.signal};
+    window.addEventListener("deviceorientation",onOrientation,opts);
+    window.addEventListener("deviceorientationabsolute",event=>{
+      if(performance.now()-orientationAt>1000)onOrientation(event);
+    },opts);
+    window.addEventListener("devicemotion",onMotion,opts);
+    const epoch=sensorListeners;
+    setTimeout(()=>{
+      if(disposed||epoch!==sensorListeners||hasSensorData()||permissionDenied)return;
+      reportState(permissionState==="prompt"?"gesture-required":"no-data");
+    },2500);
+  }
+  function stopGravity(){
+    const old=gravitySensor;gravitySensor=null;
+    try{old?.stop();}catch{}
+    gravityReading=null;gravityAt=-Infinity;genericKind="";
+  }
+  function blockSensors(){
+    permissionDenied=true;permissionGranted=false;
+    sensorListeners?.abort();sensorListeners=null;
+    stopGravity();orientationReading=motionReading=null;
+    orientationAt=motionAt=-Infinity;
+    targetAngle=0;targetStrength=1;
+    disarmGesture();reportState("denied");
+  }
   async function startGravity(){
-    if(disposed||permissionDenied||gravitySensor||gravityStarting||!window.isSecureContext||typeof window.GravitySensor!=="function")return;
+    if(disposed||permissionDenied||gravitySensor||gravityStarting||!window.isSecureContext)return;
     gravityStarting=true;
     try{
-      // Only start an already-authorized sensor. Never use a second API to
-      // override an explicit denial or manufacture motion data.
+      // Query the browser's existing authorization; no fallback may bypass it.
       if(navigator.permissions?.query){
-        const permission=await navigator.permissions.query({name:"accelerometer"});
-        if(disposed||permissionDenied||permission.state!=="granted")return;
-      }
-      if(disposed||permissionDenied)return;
-      const sensor=new window.GravitySensor({frequency:30,referenceFrame:"device"});
-      gravitySensor=sensor;
-      sensor.addEventListener("reading",()=>{
-        if(!Number.isFinite(sensor.x)||!Number.isFinite(sensor.y)||!Number.isFinite(sensor.z))return;
-        if(Math.hypot(sensor.x,sensor.y,sensor.z)<1)return;
-        gravityReading=[clamp(-sensor.x/9.81,-1,1),clamp(sensor.y/9.81,-1,1)];
-        gravityAt=performance.now();
-        if(orientationReading&&performance.now()-orientationAt<800){
-          const dot=gravityReading[0]*orientationReading[0]+gravityReading[1]*orientationReading[1];
-          if(Math.abs(dot)>.18)motionSign=dot<0?-1:1;
+        try{
+          const p=await navigator.permissions.query({name:"accelerometer"});
+          if(p.state==="denied"||p.state==="prompt")return;
+        }catch{if(!permissionGranted&&permissionApis.length)return;}
+      }else if(permissionApis.length&&!permissionGranted&&!hasSensorData())return;
+      if(disposed||permissionDenied||gravitySensor)return;
+      const sources=[["gravity",window.GravitySensor],["accelerometer",window.Accelerometer]];
+      function trySource(index){
+        if(disposed||permissionDenied||index>=sources.length)return;
+        const [kind,Sensor]=sources[index];
+        if(typeof Sensor!=="function"){trySource(index+1);return;}
+        try{
+          const sensor=new Sensor({frequency:30,referenceFrame:"device"});
+          gravitySensor=sensor;genericKind=kind;
+          sensor.addEventListener("reading",()=>{
+            if(disposed||permissionDenied||gravitySensor!==sensor)return;
+            if(!Number.isFinite(sensor.x)||!Number.isFinite(sensor.y)||!Number.isFinite(sensor.z))return;
+            if(Math.hypot(sensor.x,sensor.y,sensor.z)<1)return;
+            gravityReading=[clamp(-sensor.x/9.81,-1,1),clamp(sensor.y/9.81,-1,1)];
+            gravityAt=performance.now();
+            if(orientationReading&&performance.now()-orientationAt<800){
+              const dot=gravityReading[0]*orientationReading[0]+gravityReading[1]*orientationReading[1];
+              if(Math.abs(dot)>.18)motionSign=dot<0?-1:1;
+            }
+            setSensorState(kind);
+          },options);
+          sensor.addEventListener("error",event=>{
+            if(gravitySensor!==sensor)return;
+            genericError=event.error?.name||"sensor-error";
+            stopGravity();
+            if(genericError==="NotAllowedError"||genericError==="SecurityError"){reportState("sensor-blocked");return;}
+            trySource(index+1);
+          },{once:true,signal:lifetime.signal});
+          sensor.start();
+        }catch(error){
+          genericError=error?.name||"sensor-error";
+          stopGravity();
+          if(genericError!=="NotAllowedError"&&genericError!=="SecurityError")trySource(index+1);
         }
-        setSensorState("gravity");
-      },options);
-      sensor.addEventListener("error",()=>{stopGravity();},{once:true,signal:lifetime.signal});
-      sensor.start();
-    }catch{stopGravity();}finally{gravityStarting=false;}
-  }
-  async function watchSensorPermissions(){
-    if(!navigator.permissions?.query)return;
-    for(const name of ["accelerometer","gyroscope"]){
-      try{
-        const p=await navigator.permissions.query({name});
-        if(disposed)return;
-        permissionWatches.push(p);
-        p.addEventListener("change",()=>{
-          if(disposed)return;
-          permissionDenied=permissionWatches.some(item=>item.state==="denied");
-          if(permissionDenied){stopGravity();gravityReading=motionReading=orientationReading=null;targetAngle=0;targetStrength=1;setSensorState("denied");return;}
-          permissionGranted=false;
-          listenSensors();
-          startGravity();
-          if(permissionApis.length)requestSensorPermission();
-        },options);
-      }catch{}
-    }
+      }
+      trySource(0);
+    }finally{gravityStarting=false;}
   }
   function onFirstGesture(event){
-    if(!event.isTrusted||disposed||permissionDenied||permissionGranted||hasSensorData())return;
-    // A native permission prompt may require transient user activation.
-    // Never prevent the underlying click or request permission after denial.
-    if(navigator.userActivation && !navigator.userActivation.isActive)return;
-    disarmGesture();
+    if(!event.isTrusted||disposed||permissionDenied||permissionGranted||hasSensorData()||permissionBusy)return;
+    if(navigator.userActivation&&!navigator.userActivation.isActive)return;
     requestSensorPermission(true);
   }
   function disarmGesture(){
     gestureArmed=false;
-    window.removeEventListener("click",onFirstGesture,true);
-    window.removeEventListener("keydown",onFirstGesture,true);
+    for(const event of ["pointerup","click","keydown"])window.removeEventListener(event,onFirstGesture,true);
   }
   function armGesture(){
-    if(gestureArmed||disposed||permissionGranted||hasSensorData())return;
+    if(gestureArmed||disposed||permissionDenied||permissionGranted||hasSensorData()||!permissionApis.length)return;
     gestureArmed=true;
-    window.addEventListener("click",onFirstGesture,{capture:true,passive:true,signal:lifetime.signal});
-    window.addEventListener("keydown",onFirstGesture,{capture:true,passive:true,signal:lifetime.signal});
+    for(const event of ["pointerup","click","keydown"])window.addEventListener(event,onFirstGesture,{capture:true,passive:true,signal:lifetime.signal});
   }
   async function requestSensorPermission(userActivated=false){
     if(disposed||permissionDenied||permissionBusy||permissionGranted||hasSensorData()||!permissionApis.length)return;
     permissionBusy=true;
-    // Execute both calls synchronously before awaiting either result.
-    const pending=permissionApis.map(api=>{
-      try{return Promise.resolve(api.requestPermission());}
-      catch(error){return Promise.reject(error);}
-    });
-    const results=await Promise.allSettled(pending);
-    permissionBusy=false;
+    let result;
+    try{
+      // Both native requests are initiated within the same trusted activation.
+      const pending=permissionApis.map(api=>{
+        try{return Promise.resolve(api.requestPermission());}
+        catch(error){return Promise.reject(error);}
+      });
+      result=await Promise.allSettled(pending);
+    }finally{permissionBusy=false;}
     if(disposed)return;
-    if(hasSensorData()||results.some(r=>r.status==="fulfilled"&&r.value==="granted")){
-      permissionGranted=true;
+    if(sensorPermission?.state==="denied"){blockSensors();return;}
+    if(hasSensorData()||result?.some(r=>r.status==="fulfilled"&&r.value==="granted")){
+      permissionGranted=true;permissionDenied=false;permissionState="granted";
       disarmGesture();
-      if(!hasSensorData())setSensorState("waiting");
+      // Chromium can emit only a null event before permission is granted.
+      // Reattach after the grant rather than keeping the stalled subscription.
+      listenSensors(true);
       startGravity();
+      reportState(hasSensorData()?sensorState:"waiting");
       return;
     }
-    const requiresGesture=results.some(r=>r.status==="rejected"&&
-      (r.reason?.name==="NotAllowedError"||r.reason?.name==="InvalidStateError"));
-    if(!userActivated&&requiresGesture){
-      setSensorState("gesture-required");
+    const denied=result?.every(r=>r.status==="fulfilled"&&r.value==="denied");
+    if(sensorPermission?.state==="denied"||(userActivated&&denied)){blockSensors();return;}
+    // A request without activation can fail while the browser is in ASK.
+    // Do not interpret that as a permanent user denial.
+    if(!userActivated){armGesture();reportState("gesture-required");}
+    else {disarmGesture();reportState("unavailable");}
+  }
+  async function initializeSensors(){
+    if(disposed||!mobile||reduced.matches)return;
+    if(!window.isSecureContext){reportState("HTTPS-required");return;}
+    if(!orientationSensor&&!motionSensor&&!window.GravitySensor&&!window.Accelerometer){reportState("unsupported");return;}
+    // Install listeners immediately for Firefox and already-allowed Chromium.
+    listenSensors();
+    if(navigator.permissions?.query){
+      try{
+        sensorPermission=await navigator.permissions.query({name:"accelerometer"});
+        if(disposed)return;
+        permissionState=sensorPermission.state;
+        sensorPermission.addEventListener("change",()=>{
+          permissionState=sensorPermission.state;
+          if(permissionState==="denied"){blockSensors();return;}
+          permissionDenied=false;permissionGranted=false;
+          listenSensors(true);
+          if(permissionState==="granted"){
+            if(permissionApis.length)requestSensorPermission();
+            startGravity();
+          }else armGesture();
+        },options);
+        if(permissionState==="denied"){blockSensors();return;}
+        if(permissionState==="prompt"){armGesture();reportState("gesture-required");return;}
+      }catch{}
+    }
+    if(permissionApis.length){
       armGesture();
-      // Query-only fallback can start if access was already granted.
-      startGravity();
+      requestSensorPermission();
     }else{
-      permissionDenied=results.every(r=>r.status==="fulfilled"&&r.value==="denied");
-      if(permissionDenied){stopGravity();gravityReading=null;}
-      setSensorState(permissionDenied?"denied":"unavailable");
-      disarmGesture();
+      startGravity();
     }
   }
   // Opt-in, local-only diagnostics; never collect or transmit sensor values.
@@ -371,6 +422,7 @@
     root.classList.remove("snow-active");
     cancelAnimationFrame(frame);
     stopGravity();
+    sensorListeners?.abort();
     lifetime.abort();
     debug?.remove();
     particles=[];
@@ -387,17 +439,8 @@
     if(!document.hidden)frame=requestAnimationFrame(render);
   }
 
-  if(mobile&&!reduced.matches){
-    if(!window.isSecureContext)setSensorState("HTTPS-required");
-    else if(!orientationSensor&&!motionSensor&&typeof window.GravitySensor!=="function")setSensorState("unsupported");
-    else {
-      listenSensors();
-      watchSensorPermissions();
-      if(permissionApis.length)requestSensorPermission();
-      // Where permission APIs are absent, the browser enforces access itself.
-      else startGravity();
-    }
-  }else setSensorState("natural");
+  if(mobile&&!reduced.matches)initializeSensors();
+  else setSensorState("natural");
   // Start with the photographic opening, before the first numeral enters.
   // The spin event is only a fallback if the initial canvas has no dimensions.
   start();
@@ -413,7 +456,11 @@
     last=0;lastTick=0;nextPaint=0;frameDebt=0;
     if(!document.hidden){
       frame=requestAnimationFrame(render);
-      if(mobile&&!permissionDenied)startGravity();
+      if(mobile&&!permissionDenied){
+        if(!hasSensorData())listenSensors(true);
+        if(permissionState==="prompt")armGesture();
+        else startGravity();
+      }
     }
   },{signal:lifetime.signal});
   window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
