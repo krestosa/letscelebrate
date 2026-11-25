@@ -1,0 +1,4 @@
+[submodule ".agents/skills/emil"]
+	path = .agents/skills/emil
+	url = https://github.com/emilkowalski/skills.git
+	branch = main
