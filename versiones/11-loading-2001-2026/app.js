@@ -9,10 +9,16 @@
 
   const root = document.documentElement;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const initialHold = 1030, durations = [1320,1760,2200,2640];
-  const totalDuration = initialHold + durations[3];
-  const acceleration = 140, braking = 920;
-  const entrance = {delay:100, stagger:140, duration:420};
+  const tokens=getComputedStyle(root);
+  const entrance={
+    delay:parseFloat(tokens.getPropertyValue("--intro-delay"))||100,
+    duration:parseFloat(tokens.getPropertyValue("--digit-duration"))||420,
+    offsets:wheels.map(w=>parseFloat(w.style.getPropertyValue("--digit-offset"))||0)
+  };
+  const initialHold=entrance.delay+Math.max(...entrance.offsets)+entrance.duration+90;
+  const durations=[1320,1760,2200,2640];
+  const totalDuration=initialHold+durations[3];
+  const acceleration=140, braking=920;
   const clamp = v => Math.max(0,Math.min(1,v));
   // Ten equally spaced digits on a complete circular reel.
   const step = Math.PI * 2 / 10;
@@ -20,7 +26,7 @@
   const limit = Math.acos(radius / (camera + radius));
   const cell = 256, atlasSize = 1024;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
-  let lastPercent = -1, needsResize = true, drawingStarted = false;
+  let lastPercent = -1, needsResize = true, drawingStarted = false, progressMotion;
   const drums = wheels.map((wheel, i) => {
     const start = Number(wheel.dataset.start), end = Number(wheel.dataset.end);
     return {wheel, start, end, steps:10+(end-start+10)%10,
@@ -85,12 +91,18 @@
         return sampleColor;
       }
       void main(){
-        vec4 c=vec4(0.0);
-        for(int i=0;i<7;i++){
-          float f=(float(i)-3.0)/3.0;
-          c+=glyph(uPhase+f*uBlur)*(1.0-0.65*abs(f));
+        vec4 c;
+        // Resting and entering digits need one texture sample, not seven.
+        if(uBlur<0.001){
+          c=glyph(uPhase);
+        }else{
+          c=vec4(0.0);
+          for(int i=0;i<7;i++){
+            float f=(float(i)-3.0)/3.0;
+            c+=glyph(uPhase+f*uBlur)*(1.0-0.65*abs(f));
+          }
+          c/=4.4;
         }
-        c/=4.4;
         float edge=1.0-smoothstep(uLimit*0.70,uLimit,abs(vAngle));
         float light=0.18+0.82*pow(max(0.0,cos(vAngle)),3.0);
         gl_FragColor=vec4(vec3(0.9686,0.9608,0.9412)*light,clamp(c.a*edge*uOpacity,0.0,1.0));
@@ -194,7 +206,7 @@
 
   function updateProgress(elapsed){
     const value=Math.max(0,Math.min(1,elapsed/totalDuration));
-    fill.style.transform="scaleX("+value+")";
+    if(!progressMotion)fill.style.transform="scaleX("+value+")";
     const percent=Math.floor(value*100);
     if(percent!==lastPercent){lastPercent=percent;progress.setAttribute("aria-valuenow",String(percent));}
   }
@@ -209,6 +221,8 @@
     finished=true;cancelAnimationFrame(frame);
     drums.forEach(settle);
     if(renderer && drawingStarted){renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}
+    // Persist the exact end value before releasing the compositor animation.
+    if(progressMotion){fill.style.transform="scaleX(1)";progressMotion.cancel();progressMotion=null;}
     updateProgress(totalDuration);label.textContent="2026";
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
@@ -239,7 +253,18 @@
   }
   function render(now){
     if(finished)return;
-    if(startedAt===null){startedAt=now;root.classList.add("loading-ready");}
+    if(startedAt===null){
+      startedAt=now;root.classList.add("loading-ready");
+      // Predetermined linear progress belongs to the compositor; the
+      // cylinder alone needs per-frame rendering for its curved texture.
+      if(typeof fill.animate==="function"){
+        try{
+          progressMotion=fill.animate([{transform:"scaleX(0)"},{transform:"scaleX(1)"}],
+            {duration:totalDuration,easing:"linear",fill:"forwards"});
+          progressMotion.startTime=now;
+        }catch{progressMotion?.cancel();progressMotion=null;}
+      }
+    }
     updateProgress(now-startedAt);
     const elapsed=now-startedAt-initialHold;
     if(needsResize)resize();
@@ -252,10 +277,10 @@
       // Keep the same texture and projection from the first frame to the last.
       if(renderer){
         for(const d of drums){
-          const t=clamp((now-startedAt-entrance.delay-d.index*entrance.stagger)/entrance.duration);
+          const t=clamp((now-startedAt-entrance.delay-entrance.offsets[d.index])/entrance.duration);
           if(t<=0)continue;
           const eased=entranceEase(t);
-          renderer.draw(d,d.start,0,eased,(1-eased)*1.1);
+          renderer.draw(d,d.start,0,eased,(1-eased)*1.1,1);
         }
       }
     }else{
@@ -264,7 +289,11 @@
         if(d.settled){if(renderer)renderer.draw(d,d.end,0,1,0,1);continue;}
         const m=motion(elapsed,d.duration,d.steps);
         const remaining=clamp((d.steps-m.p)/.4);
-        const isolation=1-remaining*remaining*(3-2*remaining);
+        const landing=1-remaining*remaining*(3-2*remaining);
+        const reveal=clamp(elapsed/acceleration);
+        const opening=1-reveal*reveal*(3-2*reveal);
+        // Gray neighbors emerge with the spin, not with a hard state change.
+        const isolation=Math.max(landing,opening);
         if(renderer)renderer.draw(d,d.start+m.p,m.v,1,0,isolation);
       }
       if(drums.every(d=>d.settled)){finish();return;}
@@ -279,7 +308,12 @@
     for(const d of drums){d.wheel.classList.remove("is-rendered","is-spinning");d.digit.textContent=String(d.end);}
     finish();
   },{once:true});
-  reduced.addEventListener?.("change",()=>{if(reduced.matches)finish();});
+  reduced.addEventListener?.("change",()=>{
+    if(!reduced.matches)return;
+    renderer?.clear();renderer=null;drawingStarted=false;
+    for(const d of drums)d.wheel.classList.remove("is-rendered","is-spinning");
+    finish();
+  });
   addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}},{passive:true});
   function launch(){
     if(launched||finished)return;
