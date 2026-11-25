@@ -480,3 +480,22 @@ html.voucher-modal-open{overflow:hidden}
   #voucher-form>.feedback{margin:0}
   #voucher-form>#claim-button{min-height:54px}
 }
+
+@media(max-width:760px){
+  .hero{
+    --hero-mobile-top:clamp(64px,9svh,88px);
+    --hero-mobile-bottom:max(clamp(16px,3svh,28px),env(safe-area-inset-bottom,0px));
+    padding-top:var(--hero-mobile-top);
+    padding-bottom:var(--hero-mobile-bottom);
+    justify-content:flex-start;
+  }
+  .hero__layout{
+    flex:1 0 auto;
+    min-height:calc(100svh - var(--hero-mobile-top) - var(--hero-mobile-bottom));
+    grid-template-rows:auto auto;
+    align-content:space-between;
+    align-items:start;
+    row-gap:clamp(56px,10svh,112px);
+  }
+  .hero__layout .claim-section{align-self:end}
+}
