@@ -103,12 +103,7 @@
     resetCopiedState();
     delete confirmation.dataset.visible;
     document.documentElement.classList.remove("voucher-modal-open");
-    if(issuedCode){
-      form.reset();
-      form.hidden=true;
-      generated.hidden=false;
-      viewCode.focus({preventScroll:true});
-    }else submit.focus({preventScroll:true});
+    (issuedCode?viewCode:submit).focus({preventScroll:true});
   });
   viewCode.addEventListener("click",openConfirmation);
 
@@ -290,7 +285,7 @@
   claimSection.addEventListener("pointerdown",completeFormEntrance,{once:true});
   claimSection.addEventListener("focusin",completeFormEntrance,{once:true});
   claimSection.addEventListener("animationend",event=>{
-    if(event.target===claimSection)completeFormEntrance();
+    if(event.target===form)completeFormEntrance();
   });
 
   form.addEventListener("submit", async event => {
@@ -311,8 +306,12 @@
         return;
       }
       issuedCode=result.code;
-      // Keep the filled form visible and unchanged behind the modal.
-      // Swap to the generated state only after dismissal completes.
+      // Commit the success state before the modal becomes visible. Closing
+      // the modal only restores focus; it never changes the form layout.
+      completeFormEntrance();
+      form.reset();
+      form.hidden=true;
+      generated.hidden=false;
       openConfirmation();
     } catch (error) {
       showFeedback(feedback, error?.message === "voucher-service-unconfigured"

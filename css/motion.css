@@ -97,8 +97,9 @@
 .loading .year { position: relative; z-index: 1; }
 
 /* Landing choreography: the offer leads; branding, supporting copy and the
-   form overlap the handoff. The photograph and frosted glass contents remain
-   static. Only opacity and translation move; no second entrance per child. */
+   form overlap the handoff. The photograph and frosted glass surface stay
+   static; animating the glass or its ancestors' opacity creates a backdrop
+   root and can temporarily remove the blur. Only the form content moves. */
 .landing-enter .title-lockup{
   --reveal-y:32px;
   animation:landing-rise 600ms var(--ease-out) 140ms backwards;
@@ -111,9 +112,9 @@
   --reveal-y:14px;
   animation:landing-rise 480ms var(--ease-out) 270ms backwards;
 }
-.landing-enter .claim-section:not([data-entrance-complete]){
-  --reveal-y:22px;
-  animation:landing-rise 560ms var(--ease-out) 200ms backwards;
+.landing-enter .claim-section:not([data-entrance-complete]) #voucher-form{
+  --reveal-y:12px;
+  animation:landing-rise 460ms var(--ease-out) 140ms backwards;
 }
 @keyframes landing-rise {
   from { opacity: 0; transform: translate3d(0, var(--reveal-y, 16px), 0); }
@@ -131,7 +132,7 @@
   .landing-enter .masthead__brands,
   .landing-enter .title-lockup,
   .landing-enter .hero-copy,
-  .landing-enter .claim-section:not([data-entrance-complete]) {
+  .landing-enter .claim-section:not([data-entrance-complete]) #voucher-form {
     animation: landing-fade 200ms ease backwards;
   }
   .section-motion-pending, .section-motion-enter { opacity: 1; animation: none; transform: none; }
