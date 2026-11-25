@@ -36,101 +36,101 @@
     return {x:gx/length,y:gy/length};
   }
   let gravityX=0,gravityY=1;
-  let orientationSample=null,motionSample=null,gravitySample=null;
-  let sensorSource="none", sensorCount=0, sensorStatus="waiting";
-  const sensorCounts={orientation:0,gravity:0,motion:0};
+  const samples=Object.create(null), sensors=Object.create(null);
+  const sensorCounts={gravity:0,accelerometer:0,motion:0,orientation:0,absolute:0};
+  const sensorErrors=Object.create(null);
+  const priority=["gravity","accelerometer","motion","orientation","absolute"];
+  let sensorSource="none",sensorCount=0,sensorStatus="waiting";
+  let permissionState="unknown",debugPanel=null,debugLast=0;
   const sensorStart=performance.now();
-  let gravitySensor=null, permissionButton=null, permissionRequested=false;
-  let debugPanel=null, debugLast=0;
   const debug=new URLSearchParams(location.search).get("snowDebug")==="1";
   const screenAngle=()=>Number(screen.orientation?.angle??window.orientation??0)||0;
   function noteSample(source,x,y,z){
-    if(!Number.isFinite(x)||!Number.isFinite(y))return;
-    const sample={x,y,z};
-    if(source==="orientation")orientationSample=sample;
-    else if(source==="gravity")gravitySample=sample;
-    else motionSample=sample;
-    sensorCount++;
-    sensorCounts[source]++;
-    sensorStatus="active";
-    if(permissionButton)permissionButton.hidden=true;
+    if(![x,y,z].every(Number.isFinite))return;
+    samples[source]={x,y,z,at:performance.now()};
+    sensorCount++;sensorCounts[source]++;sensorStatus="active";
   }
-  function sampleOrientation(event){
+  function sampleOrientation(source,event){
     if(!Number.isFinite(event.beta)||!Number.isFinite(event.gamma))return;
     const g=orientationGravity(event.beta,event.gamma);
-    noteSample("orientation",g.x,g.y,Math.cos(event.beta*radians)*Math.cos(event.gamma*radians));
+    noteSample(source,g.x,g.y,Math.cos(event.beta*radians)*Math.cos(event.gamma*radians));
   }
   function sampleAcceleration(source,a){
-    if(!a||!Number.isFinite(a.x)||!Number.isFinite(a.y)||!Number.isFinite(a.z))return;
+    if(!a||![a.x,a.y,a.z].every(Number.isFinite))return;
     const norm=Math.hypot(a.x,a.y,a.z);
     if(norm<3||norm>20)return;
-    // Proper acceleration is opposite to gravity; CSS Y points down.
-    noteSample(source,-a.x/norm,a.y/norm,a.z/norm);
+    let x=-a.x/norm,y=a.y/norm,z=a.z/norm;
+    const prev=samples[source];
+    if(source==="accelerometer"&&prev&&performance.now()-prev.at<500){
+      const k=.30;
+      x=prev.x+(x-prev.x)*k;y=prev.y+(y-prev.y)*k;z=prev.z+(z-prev.z)*k;
+    }
+    noteSample(source,x,y,z);
   }
   function getGravity(){
-    const alternative=gravitySample||motionSample;
-    let sample=orientationSample;
-    let source="orientation";
-    // An orientation implementation can emit flat/zero readings while
-    // accelerometer data is already valid. Prefer the working source then.
-    if(!sample||(Math.hypot(sample.x,sample.y)<.03&&alternative&&Math.hypot(alternative.x,alternative.y)>.13)){
-      sample=alternative;
-      source=gravitySample?"gravity":"motion";
-    }
-    if(!sample){sensorSource="none";return {x:0,y:1};}
+    const now=performance.now();
+    // Prefer live streams to stale Euler angles; flat is a valid reading.
+    let source=priority.find(key=>samples[key]&&now-samples[key].at<1500);
+    if(!source)source=priority.filter(key=>samples[key]).sort((a,b)=>samples[b].at-samples[a].at)[0];
+    if(!source){sensorSource="none";return {x:0,y:1};}
     sensorSource=source;
+    const sample=samples[source];
     const g=screenGravity(sample.x,sample.y,screenAngle());
     return snowDirection(g.x,g.y);
   }
-  function startGravitySensor(){
-    if(gravitySensor||typeof window.GravitySensor!=="function")return;
+  function startGeneric(source,Constructor){
+    if(sensors[source]||typeof Constructor!=="function")return;
     try{
-      const sensor=new window.GravitySensor({frequency:25,referenceFrame:"device"});
-      gravitySensor=sensor;
-      sensor.addEventListener("reading",()=>sampleAcceleration("gravity",sensor),options);
-      sensor.addEventListener("error",()=>{gravitySensor=null;gravitySample=null;try{sensor.stop();}catch{}},options);
+      const sensor=new Constructor({frequency:30,referenceFrame:"device"});
+      sensors[source]=sensor;
+      sensor.addEventListener("reading",()=>sampleAcceleration(source,sensor),options);
+      sensor.addEventListener("error",event=>{
+        sensorErrors[source]=event.error?.name||"SensorError";
+        delete sensors[source];delete samples[source];
+        try{sensor.stop();}catch{}
+      },options);
+      delete sensorErrors[source];
       sensor.start();
-    }catch{gravitySensor=null;}
+    }catch(error){
+      delete sensors[source];
+      sensorErrors[source]=error.name||"SensorError";
+    }
+  }
+  function startGenericSensors(){
+    if(disposed||document.hidden)return;
+    startGeneric("gravity",window.GravitySensor);
+    startGeneric("accelerometer",window.Accelerometer);
+  }
+  function checkPermission(){
+    if(!navigator.permissions?.query)return;
+    navigator.permissions.query({name:"accelerometer"}).then(status=>{
+      if(disposed)return;
+      permissionState=status.state;
+      status.addEventListener?.("change",()=>{
+        permissionState=status.state;
+        if(status.state==="granted")startGenericSensors();
+      },options);
+      if(status.state==="granted")startGenericSensors();
+    }).catch(()=>{permissionState="unavailable";});
   }
   function initSensors(){
-    if(!mobile){sensorStatus="no touch device";return;}
     if(!window.isSecureContext){sensorStatus="HTTPS required";return;}
-    // Legacy events work in Firefox and Chromium; no Generic Sensor API
-    // dependency on Firefox. Attach immediately even during the intro.
-    window.addEventListener("deviceorientation",sampleOrientation,options);
-    window.addEventListener("deviceorientationabsolute",sampleOrientation,options);
+    // Start on page load without device-type gating or a permission button.
+    window.addEventListener("deviceorientation",event=>sampleOrientation("orientation",event),options);
+    window.addEventListener("deviceorientationabsolute",event=>sampleOrientation("absolute",event),options);
     window.addEventListener("devicemotion",event=>{
       const a=event.accelerationIncludingGravity,linear=event.acceleration;
       if(a&&linear&&[a.x,a.y,a.z,linear.x,linear.y,linear.z].every(Number.isFinite)){
-        sampleAcceleration("motion",{x:a.x-linear.x,y:a.y-linear.y,z:a.z-linear.z});
-      }else sampleAcceleration("motion",a);
+        const g={x:a.x-linear.x,y:a.y-linear.y,z:a.z-linear.z};
+        const norm=Math.hypot(g.x,g.y,g.z);
+        if(norm>=3&&norm<=20){sampleAcceleration("motion",g);return;}
+      }
+      sampleAcceleration("motion",a);
     },options);
-    startGravitySensor();
-    const permissionAPIs=[window.DeviceOrientationEvent,window.DeviceMotionEvent]
-      .filter(api=>typeof api?.requestPermission==="function");
-    if(!permissionAPIs.length)return;
-    // Request only from an explicit gesture, never on load or unrelated taps.
-    permissionButton=document.createElement("button");
-    permissionButton.type="button";
-    permissionButton.className="snow-permission";
-    permissionButton.textContent="Activar movimiento de nieve";
-    permissionButton.hidden=true;
-    document.body.appendChild(permissionButton);
-    const offerPermission=()=>{if(!sensorCount&&!permissionRequested)permissionButton.hidden=false;};
-    document.addEventListener("intro-dismissed",offerPermission,{once:true,signal:lifetime.signal});
-    if(!document.getElementById("intro-screen"))offerPermission();
-    permissionButton.addEventListener("click",async()=>{
-      if(permissionRequested)return;
-      permissionRequested=true;
-      permissionButton.disabled=true;
-      const results=await Promise.allSettled(permissionAPIs.map(api=>{
-        try{return api.requestPermission();}catch(error){return Promise.reject(error);}
-      }));
-      if(disposed)return;
-      sensorStatus=sensorCount?"active":results.some(r=>r.status==="fulfilled"&&r.value==="granted")?"granted":"denied";
-      permissionButton.hidden=true;
-      startGravitySensor();
-    },options);
+    startGenericSensors();
+    checkPermission();
+    window.addEventListener("focus",startGenericSensors,options);
+    window.addEventListener("pageshow",startGenericSensors,options);
   }
   function updateDebug(now){
     if(!debug||now-debugLast<250)return;
@@ -140,10 +140,12 @@
       debugPanel.className="snow-debug";
       document.body.appendChild(debugPanel);
     }
-    const status=sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
-    debugPanel.textContent="Snow | "+status+" | "+sensorSource+
+    const status=!sensorCount&&now-sensorStart>4000?"no sensor samples":sensorStatus;
+    debugPanel.textContent="Snow 31 | "+status+" | "+sensorSource+
       "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
-      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+
+      "\nG: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+" | M: "+sensorCounts.motion+
+      "\nO: "+sensorCounts.orientation+" | Abs: "+sensorCounts.absolute+
+      "\npermission: "+permissionState+" | errors: "+(Object.entries(sensorErrors).map(([key,value])=>key+":"+value).join(", ")||"none")+
       "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
   }
 
@@ -303,8 +305,7 @@
     disposed=true;active=false;
     cancelAnimationFrame(frame);
     observer?.disconnect();
-    try{gravitySensor?.stop();}catch{}
-    permissionButton?.remove();
+    for(const sensor of Object.values(sensors)){try{sensor.stop();}catch{}}
     debugPanel?.remove();
     lifetime.abort();
     root.classList.remove("snow-active");
@@ -316,7 +317,7 @@
     if(!active||disposed)return;
     cancelAnimationFrame(frame);
     resetClock();
-    if(!document.hidden)frame=requestAnimationFrame(render);
+    if(!document.hidden){startGenericSensors();frame=requestAnimationFrame(render);}
   },options);
   window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
   reduced.addEventListener?.("change",()=>{if(reduced.matches)dispose();},{signal:lifetime.signal});
