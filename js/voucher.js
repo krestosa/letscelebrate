@@ -19,6 +19,7 @@
   const viewCode = document.getElementById("view-code");
   const dragHandle = document.getElementById("confirmation-drag");
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const desktopDialog = matchMedia("(min-width:1025px) and (pointer:fine) and (hover:hover)");
 
   // Integration contract: same-origin POST, JSON { email, phone, acceptedTerms: true }.
   // Success: HTTP 200/201 { code: "issued-by-commerce-system" }.
@@ -111,7 +112,7 @@
   // A captured pointer tracks the sheet directly; release uses the same
   // interruptible drawer transition for both dismissal and snap-back.
   dragHandle.addEventListener("pointerdown",event=>{
-    if(!confirmation.open||drag||!event.isPrimary||event.button!==0||reducedMotion.matches)return;
+    if(!confirmation.open||drag||desktopDialog.matches||!event.isPrimary||event.button!==0||reducedMotion.matches)return;
     const style=getComputedStyle(confirmation);
     const offset=style.transform==="none"?0:new DOMMatrixReadOnly(style.transform).m42;
     const height=confirmation.offsetHeight;
@@ -148,6 +149,7 @@
   dragHandle.addEventListener("pointerup",event=>endDrag(event));
   dragHandle.addEventListener("pointercancel",event=>endDrag(event,true));
   dragHandle.addEventListener("lostpointercapture",event=>endDrag(event,true));
+  desktopDialog.addEventListener("change",()=>{if(drag)clearDrag();});
 
   function showFeedback(element, message, kind = "error") {
     element.textContent = message;

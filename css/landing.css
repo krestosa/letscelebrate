@@ -412,7 +412,6 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation__drag{position:absolute;top:0;left:0;right:0;height:36px;display:grid;place-items:center;touch-action:none;cursor:grab;user-select:none}
 .confirmation__drag span{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.36)}
 .confirmation[data-dragging] .confirmation__drag{cursor:grabbing}
-@media(min-width:761px){.confirmation{--sheet-duration:200ms;--ease-drawer:cubic-bezier(.165,.84,.44,1)}}
 .confirmation__close{position:absolute;top:36px;right:12px;display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
 .confirmation__close:hover{background:rgba(255,255,255,.16)}
 .confirmation h2{font-size:clamp(24px,5vw,32px);font-weight:650;line-height:1.15;letter-spacing:-.045em;margin:0 0 22px;padding-inline:40px}
@@ -425,6 +424,27 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation .feedback{margin:10px 0 0}
 .confirmation p.confirmation__instruction{margin:20px 0 12px;color:rgba(255,255,255,.8);font-size:13px}
 .confirmation .button+.button{margin-top:12px}
+/* Desktop: a centered dialog. Tablets and phones retain the bottom sheet,
+   including larger touch-first landscape layouts. */
+@media (min-width:1025px) and (pointer:fine) and (hover:hover){
+  .confirmation{
+    --sheet-duration:240ms;
+    --ease-drawer:var(--ease-out);
+    inset:0;margin:auto;
+    width:min(460px,calc(100% - 48px));
+    max-height:calc(100dvh - 48px);
+    border-bottom:1px solid rgba(255,255,255,.24);
+    border-radius:20px;
+    box-shadow:0 20px 80px rgba(0,0,0,.48);
+    opacity:0;
+    transform:scale(.97);
+    transition:transform var(--sheet-duration) var(--ease-drawer),opacity var(--sheet-duration) var(--ease-drawer);
+  }
+  .confirmation[data-visible]{opacity:1;transform:scale(1)}
+  .confirmation__surface{padding:32px}
+  .confirmation__drag{display:none}
+  .confirmation__close{top:12px;right:12px}
+}
 @media(prefers-reduced-motion:reduce){.confirmation,.confirmation::backdrop{transition:none}.confirmation__drag{display:none}}
 .instructions,.conditions{border-top:1px solid rgba(255,255,255,.15)}
 .instructions ol{list-style:none;counter-reset:steps;display:grid;gap:26px;padding:0;margin:0}
