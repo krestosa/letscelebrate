@@ -354,3 +354,117 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 @media(max-width:980px){.proposal__shell{grid-template-columns:minmax(0,1fr);row-gap:26px}.proposal__header,.proposal__content{grid-column:1}.proposal__header h2{font-size:clamp(54px,10vw,100px)}}
 @media(max-width:620px){.hero{min-height:clamp(380px,58svh,560px);padding:88px 16px 48px}.hero__video{object-position:53% center}.masthead{top:22px}.masthead__sushiclub{width:104px}.masthead__campaign{font-size:11px}.title-word{font-size:clamp(86px,32vw,190px)}.title-kicker{font-size:clamp(18px,5vw,28px)}.title-kicker--end{font-size:clamp(21px,5.6vw,34px)}.hero-copy{width:88vw;margin-top:22px;text-align:center}.hero-copy p{font-size:12px;line-height:1.3}.proposal__shell,.legal{width:calc(100% - 40px)}.proposal{padding:36px 0}.claim-section{padding-top:20px}.proposal__header h2{font-size:clamp(52px,13.8vw,74px)}.instructions li{grid-template-columns:42px 1fr;gap:12px}.instructions li::before{font-size:42px}.button{min-height:54px}}
 @media(prefers-reduced-motion:reduce){.hero__video-stack{display:none}.hero__grain{display:none}.button{transition:none}}
+
+/* Variant 02 — integrated editorial hero. */
+.hero {
+  min-height: min(840px, max(640px, 88svh));
+  padding: clamp(112px, 15vh, 156px) var(--page-x) clamp(64px, 10vh, 110px);
+}
+.hero__layout {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1.36fr) minmax(320px, .82fr);
+  align-items: center;
+  gap: clamp(36px, 7vw, 112px);
+  width: min(1280px, 100%);
+  margin-inline: auto;
+}
+.hero__offer { min-width: 0; }
+.hero__gradient {
+  background: linear-gradient(0deg, #000 0%, rgba(0,0,0,.88) 9%, transparent 45%),
+    linear-gradient(90deg, rgba(0,0,0,.34), rgba(0,0,0,.08) 38%, rgba(0,0,0,.75) 100%),
+    linear-gradient(180deg, #000 0%, rgba(0,0,0,.58) 17%, transparent 57%);
+}
+.hero__black-filter { background: rgba(0,0,0,.32); }
+.hero .title-lockup { width: 100%; text-align: left; }
+.title-lockup h1 { align-items: flex-start; gap: clamp(9px,1.15vw,17px); }
+.title-word {
+  font-size: clamp(96px, 15.4vw, 244px);
+  line-height: .82;
+  color: #fff;
+  letter-spacing: -.008em;
+}
+.title-kicker {
+  justify-self: start;
+  font-size: clamp(19px,2.15vw,34px);
+  font-weight: 500;
+  text-align: left;
+}
+.title-kicker--end { font-size: clamp(21px,2.7vw,44px); }
+.hero .hero-copy { width: min(100%, 510px); text-align: left; margin-top: clamp(20px,3.1vh,32px); }
+.hero-copy p { margin: 0; font-size: clamp(13px,1.2vw,16px); line-height: 1.42; }
+.hero .claim-section {
+  align-self: center;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.hero .voucher {
+  border-top: 1px solid rgba(255,255,255,.72);
+  border-bottom: 1px solid rgba(255,255,255,.24);
+  padding: clamp(24px,3.3vw,40px) 0;
+}
+.field input {
+  border: 0;
+  border-bottom: 1px solid rgba(255,255,255,.55);
+  border-radius: 0;
+  background: rgba(0,0,0,.28);
+  padding-inline: 12px;
+  min-height: 52px;
+}
+.field label { font-size: 12px; letter-spacing: .015em; }
+.field input:focus { outline: 2px solid var(--orange); outline-offset: 0; }
+.button--primary { color: #000; }
+.proposal.instructions .proposal__shell,
+.proposal.conditions .proposal__shell {
+  width: min(1280px, 100% - (2 * var(--page-x)));
+  grid-template-columns: minmax(220px,.82fr) minmax(0,1.36fr);
+  gap: clamp(36px,7vw,112px);
+}
+.proposal__header h2 { font-size: clamp(56px,6vw,102px); }
+.proposal.instructions { padding-top: clamp(36px,6vh,70px); }
+.instructions li { grid-template-columns: 52px 1fr; gap: 16px; }
+.instructions li::before { font-size: 48px; }
+.legal { width: min(1280px, 100% - (2 * var(--page-x))); }
+@media (max-width: 980px) {
+  .hero__layout { grid-template-columns: minmax(0,1fr) minmax(300px,.95fr); gap: 32px; }
+  .title-word { font-size: clamp(92px,14vw,165px); }
+  .proposal.instructions .proposal__shell,
+  .proposal.conditions .proposal__shell { grid-template-columns: minmax(0,1fr); gap: 24px; }
+}
+@media (max-width: 720px) {
+  .hero { min-height: 0; padding: 82px 20px 34px; }
+  .hero__layout { display: grid; grid-template-columns: minmax(0,1fr); gap: 26px; width: min(460px,100%); }
+  .hero__video-stack, .hero__black-filter, .hero__gradient, .hero__grain {
+    height: min(420px, 62svh);
+  }
+  .hero__gradient { background: linear-gradient(180deg,#000 0%,rgba(0,0,0,.25) 28%,rgba(0,0,0,.34) 55%,#000 100%); }
+  .hero__black-filter { background: rgba(0,0,0,.32); }
+  .hero .title-lockup { text-align: center; }
+  .title-lockup h1 { align-items: center; gap: 8px; }
+  .title-word { font-size: clamp(84px,29vw,188px); }
+  .title-kicker { font-size: clamp(18px,5vw,24px); text-align: center; }
+  .title-kicker--end { font-size: clamp(20px,5.4vw,28px); }
+  .hero .hero-copy { width: 100%; text-align: center; margin-top: 18px; }
+  .hero-copy p { font-size: 12px; line-height: 1.4; }
+  .hero .voucher { padding: 20px 0 0; border-bottom: 0; }
+  .field+.field { margin-top: 16px; }
+  .consent { margin: 18px 0; }
+  .button { min-height: 54px; }
+  .proposal.instructions .proposal__shell,
+  .proposal.conditions .proposal__shell,
+  .legal { width: calc(100% - 40px); }
+  .proposal__header h2 { font-size: clamp(48px,12vw,70px); }
+  .instructions li { grid-template-columns: 42px 1fr; gap: 12px; }
+  .instructions li::before { font-size: 42px; }
+}
+
+/* Keep the long currency amount inside the available column at every width. */
+.hero__offer { container-type: inline-size; }
+@supports (font-size: 1cqw) {
+  .hero .title-word { font-size: min(244px, 30cqw); }
+  @media (max-width: 720px) {
+    .hero .title-word { font-size: min(188px, 30cqw); }
+  }
+}
