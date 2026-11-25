@@ -27,6 +27,7 @@
   const cell = 256, atlasSize = 1024;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
   let lastPercent = -1, needsResize = true, drawingStarted = false, progressMotion;
+  let spinStarted = false;
   const drums = wheels.map((wheel, i) => {
     const start = Number(wheel.dataset.start), end = Number(wheel.dataset.end);
     return {wheel, start, end, steps:10+(end-start+10)%10,
@@ -284,6 +285,10 @@
         }
       }
     }else{
+      if(!spinStarted){
+        spinStarted=true;
+        document.dispatchEvent(new Event("loading-spin-start"));
+      }
       for(const d of drums){
         if(!d.settled && elapsed>=d.duration)settle(d);
         if(d.settled){if(renderer)renderer.draw(d,d.end,0,1,0,1);continue;}

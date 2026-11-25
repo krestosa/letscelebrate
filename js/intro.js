@@ -15,13 +15,15 @@
 
   // Sequence follows actual transition completion. The timeout is only a
   // safety net for background tabs, missing assets or disabled transitions.
-  function afterTransition(element, property, duration, next) {
+  function afterMotion(element, property, duration, next, animation = false) {
+    const endEvent = animation ? "animationend" : "transitionend";
+    const cancelEvent = animation ? "animationcancel" : "transitioncancel";
     cancelTransition();
     let timer, done = false;
     function clean() {
       clearTimeout(timer);
-      element.removeEventListener("transitionend", ended);
-      element.removeEventListener("transitioncancel", ended);
+      element.removeEventListener(endEvent, ended);
+      element.removeEventListener(cancelEvent, ended);
     }
     function complete() {
       if (done) return;
@@ -31,10 +33,10 @@
       next();
     }
     function ended(event) {
-      if (event.target === element && event.propertyName === property) complete();
+      if (event.target === element && (animation ? event.animationName : event.propertyName) === property) complete();
     }
-    element.addEventListener("transitionend", ended);
-    element.addEventListener("transitioncancel", ended);
+    element.addEventListener(endEvent, ended);
+    element.addEventListener(cancelEvent, ended);
     timer = setTimeout(complete, duration + 120);
     cancelTransition = () => { done = true; clean(); };
   }
@@ -68,7 +70,7 @@
     cancelTransition();
     const page = document.getElementById("landing-page");
     if (page) page.inert = false;
-    root.classList.remove("intro-active", "intro-signature", "intro-revealing");
+    root.classList.remove("intro-active", "intro-signature", "intro-revealing", "loading-spinning");
     document.getElementById("intro-screen")?.remove();
     document.dispatchEvent(new Event("intro-dismissed"));
   }
@@ -89,23 +91,28 @@
     root.classList.add("landing-enter");
     if (overlay) overlay.inert = true;
     if (!overlay || reduced.matches) { dismiss(); return; }
-    afterTransition(overlay, "opacity", token("--intro-exit", 420), dismiss);
+    afterMotion(overlay, "opacity", token("--intro-exit", 420), dismiss);
     root.classList.add("intro-revealing");
   }
 
-  function liftSignature() {
+  function writeSignature() {
     if (phase !== "counter-hold") return;
     const signature = document.getElementById("intro-signature");
-    const image = signature?.querySelector("img");
-    if (reduced.matches || !signature || (image?.complete && !image.naturalWidth)) {
+    const lastStroke = signature?.querySelector(".signature-complete");
+    if (reduced.matches || !lastStroke) {
       reveal();
       return;
     }
     phase = "signature";
-    afterTransition(signature, "transform", token("--signature-lift", 640), () => {
+    // The first pass starts only after all four reels have settled.
+    // Finish on the mask's last animation event, not the scaling transition.
+    const writeDuration = token("--signature-write-first", 1250)
+      + token("--signature-write-second", 800)
+      + token("--signature-write-finish", 160);
+    afterMotion(lastStroke, "signature-finish", writeDuration, () => {
       if (phase !== "signature") return;
-      holdTimer = setTimeout(reveal, token("--signature-hold", 200));
-    });
+      holdTimer = setTimeout(reveal, token("--signature-hold", 180));
+    }, true);
     root.classList.add("intro-signature");
   }
 
@@ -114,7 +121,7 @@
     clearTimeout(watchdog);
     if (reduced.matches) { reveal(); return; }
     phase = "counter-hold";
-    holdTimer = setTimeout(liftSignature, token("--year-hold", 160));
+    holdTimer = setTimeout(writeSignature, token("--year-hold", 160));
   }
 
   document.addEventListener("DOMContentLoaded", () => {

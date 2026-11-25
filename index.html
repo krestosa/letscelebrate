@@ -15,11 +15,13 @@
   <link rel="stylesheet" href="css/motion.css">
   <link rel="preload" href="assets/firma.svg" as="image">
   <link rel="preload" href="fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
+  <script src="js/snow.js" defer></script>
   <script src="js/loading.js" defer></script>
   <script src="js/voucher.js" defer></script>
 </head>
 <body>
   <section class="loading" id="intro-screen" aria-label="Aniversario SushiClub">
+    <canvas class="loading__snow" id="intro-snow" aria-hidden="true"></canvas>
     <div class="year" role="status">
       <span class="sr-only" id="year-label">2001</span>
       <span class="year__wheels" aria-hidden="true">
@@ -31,11 +33,23 @@
       </span>
     </div>
     <div class="loading__signature" id="intro-signature" aria-hidden="true">
-      <img src="assets/firma.svg" alt="" width="2316" height="804" decoding="async">
+      <svg viewBox="0 0 2316 804" width="2316" height="804" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <mask id="signature-writing-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="2316" height="804">
+            <path class="signature-trace signature-trace--first" pathLength="1"
+              d="M-200 575 L180 515 L510 465 L860 395 L1210 325 L1550 255 L1890 185 L2520 65" stroke-width="285"/>
+            <path class="signature-trace signature-trace--second" pathLength="1"
+              d="M300 815 L520 730 L850 670 L1190 605 L1520 535 L1825 465 L2130 405" stroke-width="315"/>
+            <rect class="signature-complete" x="0" y="0" width="2316" height="804" fill="white" opacity="0"/>
+          </mask>
+        </defs>
+        <image href="assets/firma.svg" width="2316" height="804" mask="url(#signature-writing-mask)"/>
+      </svg>
     </div>
     <div class="loading__progress" id="loading-progress" role="progressbar" aria-label="Progreso de la apertura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <span class="loading__progress-fill" id="loading-progress-fill"></span>
     </div>
+    <button class="snow-motion-permission" id="snow-motion-permission" type="button" hidden>Activar inclinación</button>
   </section>
   <main class="page" id="landing-page">
     <section class="hero" aria-labelledby="offer-title">
