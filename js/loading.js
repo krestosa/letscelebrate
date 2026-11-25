@@ -301,6 +301,17 @@
     frame=requestAnimationFrame(render);
   }
 
+  // Release the counter's frame loop and listeners when the orchestrator
+  // removes the loading overlay, including watchdog and reduced-motion exits.
+  const lifetime = new AbortController();
+  document.addEventListener("intro-dismissed",()=>{
+    finished=true;
+    cancelAnimationFrame(frame);
+    progressMotion?.cancel();
+    progressMotion=null;
+    renderer=null;
+    lifetime.abort();
+  },{once:true});
   if(reduced.matches){finish();return;}
   canvas.addEventListener("webglcontextlost",event=>{
     event.preventDefault();
@@ -313,8 +324,8 @@
     renderer?.clear();renderer=null;drawingStarted=false;
     for(const d of drums)d.wheel.classList.remove("is-rendered","is-spinning");
     finish();
-  });
-  addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}},{passive:true});
+  },{signal:lifetime.signal});
+  addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}},{passive:true,signal:lifetime.signal});
   function launch(){
     if(launched||finished)return;
     launched=true;

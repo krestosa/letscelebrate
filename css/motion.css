@@ -1,0 +1,62 @@
+@charset "UTF-8";
+
+/* Shared timeline: cylinder -> signature -> landing. */
+:root {
+  --counter-size: min(37vw, 65svh, 620px);
+  --year-hold: 160ms;
+  --signature-lift: 640ms;
+  --signature-hold: 200ms;
+  --intro-exit: 420ms;
+}
+.loading { transition: opacity var(--intro-exit) var(--ease-out); }
+.year { font-size: var(--counter-size); transition: opacity 280ms var(--ease-out), transform 360ms var(--ease-out); }
+.intro-signature .year { opacity: 0; transform: translateY(-.08em) scale(.97); }
+.loading__progress { transition: opacity 280ms var(--ease-out); }
+.intro-signature .loading__progress { opacity: 0; }
+
+/* The signature keeps a single center anchor, original proportions and asset. */
+.loading__signature {
+  --signature-drop: min(calc(var(--counter-size) * .62 + 8px), 32svh);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: min(560px, 80vw, 70svh);
+  transform: translate(-50%, -50%) translateY(var(--signature-drop)) scale(.46);
+  transform-origin: center;
+  transition: transform var(--signature-lift) var(--ease-out);
+  pointer-events: none;
+}
+.loading__signature img { display: block; width: 100%; height: auto; opacity: 0; }
+.loading-ready .loading__signature img { animation: signature-appear 420ms var(--ease-out) 340ms both; }
+@keyframes signature-appear {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.intro-signature .loading__signature { transform: translate(-50%, -50%) translateY(0) scale(1); }
+
+/* Hero entrance: overlap the lead amount with its supporting copy and brand. */
+.landing-enter .hero__video-stack { animation: landing-fade 650ms var(--ease-soft) both; }
+.landing-enter .masthead__brands { --reveal-y: -10px; animation: landing-rise 420ms var(--ease-out) 60ms both; }
+.landing-enter .title-kicker:not(.title-kicker--end) { --reveal-y: 12px; animation: landing-rise 460ms var(--ease-out) 80ms both; }
+.landing-enter .title-word { --reveal-y: 30px; animation: landing-rise 600ms var(--ease-out) 110ms both; }
+.landing-enter .title-kicker--end { --reveal-y: 12px; animation: landing-rise 500ms var(--ease-out) 200ms both; }
+.landing-enter .hero-copy p { --reveal-y: 10px; animation: landing-rise 480ms var(--ease-out) 290ms both; }
+@keyframes landing-rise {
+  from { opacity: 0; transform: translate3d(0, var(--reveal-y, 16px), 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+@keyframes landing-fade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Reveal lower sections once, never delay individual controls. */
+.section-motion-pending { opacity: 0; }
+.section-motion-enter { --reveal-y: 14px; animation: landing-rise 500ms var(--ease-out) both; }
+.section-motion-pending:focus-within, .section-motion-enter:focus-within { opacity: 1; animation: none; transform: none; }
+@media (prefers-reduced-motion: reduce) {
+  .loading, .year, .loading__progress, .loading__signature { transition: none; }
+  .loading-ready .loading__signature img { animation: landing-fade 200ms ease both; }
+  .landing-enter .hero__video-stack, .landing-enter .masthead__brands,
+  .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {
+    animation: landing-fade 200ms ease both;
+  }
+  .section-motion-pending, .section-motion-enter { opacity: 1; animation: none; transform: none; }
+}

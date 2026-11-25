@@ -1,44 +1,134 @@
 "use strict";
 (() => {
-  const root=document.documentElement;
-  const reduced=matchMedia("(prefers-reduced-motion: reduce)");
-  let revealing=false, dismissed=false, holdTimer, exitTimer, watchdog;
+  const root = document.documentElement;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  let phase = "counter";
+  let holdTimer, watchdog, cancelTransition = () => {};
+  let sectionsObserver;
   root.classList.add("intro-active");
 
-  function dismiss(){
-    if(dismissed)return;
-    dismissed=true;
-    clearTimeout(holdTimer);clearTimeout(exitTimer);clearTimeout(watchdog);
-    root.classList.remove("intro-active","intro-revealing");
-    const page=document.getElementById("landing-page");
-    if(page)page.inert=false;
+  const token = (name, fallback) => {
+    const value = getComputedStyle(root).getPropertyValue(name).trim();
+    const n = parseFloat(value);
+    return Number.isFinite(n) ? n * (value.endsWith("ms") ? 1 : value.endsWith("s") ? 1000 : 1) : fallback;
+  };
+
+  // Sequence follows actual transition completion. The timeout is only a
+  // safety net for background tabs, missing assets or disabled transitions.
+  function afterTransition(element, property, duration, next) {
+    cancelTransition();
+    let timer, done = false;
+    function clean() {
+      clearTimeout(timer);
+      element.removeEventListener("transitionend", ended);
+      element.removeEventListener("transitioncancel", ended);
+    }
+    function complete() {
+      if (done) return;
+      done = true;
+      clean();
+      cancelTransition = () => {};
+      next();
+    }
+    function ended(event) {
+      if (event.target === element && event.propertyName === property) complete();
+    }
+    element.addEventListener("transitionend", ended);
+    element.addEventListener("transitioncancel", ended);
+    timer = setTimeout(complete, duration + 120);
+    cancelTransition = () => { done = true; clean(); };
+  }
+
+  function animateSections(page) {
+    if (!page || reduced.matches || !("IntersectionObserver" in window)) return;
+    sectionsObserver = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
+        entry.target.classList.remove("section-motion-pending");
+        entry.target.classList.add("section-motion-enter");
+        sectionsObserver.unobserve(entry.target);
+      }
+    }, { threshold: 0, rootMargin: "0px 0px -4% 0px" });
+    for (const section of page.querySelectorAll(".proposal, .legal")) {
+      if (section.getBoundingClientRect().top < innerHeight) continue;
+      section.classList.add("section-motion-pending");
+      sectionsObserver.observe(section);
+      section.addEventListener("focusin", () => {
+        section.classList.remove("section-motion-pending", "section-motion-enter");
+        sectionsObserver?.unobserve(section);
+      }, { once: true });
+    }
+  }
+
+  function dismiss() {
+    if (phase === "done") return;
+    phase = "done";
+    clearTimeout(holdTimer);
+    clearTimeout(watchdog);
+    cancelTransition();
+    const page = document.getElementById("landing-page");
+    if (page) page.inert = false;
+    root.classList.remove("intro-active", "intro-signature", "intro-revealing");
     document.getElementById("intro-screen")?.remove();
     document.dispatchEvent(new Event("intro-dismissed"));
   }
-  function reveal(){
-    if(revealing||dismissed)return;
-    revealing=true;
-    const overlay=document.getElementById("intro-screen");
-    const landing=document.getElementById("landing-page");
-    if(landing)landing.inert=false;
-    if(overlay)overlay.inert=true;
-    if(!overlay||reduced.matches){dismiss();return;}
-    overlay.addEventListener("transitionend",event=>{
-      if(event.target===overlay&&event.propertyName==="opacity")dismiss();
-    });
+
+  function reveal() {
+    if (phase === "reveal" || phase === "done") return;
+    phase = "reveal";
+    clearTimeout(holdTimer);
+    clearTimeout(watchdog);
+    cancelTransition();
+    const overlay = document.getElementById("intro-screen");
+    const page = document.getElementById("landing-page");
+    if (page) {
+      page.inert = false;
+      animateSections(page);
+    }
+    // The hero starts its own entrance while the overlay is dissolving.
+    root.classList.add("landing-enter");
+    if (overlay) overlay.inert = true;
+    if (!overlay || reduced.matches) { dismiss(); return; }
+    afterTransition(overlay, "opacity", token("--intro-exit", 420), dismiss);
     root.classList.add("intro-revealing");
-    exitTimer=setTimeout(dismiss,600);
   }
 
-  document.addEventListener("DOMContentLoaded",()=>{
-    const landing=document.getElementById("landing-page");
-    if(landing&&!revealing&&!dismissed)landing.inert=true;
-  },{once:true});
-  document.addEventListener("loading-complete",()=>{
-    if(revealing||dismissed)return;
-    if(reduced.matches)reveal();
-    else holdTimer=setTimeout(reveal,200);
-  },{once:true});
-  reduced.addEventListener?.("change",()=>{if(reduced.matches)reveal();});
-  watchdog=setTimeout(reveal,8000);
+  function liftSignature() {
+    if (phase !== "counter-hold") return;
+    const signature = document.getElementById("intro-signature");
+    const image = signature?.querySelector("img");
+    if (reduced.matches || !signature || (image?.complete && !image.naturalWidth)) {
+      reveal();
+      return;
+    }
+    phase = "signature";
+    afterTransition(signature, "transform", token("--signature-lift", 640), () => {
+      if (phase !== "signature") return;
+      holdTimer = setTimeout(reveal, token("--signature-hold", 200));
+    });
+    root.classList.add("intro-signature");
+  }
+
+  function counterComplete() {
+    if (phase !== "counter") return;
+    clearTimeout(watchdog);
+    if (reduced.matches) { reveal(); return; }
+    phase = "counter-hold";
+    holdTimer = setTimeout(liftSignature, token("--year-hold", 160));
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const landing = document.getElementById("landing-page");
+    if (landing && phase !== "done" && phase !== "reveal") landing.inert = true;
+  }, { once: true });
+  document.addEventListener("loading-complete", counterComplete, { once: true });
+  reduced.addEventListener?.("change", () => {
+    if (!reduced.matches) return;
+    sectionsObserver?.disconnect();
+    document.querySelectorAll(".section-motion-pending, .section-motion-enter").forEach(section =>
+      section.classList.remove("section-motion-pending", "section-motion-enter"));
+    if (phase === "reveal") dismiss();
+    else reveal();
+  });
+  watchdog = setTimeout(reveal, 8000);
 })();

@@ -12,6 +12,8 @@
   <script src="js/intro.js"></script>
   <link rel="stylesheet" href="css/landing.css">
   <link rel="stylesheet" href="css/loading.css">
+  <link rel="stylesheet" href="css/motion.css">
+  <link rel="preload" href="assets/firma.svg" as="image">
   <link rel="preload" href="fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
   <script src="js/loading.js" defer></script>
   <script src="js/voucher.js" defer></script>
@@ -27,6 +29,9 @@
         <span class="wheel" style="--digit-offset:420ms" data-start="1" data-end="6"><span class="wheel__static">1</span></span>
         <canvas class="year__cylinder" id="cylinder-canvas" aria-hidden="true"></canvas>
       </span>
+    </div>
+    <div class="loading__signature" id="intro-signature" aria-hidden="true">
+      <img src="assets/firma.svg" alt="" width="2316" height="804" decoding="async">
     </div>
     <div class="loading__progress" id="loading-progress" role="progressbar" aria-label="Progreso de la apertura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <span class="loading__progress-fill" id="loading-progress-fill"></span>
