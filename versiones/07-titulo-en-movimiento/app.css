@@ -101,7 +101,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 @media(max-width:350px){#voucher-form{grid-template-columns:minmax(0,1fr)}}
 @media(prefers-reduced-motion:reduce){.hero__video-stack{display:none}.button{transition:none}}
 
-/* Variant 07 — the split, scroll-joined Sushi Libre title. */
+
 .hero--motion {
   display:block;
   padding:0;

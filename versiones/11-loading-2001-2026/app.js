@@ -20,7 +20,6 @@
   const totalDuration=initialHold+durations[3];
   const acceleration=140, braking=920;
   const clamp = v => Math.max(0,Math.min(1,v));
-  // Ten equally spaced digits on a complete circular reel.
   const step = Math.PI * 2 / 10;
   const radius = 1.45, camera = .65;
   const limit = Math.acos(radius / (camera + radius));
@@ -34,8 +33,6 @@
   });
   root.classList.add("loading-preparing");
 
-  // Rasterize the original Gazzetta glyphs once. The texture is wrapped
-  // around a genuinely curved cylindrical surface, not a stack of flat cards.
   function makeAtlas() {
     const a = document.createElement("canvas");
     a.width = a.height = atlasSize;
@@ -82,8 +79,6 @@
         vec2 uv=(vec2(mod(digit,4.0),floor(digit/4.0))*256.0+
           vec2(0.5+vU*255.0,0.5+fract(n)*255.0))/1024.0;
         vec4 sampleColor=texture2D(uAtlas,uv);
-        // Peripheral digits are deliberately gray. As the reel settles,
-        // only the exact central digit remains visible.
         float distanceToCenter=abs(floor(n)-uPhase);
         float focus=1.0-smoothstep(0.18,0.85,distanceToCenter);
         float central=1.0-step(0.5,distanceToCenter);
@@ -92,7 +87,6 @@
       }
       void main(){
         vec4 c;
-        // Resting and entering digits need one texture sample, not seven.
         if(uBlur<0.001){
           c=glyph(uPhase);
         }else{
@@ -118,7 +112,6 @@
     gl.linkProgram(program);
     if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
     gl.useProgram(program);
-    // 96 connected curved segments per reel; perspective-correct texture mapping.
     const vertices=[];
     for(let i=0;i<=96;i++){
       const a=-limit+2*limit*i/96;
@@ -149,8 +142,6 @@
     };
   }
 
-  // CPU fallback: project the same curved cylindrical mesh in narrow strips.
-  // This preserves curvature and depth even if WebGL is disabled.
   function cpuRenderer(atlas) {
     const ctx=canvas.getContext("2d");
     if(!ctx)return null;
@@ -221,13 +212,11 @@
     finished=true;cancelAnimationFrame(frame);
     drums.forEach(settle);
     if(renderer && drawingStarted){renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}
-    // Persist the exact end value before releasing the compositor animation.
     if(progressMotion){fill.style.transform="scaleX(1)";progressMotion.cancel();progressMotion=null;}
     updateProgress(totalDuration);label.textContent="2026";
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
   }
-  // Match the existing CSS ease-out exactly.
   function entranceEase(t){
     if(t<=0||t>=1)return t;
     const bez=(u,a,b)=>3*(1-u)*(1-u)*u*a+3*(1-u)*u*u*b+u*u*u;
@@ -238,7 +227,6 @@
     }
     return bez((lo+hi)/2,1,1);
   }
-  // Continuous angular velocity and acceleration, exact landing without bounce.
   function motion(t,duration,steps){
     const speed=steps/(duration-(acceleration+braking)/2);
     if(t<acceleration){
@@ -255,8 +243,6 @@
     if(finished)return;
     if(startedAt===null){
       startedAt=now;root.classList.add("loading-ready");
-      // Predetermined linear progress belongs to the compositor; the
-      // cylinder alone needs per-frame rendering for its curved texture.
       if(typeof fill.animate==="function"){
         try{
           progressMotion=fill.animate([{transform:"scaleX(0)"},{transform:"scaleX(1)"}],
@@ -274,7 +260,6 @@
     }
     renderer?.clear();
     if(elapsed<0){
-      // Keep the same texture and projection from the first frame to the last.
       if(renderer){
         for(const d of drums){
           const t=clamp((now-startedAt-entrance.delay-entrance.offsets[d.index])/entrance.duration);
@@ -292,7 +277,6 @@
         const landing=1-remaining*remaining*(3-2*remaining);
         const reveal=clamp(elapsed/acceleration);
         const opening=1-reveal*reveal*(3-2*reveal);
-        // Gray neighbors emerge with the spin, not with a hard state change.
         const isolation=Math.max(landing,opening);
         if(renderer)renderer.draw(d,d.start+m.p,m.v,1,0,isolation);
       }

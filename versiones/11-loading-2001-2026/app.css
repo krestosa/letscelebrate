@@ -40,7 +40,7 @@ body { font-synthesis: none; text-rendering: geometricPrecision; }
   height: 1.46em;
   padding-inline: .035em;
   overflow: hidden;
-  /* Fade the projected curved surfaces before the shared aperture ends. */
+  
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 23%, #000 77%, transparent 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 23%, #000 77%, transparent 100%);
 }

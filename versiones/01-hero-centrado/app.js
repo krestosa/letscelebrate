@@ -13,10 +13,6 @@
   const copyFeedback = document.getElementById("copy-feedback");
   const demoNotice = document.getElementById("demo-notice");
 
-  // Integration contract: same-origin POST, JSON { email, phone, acceptedTerms: true }.
-  // Success: HTTP 200/201 { code: "issued-by-commerce-system" }.
-  // Duplicate of either identifier: HTTP 409 or { status: "already_claimed" }.
-  // The server must atomically enforce uniqueness and issue redeemable vouchers.
   const endpoint = "/api/lets-celebrate/voucher";
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
@@ -147,12 +143,12 @@
         await navigator.clipboard.writeText(codeField.value);
         copied = true;
       }
-    } catch { /* Try selection-based clipboard support. */ }
+    } catch {   }
     if (!copied) {
       codeField.focus();
       codeField.select();
       codeField.setSelectionRange(0, codeField.value.length);
-      try { copied = document.execCommand("copy"); } catch { /* manual copy */ }
+      try { copied = document.execCommand("copy"); } catch {   }
     }
     showFeedback(copyFeedback, copied ? "Código copiado." : "Seleccioná y copiá el código.", copied ? "success" : "error");
   });
