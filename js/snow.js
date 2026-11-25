@@ -3,13 +3,14 @@
   const canvas = document.getElementById("intro-snow");
   if (!canvas) return;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  if (reduced.matches) return;
+  if (reduced.matches) {window.__snowSensorBootstrap?.stop();delete window.__snowSensorBootstrap;return;}
   const ctx = canvas.getContext("2d", { alpha: true });
   if (!ctx) return;
   const lifetime = new AbortController();
   const options = { passive: true, signal: lifetime.signal };
   const mobile = matchMedia("(any-pointer: coarse)").matches || navigator.maxTouchPoints > 0;
   const root = document.documentElement;
+  const page = document.getElementById("landing-page");
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   const smooth = v => { const t = clamp(v, 0, 1); return t*t*(3-2*t); };
   let w=0, h=0, dpr=0, active=false, disposed=false, frame=0;
@@ -42,7 +43,8 @@
   const sensorCounts={orientation:0,absolute:0,gravity:0,accelerometer:0,motion:0};
   const sensorErrors=Object.create(null), permissionStates=Object.create(null);
   let sensorSource="none",sensorCount=0,sensorStatus="waiting",permissionRequestRunning=false;
-  const sensorStart=performance.now();
+  const sensorStart=window.__snowSensorBootstrap?.startedAt??performance.now();
+  let firstSampleAt=null, firstDirectionApplied=false;
   let debugPanel=null,debugLast=0;
   const debug=new URLSearchParams(location.search).get("snowDebug")==="1";
   const screenAngle=()=>Number(screen.orientation?.angle??window.orientation??0)||0;
@@ -59,6 +61,7 @@
     }
     samples[source]={x,y,z,at:now};
     sensorCount++;
+    if(firstSampleAt===null)firstSampleAt=now;
     sensorCounts[source]++;
     sensorStatus="active";
   }
@@ -90,8 +93,19 @@
     for(const source of ["gravity","accelerometer"]){
       if(samples[source]&&now-samples[source].at<1800)return {source,sample:samples[source]};
     }
-    for(const source of ["orientation","absolute","motion"]){
-      if(samples[source]&&now-samples[source].at<1800)return {source,sample:samples[source]};
+    const orientation=samples.orientation||samples.absolute;
+    const motion=samples.motion;
+    // Firefox motion streams continuously; do not wait for an Euler
+    // update or keep an old orientation while the phone is moving.
+    if(motion&&now-motion.at<500&&(!orientation||
+       now-orientation.at>180||
+       (Math.hypot(orientation.x,orientation.y)<.035&&Math.hypot(motion.x,motion.y)>.12))){
+      return {source:"motion",sample:motion};
+    }
+    const legacy=["orientation","absolute","motion"].filter(key=>samples[key]&&now-samples[key].at<1800);
+    if(legacy.length){
+      const source=legacy[0];
+      return {source,sample:samples[source]};
     }
     // Do not reset gravity just because an event-driven device is still.
     const latest=Object.entries(samples).sort((a,b)=>b[1].at-a[1].at)[0];
@@ -193,6 +207,16 @@
     // report a fine pointer despite running on a phone.
     if(!window.isSecureContext){sensorStatus="HTTPS required";return;}
     attachLegacy();
+    const bootstrap=window.__snowSensorBootstrap;
+    if(bootstrap){
+      bootstrap.stop();
+      for(const [kind,event] of Object.entries(bootstrap.latest)){
+        if(kind==="devicemotion")sampleMotion(event);
+        else if(kind==="deviceorientationabsolute")sampleAbsolute(event);
+        else sampleOrientation(event);
+      }
+      delete window.__snowSensorBootstrap;
+    }
     startGenericSensors();
     Promise.all(["accelerometer","gyroscope"].map(inspectPermission)).then(requestExistingPermission);
     window.addEventListener("focus",startGenericSensors,options);
@@ -207,11 +231,12 @@
       document.body.appendChild(debugPanel);
     }
     const status=sensorSource!=="none"?"active":Object.values(permissionStates).includes("denied")?"denied":sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
-    debugPanel.textContent="Snow 32 | "+status+" | "+sensorSource+
+    debugPanel.textContent="Snow 33 | "+status+" | "+sensorSource+
       "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
       "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+" | Abs: "+sensorCounts.absolute+
       "\npermission: "+Object.entries(permissionStates).map(([key,value])=>key+":"+value).join(" ")+
       "\nerrors: "+Object.entries(sensorErrors).map(([key,value])=>key+":"+value).join(" ")+
+      "\nfirst: "+(firstSampleAt===null?"waiting":Math.round(firstSampleAt-sensorStart)+"ms")+" | field: "+w+"×"+h+
       "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
   }
 
@@ -244,7 +269,7 @@
     const depth = Math.random(), near = layer === 2, middle = layer === 1;
     const radius = near ? 3.2 + depth*2.6 : middle ? 1.45 + depth*1.25 : .75 + depth*.8;
     const speed = near ? 62 + depth*36 : middle ? 36 + depth*34 : 18 + depth*22;
-    const y = initial ? Math.random()*h*(Math.random()<.68?.48:1) : -12 - Math.random()*32;
+    const y = initial ? Math.random()*h : -12 - Math.random()*32;
     return {
       layer, x: Math.random()*w, y, radius, speed,
       opacity: near ? .20 + depth*.20 : middle ? .32 + depth*.38 : .22 + depth*.24,
@@ -260,12 +285,14 @@
     return i%13===0?2:i%3===0?1:0;
   }
 
-  // CSS uses the stable large viewport. Browser chrome moving during scroll
-  // does not change these dimensions, allocate a canvas, or respawn flakes.
+  // World coordinates span the document, not the visible viewport.
+  // Limit backing-store allocation on tall pages and preserve the field.
   function resize() {
     if (disposed) return false;
     const width=canvas.clientWidth, height=canvas.clientHeight;
-    const ratio=Math.min(devicePixelRatio || 1, mobile ? .9 : 1.5);
+    const ratio=Math.min(devicePixelRatio || 1, mobile ? .9 : 1.5,
+      Math.sqrt((mobile?2400000:4800000)/Math.max(1,width*height)),
+      4096/Math.max(1,width,height));
     if (!width || !height) return false;
     if (width===w && height===h && ratio===dpr) return true;
     const oldW=w, oldH=h;
@@ -274,12 +301,17 @@
     canvas.height=Math.max(1,Math.round(h*dpr));
     ctx.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
     if (oldW && oldH) {
-      // A real window size change preserves the existing particle field.
-      for (const p of particles) { p.x*=w/oldW; p.y*=h/oldH; }
+      // Height growth must not move existing flakes in document space.
+      if(oldW!==w)for(const p of particles)p.x*=w/oldW;
+      if(h<oldH)for(let i=particles.length-1;i>=0;i--)if(particles[i].y>h+44)particles.splice(i,1);
     }
-    const count=Math.round(mobile ? clamp(w*h/7200,32,72) : clamp(w*h/6500,48,180));
+    const count=Math.round(mobile ? clamp(w*h/7200,32,320) : clamp(w*h/6500,48,640));
     if (particles.length>count) particles.length=count;
-    while (particles.length<count) particles.push(particle(true,layerFor(particles.length)));
+    while (particles.length<count){
+      const p=particle(true,layerFor(particles.length));
+      if(oldH&&h>oldH)p.y=oldH+Math.random()*(h-oldH);
+      particles.push(p);
+    }
     return true;
   }
 
@@ -310,11 +342,17 @@
     nextPaint+=step*Math.max(1,Math.floor((now+1.5-nextPaint)/step)+1);
     const dt=clamp((now-(last||now))/1000,0,.067);
     last=now; time+=dt;
-    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(6.2+layer*1.1));
+    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(10+layer*1.3));
     const target=getGravity();
-    const gravityBlend=1-Math.exp(-dt*10);
-    gravityX+=(target.x-gravityX)*gravityBlend;
-    gravityY+=(target.y-gravityY)*gravityBlend;
+    if(!firstDirectionApplied&&sensorSource!=="none"){
+      // Apply the first physical reading immediately. Flakes still retain
+      // inertia, but no second gravity ramp delays the initial response.
+      gravityX=target.x;gravityY=target.y;firstDirectionApplied=true;
+    }else{
+      const gravityBlend=1-Math.exp(-dt*18);
+      gravityX+=(target.x-gravityX)*gravityBlend;
+      gravityY+=(target.y-gravityY)*gravityBlend;
+    }
     const air=Math.sin(time*.72)*3.2+Math.sin(time*.24+1.3)*2.1;
     updateDebug(now);
     ctx.clearRect(0,0,w,h);
@@ -358,10 +396,11 @@
     if(active)resize();
     else start();
   }
-  // Observe the stable canvas box rather than the scroll-dependent viewport.
+  // Observe document layout changes, never scroll events.
   if("ResizeObserver" in window){
     observer=new ResizeObserver(onSizeChange);
     observer.observe(canvas);
+    if(page)observer.observe(page);
   }else{
     window.addEventListener("resize",onSizeChange,options);
   }
@@ -393,5 +432,6 @@
   reduced.addEventListener?.("change",()=>{if(reduced.matches)dispose();},{signal:lifetime.signal});
   // A single field persists from the opening through the entire landing.
   initSensors();
+  if(sensorCount){const target=getGravity();gravityX=target.x;gravityY=target.y;firstDirectionApplied=true;}
   start();
 })();
