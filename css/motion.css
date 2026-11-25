@@ -113,6 +113,12 @@
   opacity: .8;
 }
 .snow-motion-permission[hidden] { display: none; }
+.snow-debug {
+  position: fixed; z-index: 1003; top: max(12px, env(safe-area-inset-top));
+  left: max(12px, env(safe-area-inset-left)); padding: 6px 9px;
+  border-radius: 4px; background: rgba(0,0,0,.85); color: #fff;
+  font: 500 11px/1.2 Inter, sans-serif; pointer-events: none;
+}
 
 /* Hero entrance: overlap the lead amount with its supporting copy and brand. */
 .landing-enter .hero__video-stack { animation: landing-fade 650ms var(--ease-soft) both; }

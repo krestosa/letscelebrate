@@ -9,43 +9,103 @@
   const lifetime = new AbortController();
   const options = { passive: true, signal: lifetime.signal };
   const mobile = matchMedia("(pointer: coarse)").matches || Math.min(innerWidth,innerHeight)<=600;
-  const sensor = window.DeviceOrientationEvent;
+  const orientationSensor = window.DeviceOrientationEvent;
+  const motionSensor = window.DeviceMotionEvent;
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   const smooth = v => { const t = clamp(v, 0, 1); return t*t*(3-2*t); };
   const root = document.documentElement;
   let w = 0, h = 0, active = false, disposed = false, frame = 0, last = 0, time = 0;
-  let target = 0, wind = 0, previousSensor = -Infinity, particles = [], sensorListening = false;
+  let gravityX = 0, gravityY = 1, particles = [], sensorListening = false;
+  let orientationReading = null, motionReading = null, orientationAt = -Infinity, motionAt = -Infinity;
+  let motionSign = 1, sensorState = "waiting", debug = null;
+  let targetX = 0, targetY = 1, flowX = 0, flowY = 1;
   let landing = false, landingBlend = 0;
   let lastTick = 0, frameDebt = 0, step = mobile ? 1000/30 : 1000/60;
   const dragFactors = [0,0,0];
 
+  function setSensorState(state) {
+    if(sensorState===state && canvas.dataset.motion===state)return;
+    sensorState = state;
+    canvas.dataset.motion = state;
+    if (debug) debug.textContent = "Nieve · " + state;
+  }
   function onOrientation(event) {
     if (!Number.isFinite(event.gamma) || !Number.isFinite(event.beta)) return;
-    const angle = (screen.orientation?.angle ?? Number(window.orientation ?? 0)) * Math.PI / 180;
     const gamma = event.gamma * Math.PI / 180;
     const beta = event.beta * Math.PI / 180;
-    // Use screen-relative tilt rather than attenuating gamma by cos(beta):
-    // an upright phone should still react visibly to a small side tilt.
-    const horizontal = Math.sin(gamma);
-    const vertical = Math.sin(beta);
-    const projected = horizontal * Math.cos(angle) + vertical * Math.sin(angle);
-    const magnitude = Math.abs(projected);
-    // Tiny dead zone, strong response to small inclinations, bounded gusts.
-    target = magnitude < .012 ? 0 : Math.sign(projected) * Math.min(360, (magnitude-.012)*560);
-    previousSensor = performance.now();
+    // Gravity projected into the original device axes (screen y points down).
+    // This works even with the handset upright and avoids Euler-roll ambiguity.
+    orientationReading = [Math.cos(beta)*Math.sin(gamma), Math.sin(beta)];
+    orientationAt = performance.now();
   }
-  function listenOrientation() {
-    if (disposed || sensorListening || !sensor || !mobile || reduced.matches) return;
-    sensorListening = true;
-    window.addEventListener("deviceorientation", onOrientation, options);
+  function onMotion(event) {
+    const g = event.accelerationIncludingGravity;
+    if (!g || !Number.isFinite(g.x) || !Number.isFinite(g.y)) return;
+    const a = event.acceleration;
+    const ax = g.x-(Number.isFinite(a?.x)?a.x:0);
+    const ay = g.y-(Number.isFinite(a?.y)?a.y:0);
+    const reading = [clamp(-ax/9.81,-1,1),clamp(ay/9.81,-1,1)];
+    if (orientationReading && performance.now()-orientationAt<800) {
+      // Match older implementations with reversed accelerometer polarity.
+      const dot=reading[0]*orientationReading[0]+reading[1]*orientationReading[1];
+      if(Math.abs(dot)>.18)motionSign=dot<0?-1:1;
+    }
+    motionReading = reading;
+    motionAt = performance.now();
+  }
+  function updateGravity(now) {
+    const useOrientation=orientationReading && (now-orientationAt<1000 || !motionReading);
+    const reading = useOrientation
+      ? orientationReading
+      : motionReading ? motionReading.map(v=>v*motionSign) : null;
+    if (!reading) return;
+    setSensorState(useOrientation?"orientation":"motion");
+    const angle=(screen.orientation?.angle ?? Number(window.orientation ?? 0))*Math.PI/180;
+    gravityX=reading[0]*Math.cos(angle)+reading[1]*Math.sin(angle);
+    gravityY=-reading[0]*Math.sin(angle)+reading[1]*Math.cos(angle);
+    const planar=Math.hypot(gravityX,gravityY);
+    // Amplify the horizontal component, not just an additive wind.
+    // Flat devices retain a soft downward snowfall.
+    const x=Math.abs(gravityX)<.008?0:gravityX*3.2;
+    const y=gravityY+Math.max(0,1-planar*2.5)*.8;
+    const norm=Math.hypot(x,y);
+    targetX=norm>.06?x/norm:0;
+    targetY=norm>.06?y/norm:1;
+    if(debug)debug.textContent="Nieve · "+sensorState+" · "+Math.round(Math.atan2(targetX,targetY)*180/Math.PI)+"°";
+  }
+  function listenSensors() {
+    if(disposed||sensorListening||!mobile||reduced.matches)return;
+    sensorListening=true;
+    if(orientationSensor)window.addEventListener("deviceorientation",onOrientation,options);
+    if(motionSensor)window.addEventListener("devicemotion",onMotion,options);
+    setSensorState("waiting");
+    setTimeout(()=>{
+      if(!disposed&&!orientationReading&&!motionReading)setSensorState("no-data");
+    },2500);
   }
   async function permission() {
     if (!button || disposed) return;
     button.disabled = true;
-    try {
-      if (await sensor.requestPermission() === "granted") listenOrientation();
-    } catch { /* Natural falling snow remains available. */ }
-    button.hidden = true;
+    // Invoke both permission APIs during the same user activation.
+    const requests=[orientationSensor,motionSensor].filter(s=>typeof s?.requestPermission==="function");
+    const pending=requests.map(s=>{try{return Promise.resolve(s.requestPermission());}catch(e){return Promise.reject(e);}});
+    const results=await Promise.allSettled(pending);
+    if(disposed)return;
+    if(results.some(r=>r.status==="fulfilled"&&r.value==="granted")){
+      listenSensors();
+      button.hidden=true;
+    }else{
+      setSensorState("denied");
+      button.disabled=false;
+      button.textContent="Activar inclinación";
+    }
+  }
+  // Opt-in, local-only diagnostics; never collect or transmit sensor values.
+  if(new URLSearchParams(location.search).get("snow-debug")==="1"){
+    debug=document.createElement("output");
+    debug.className="snow-debug";
+    debug.setAttribute("aria-live","off");
+    document.body.append(debug);
   }
 
   // Paint the soft depth-of-field sprites once, not a blur on every frame.
@@ -112,45 +172,51 @@
   }
 
   function recycle(p) {
-    const next = particle(false,p.layer);
-    if (Math.abs(wind)>30 && Math.random()<Math.min(.86,.32+Math.abs(wind)/600)) {
-      next.x=wind>0?-next.radius*3:w+next.radius*3;
-      next.y=Math.random()*h;
-    } else {
-      next.x=clamp(Math.random()*w-wind*.25,-w*.14,w*1.14);
-    }
+    const next=particle(false,p.layer);
+    // Spawn on the incoming edge, weighted by the flow through each edge.
+    // This keeps density stable when flakes travel almost horizontally.
+    const horizontal=Math.abs(flowX)*h, vertical=Math.abs(flowY)*w;
+    const side=Math.random()*(horizontal+vertical)<horizontal;
+    const pad=next.radius*3;
+    if(side){next.x=flowX>=0?-pad:w+pad;next.y=Math.random()*h;}
+    else{next.x=Math.random()*w;next.y=flowY>=0?-pad:h+pad;}
+    const speed=next.speed*(1+Math.abs(flowX)*2.4);
+    next.vx=flowX*speed;next.vy=flowY*speed;
+    next.fade=.18+Math.random()*.25;
     Object.assign(p,next);
   }
 
   function render(now) {
     if (!active || disposed) return;
     const gap=now-(lastTick||now);lastTick=now;
-    if(!mobile){
+    if(mobile){step=Math.abs(flowX)>.12?1000/60:1000/30;}else{
       frameDebt=gap>24?Math.min(12,frameDebt+1):Math.max(0,frameDebt-.25);
       step=frameDebt>=6?1000/30:1000/60;
     }
     if(last&&now-last<step-1.5){frame=requestAnimationFrame(render);return;}
     const dt=clamp((now-(last||now))/1000,0,.067);
     last=now;time+=dt;
-    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(7.0+layer*1.1));
-    // Orientation events may stop while the phone remains still; retain the
-    // last valid gravity direction until a new reading replaces it.
-    const targetWind = Number.isFinite(previousSensor) ? target : 0;
-    wind += (targetWind-wind)*(1-Math.exp(-dt*10));
+    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(4.5+layer*1.1));
+    updateGravity(now);
+    const response=1-Math.exp(-dt*12);
+    flowX+=(targetX-flowX)*response;
+    flowY+=(targetY-flowY)*response;
     const air = Math.sin(time*.75)*6+Math.sin(time*.27+1.3)*4;
     landingBlend += ((landing?1:0)-landingBlend)*(1-Math.exp(-dt*4));
     ctx.clearRect(0,0,w,h);
     for (const p of particles) {
       p.age+=dt;
       p.phase+=dt*p.frequency;
-      const desiredX = (wind+air)*(.72+p.layer*.24)+Math.sin(p.phase)*p.sway;
-      const desiredY = p.speed*(1+.08*Math.sin(p.phase*.7));
+      const speed=p.speed*(1+Math.abs(flowX)*2.4);
+      const sway=Math.sin(p.phase)*p.sway+air;
+      const desiredX=flowX*speed+flowY*sway;
+      const desiredY=flowY*speed-flowX*sway;
       const drag=dragFactors[p.layer];
       p.vx+=(desiredX-p.vx)*drag;
       p.vy+=(desiredY-p.vy)*drag;
       p.x+=p.vx*dt; p.y+=p.vy*dt;
       const pad=p.radius*4;
-      if (p.y>h+pad || p.x<-pad-w*.18 || p.x>w+pad+w*.18) recycle(p);
+      if (p.y>h+pad || p.y<-pad-h*.12 || p.x<-pad-w*.08 || p.x>w+pad+w*.08) recycle(p);
       // Ease each flake into view and protect the main typographic lockup.
       const birth=smooth(p.age/p.fade);
       if (birth<=0) continue;
@@ -173,6 +239,7 @@
     cancelAnimationFrame(frame);
     lifetime.abort();
     if(button)button.hidden=true;
+    debug?.remove();
     particles=[];
     canvas.width=canvas.height=1;
     for(const sprite of sprites)sprite.width=sprite.height=1;
@@ -187,14 +254,17 @@
     if(!document.hidden)frame=requestAnimationFrame(render);
   }
 
-  if (mobile && sensor && window.isSecureContext && !reduced.matches) {
-    if(typeof sensor.requestPermission==="function"){
+  if(mobile&&!reduced.matches){
+    if(!window.isSecureContext)setSensorState("HTTPS-required");
+    else if(!orientationSensor&&!motionSensor)setSensorState("unsupported");
+    else if(typeof orientationSensor?.requestPermission==="function"||typeof motionSensor?.requestPermission==="function"){
+      setSensorState("permission-required");
       if(button){
         button.hidden=false;
         button.addEventListener("click",permission,{signal:lifetime.signal});
       }
-    }else listenOrientation();
-  }
+    }else listenSensors();
+  }else setSensorState("natural");
   document.addEventListener("loading-spin-start",start,{once:true,signal:lifetime.signal});
   const enterLanding=()=>{landing=true;start();};
   document.addEventListener("intro-revealing",enterLanding,{once:true,signal:lifetime.signal});
