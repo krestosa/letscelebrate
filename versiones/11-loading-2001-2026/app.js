@@ -12,16 +12,19 @@
   const initialHold = 1160, durations = [1320,1760,2200,2640];
   const totalDuration = initialHold + durations[3];
   const acceleration = 140, braking = 920;
-  const step = Math.PI / 3;
-  const radius = .95, camera = 1.4;
+  const entrance = {delay:100, stagger:140, duration:420};
+  const clamp = v => Math.max(0,Math.min(1,v));
+  // Ten equally spaced digits on a complete circular reel.
+  const step = Math.PI * 2 / 10;
+  const radius = 1.45, camera = .65;
   const limit = Math.acos(radius / (camera + radius));
   const cell = 256, atlasSize = 1024;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
   let lastPercent = -1, needsResize = true, drawingStarted = false;
   const drums = wheels.map((wheel, i) => {
     const start = Number(wheel.dataset.start), end = Number(wheel.dataset.end);
-    return {wheel, start, end, steps:[2,2,2,2][i]*10+(end-start+10)%10,
-      duration:durations[i], digit:wheel.querySelector(".wheel__static"), settled:false, phase:start};
+    return {wheel, start, end, steps:10+(end-start+10)%10,
+      duration:durations[i], index:i, digit:wheel.querySelector(".wheel__static"), settled:false, phase:start};
   });
   root.classList.add("loading-preparing");
 
@@ -65,7 +68,7 @@
     const fragment = `
       precision highp float;
       uniform sampler2D uAtlas;
-      uniform float uPhase,uStep,uBlur,uLimit;
+      uniform float uPhase,uStep,uBlur,uLimit,uOpacity;
       varying float vAngle,vU;
       vec4 glyph(float phase){
         float n=phase+vAngle/uStep+0.5;
@@ -82,8 +85,8 @@
         }
         c/=4.4;
         float edge=1.0-smoothstep(uLimit*0.70,uLimit,abs(vAngle));
-        float light=0.12+0.88*pow(max(0.0,cos(vAngle)),2.5);
-        gl_FragColor=vec4(vec3(0.9686,0.9608,0.9412)*light,clamp(c.a*edge,0.0,1.0));
+        float light=0.18+0.82*pow(max(0.0,cos(vAngle)),3.0);
+        gl_FragColor=vec4(vec3(0.9686,0.9608,0.9412)*light,clamp(c.a*edge*uOpacity,0.0,1.0));
       }`;
     const compile=(kind,src)=>{
       const s=gl.createShader(kind);gl.shaderSource(s,src);gl.compileShader(s);
@@ -111,16 +114,17 @@
     for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-    const u=Object.fromEntries(["uSize","uCenter","uEm","uRadius","uCamera","uAtlas","uPhase","uStep","uBlur","uLimit"].map(n=>[n,gl.getUniformLocation(program,n)]));
+    const u=Object.fromEntries(["uSize","uCenter","uEm","uRadius","uCamera","uAtlas","uPhase","uStep","uBlur","uLimit","uOpacity"].map(n=>[n,gl.getUniformLocation(program,n)]));
     gl.uniform1i(u.uAtlas,0);gl.uniform1f(u.uRadius,radius);
     gl.uniform1f(u.uCamera,camera);gl.uniform1f(u.uStep,step);gl.uniform1f(u.uLimit,limit);
     gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     return {
       resize(w,h,dpr){gl.viewport(0,0,Math.round(w*dpr),Math.round(h*dpr));gl.uniform2f(u.uSize,w,h);},
       clear(){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);},
-      draw(d,pos,speed){
-        gl.uniform2f(u.uCenter,d.x,d.y);gl.uniform1f(u.uEm,d.em);
-        gl.uniform1f(u.uPhase,((pos%10)+10)%10);gl.uniform1f(u.uBlur,Math.min(.20,speed*4));
+      draw(d,pos,speed,opacity=1,offset=0){
+        gl.uniform2f(u.uCenter,d.x,d.y+offset*d.em);gl.uniform1f(u.uEm,d.em);
+        gl.uniform1f(u.uPhase,((pos%10)+10)%10);
+        gl.uniform1f(u.uBlur,Math.min(.14,speed*7));gl.uniform1f(u.uOpacity,opacity);
         gl.drawArrays(gl.TRIANGLE_STRIP,0,vertices.length/2);
       }
     };
@@ -139,23 +143,23 @@
     return {
       resize(width,height,dpr){w=width;h=height;ctx.setTransform(dpr,0,0,dpr,0,0);},
       clear(){ctx.clearRect(0,0,w,h);},
-      draw(d,pos,speed){
-        const n=192, blur=Math.min(.20,speed*4);
+      draw(d,pos,speed,opacity=1,offset=0){
+        const n=192, blur=Math.min(.14,speed*7);
         const samples=blur>.015?[[-blur,.25],[0,.5],[blur,.25]]:[[0,1]];
         for(let i=0;i<n;i++){
           const a=-limit+2*limit*i/n,b=-limit+2*limit*(i+1)/n,mid=(a+b)/2;
           const p=project(a),q=project(b),m=project(mid);
-          const dy=d.y+p.y*d.em, dh=Math.max(.25,(q.y-p.y)*d.em+.4);
+          const dy=d.y+(p.y+offset)*d.em, dh=Math.max(.25,(q.y-p.y)*d.em+.25);
           const dx=d.x-d.em*m.scale/2,dw=d.em*m.scale;
           const edge=Math.min(1,Math.max(0,(limit-Math.abs(mid))/(limit*.2)));
-          const shade=.12+.88*Math.pow(Math.cos(mid),2.5);
+          const shade=.18+.82*Math.pow(Math.cos(mid),3.0);
           for(const [offset,weight] of samples){
             const index=pos+offset+mid/step+.5;
             const digit=((Math.floor(index)%10)+10)%10;
             const fraction=index-Math.floor(index);
             const sy=Math.min(cell-1,Math.max(0,fraction*cell));
             const sh=Math.min(cell-sy,Math.max(1,(b-a)/step*cell));
-            ctx.globalAlpha=shade*edge*weight;
+            ctx.globalAlpha=shade*edge*weight*opacity;
             ctx.drawImage(atlas,(digit%4)*cell,Math.floor(digit/4)*cell+sy,cell,sh,dx,dy,dw,dh);
           }
         }
@@ -198,12 +202,29 @@
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
   }
+  // Match the existing CSS ease-out exactly.
+  function entranceEase(t){
+    if(t<=0||t>=1)return t;
+    const bez=(u,a,b)=>3*(1-u)*(1-u)*u*a+3*(1-u)*u*u*b+u*u*u;
+    let lo=0,hi=1;
+    for(let i=0;i<16;i++){
+      const u=(lo+hi)/2;
+      if(bez(u,.22,.36)<t)lo=u;else hi=u;
+    }
+    return bez((lo+hi)/2,1,1);
+  }
+  // Continuous angular velocity and acceleration, exact landing without bounce.
   function motion(t,duration,steps){
     const speed=steps/(duration-(acceleration+braking)/2);
-    if(t<acceleration)return {p:speed*t*t/(2*acceleration),v:speed*t/acceleration};
+    if(t<acceleration){
+      const q=clamp(t/acceleration);
+      return {p:speed*acceleration*(q-Math.sin(Math.PI*q)/Math.PI)/2,
+        v:speed*(1-Math.cos(Math.PI*q))/2};
+    }
     if(t<duration-braking)return {p:speed*(t-acceleration/2),v:speed};
-    const r=Math.max(0,duration-t);
-    return {p:steps-speed*r*r/(2*braking),v:speed*r/braking};
+    const q=clamp((duration-t)/braking);
+    return {p:steps-speed*braking*(q-Math.sin(Math.PI*q)/Math.PI)/2,
+      v:speed*(1-Math.cos(Math.PI*q))/2};
   }
   function render(now){
     if(finished)return;
@@ -211,14 +232,27 @@
     updateProgress(now-startedAt);
     const elapsed=now-startedAt-initialHold;
     if(needsResize)resize();
-    if(elapsed>=0){
-      drawingStarted=Boolean(renderer);
-      renderer?.clear();
+    if(renderer && !drawingStarted){
+      drawingStarted=true;
+      for(const d of drums)d.wheel.classList.add("is-rendered");
+    }
+    renderer?.clear();
+    if(elapsed<0){
+      // Keep the same texture and projection from the first frame to the last.
+      if(renderer){
+        for(const d of drums){
+          const t=clamp((now-startedAt-entrance.delay-d.index*entrance.stagger)/entrance.duration);
+          if(t<=0)continue;
+          const eased=entranceEase(t);
+          renderer.draw(d,d.start,0,eased,(1-eased)*1.1);
+        }
+      }
+    }else{
       for(const d of drums){
         if(!d.settled && elapsed>=d.duration)settle(d);
         if(d.settled){if(renderer)renderer.draw(d,d.end,0);continue;}
         const m=motion(elapsed,d.duration,d.steps);
-        if(renderer){d.wheel.classList.add("is-spinning","is-rendered");renderer.draw(d,d.start+m.p,m.v);}
+        if(renderer)renderer.draw(d,d.start+m.p,m.v);
       }
       if(drums.every(d=>d.settled)){finish();return;}
     }
@@ -226,6 +260,12 @@
   }
 
   if(reduced.matches){finish();return;}
+  canvas.addEventListener("webglcontextlost",event=>{
+    event.preventDefault();
+    renderer=null;drawingStarted=false;
+    for(const d of drums){d.wheel.classList.remove("is-rendered","is-spinning");d.digit.textContent=String(d.end);}
+    finish();
+  },{once:true});
   reduced.addEventListener?.("change",()=>{if(reduced.matches)finish();});
   addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0));}},{passive:true});
   function launch(){
