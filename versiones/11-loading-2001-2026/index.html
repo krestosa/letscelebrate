@@ -10,24 +10,20 @@
   <script src="app.js" defer></script>
 </head>
 <body>
-  <svg class="reel-filters" width="0" height="0" aria-hidden="true" focusable="false">
-    <defs>
-      <filter id="reel-blur-0" x="-20%" y="-90%" width="140%" height="280%" color-interpolation-filters="sRGB"><feGaussianBlur id="reel-blur-amount-0" stdDeviation="0 0"/></filter>
-      <filter id="reel-blur-1" x="-20%" y="-90%" width="140%" height="280%" color-interpolation-filters="sRGB"><feGaussianBlur id="reel-blur-amount-1" stdDeviation="0 0"/></filter>
-      <filter id="reel-blur-2" x="-20%" y="-90%" width="140%" height="280%" color-interpolation-filters="sRGB"><feGaussianBlur id="reel-blur-amount-2" stdDeviation="0 0"/></filter>
-      <filter id="reel-blur-3" x="-20%" y="-90%" width="140%" height="280%" color-interpolation-filters="sRGB"><feGaussianBlur id="reel-blur-amount-3" stdDeviation="0 0"/></filter>
-    </defs>
-  </svg>
   <main class="loading" aria-label="Aniversario SushiClub">
     <h1 class="year">
       <span class="sr-only" id="year-label">2001</span>
       <span class="year__wheels" aria-hidden="true">
-        <span class="wheel" style="--i:0" data-start="2" data-end="2"><span class="wheel__static">2</span><span class="wheel__drum"></span></span>
-        <span class="wheel" style="--i:1" data-start="0" data-end="0"><span class="wheel__static">0</span><span class="wheel__drum"></span></span>
-        <span class="wheel" style="--i:2" data-start="0" data-end="2"><span class="wheel__static">0</span><span class="wheel__drum"></span></span>
-        <span class="wheel" style="--i:3" data-start="1" data-end="6"><span class="wheel__static">1</span><span class="wheel__drum"></span></span>
+        <span class="wheel" style="--i:0" data-start="2" data-end="2"><span class="wheel__static">2</span></span>
+        <span class="wheel" style="--i:1" data-start="0" data-end="0"><span class="wheel__static">0</span></span>
+        <span class="wheel" style="--i:2" data-start="0" data-end="2"><span class="wheel__static">0</span></span>
+        <span class="wheel" style="--i:3" data-start="1" data-end="6"><span class="wheel__static">1</span></span>
+        <canvas class="year__cylinder" id="cylinder-canvas" aria-hidden="true"></canvas>
       </span>
     </h1>
+    <div class="loading__progress" id="loading-progress" role="progressbar" aria-label="Progreso de la apertura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span class="loading__progress-fill" id="loading-progress-fill"></span>
+    </div>
   </main>
 </body>
 </html>

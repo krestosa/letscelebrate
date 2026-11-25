@@ -20,6 +20,7 @@
 html, body { margin: 0; min-height: 100%; background: var(--background); color: var(--white); }
 body { font-synthesis: none; text-rendering: geometricPrecision; }
 .loading {
+  position: relative;
   display: grid;
   place-items: center;
   min-height: 100vh;
@@ -28,50 +29,75 @@ body { font-synthesis: none; text-rendering: geometricPrecision; }
 }
 .year {
   margin: 0;
-  font: 900 min(28vw, 440px)/1 Gazzetta, Impact, "Arial Narrow", sans-serif;
+  font: 900 min(37vw, 65svh, 620px)/1 Gazzetta, Impact, "Arial Narrow", sans-serif;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -.025em;
+  letter-spacing: -.055em;
 }
-.year__wheels { display: flex; align-items: center; justify-content: center; gap: .012em; }
+.year__wheels {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.28em;
+  padding-inline: .035em;
+  overflow: hidden;
+  /* Fade the projected curved surfaces before the shared aperture ends. */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 17%, #000 83%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 17%, #000 83%, transparent 100%);
+}
 .wheel {
   position: relative;
   display: block;
-  width: .58em;
-  height: 1.04em;
-  overflow: hidden;
-  perspective: 4em;
+  flex: 0 0 .49em;
+  width: .49em;
+  height: 1.08em;
+  overflow: visible;
 }
-.wheel__static, .wheel__face {
+.wheel + .wheel { margin-left: -.018em; }
+.wheel__static {
   display: grid;
   place-items: center;
   position: absolute;
   inset: 0;
   line-height: 1;
 }
-.reel-filters { position: absolute; pointer-events: none; overflow: hidden; }
-.wheel__static {
+.loading-preparing:not(.loading-ready):not(.loading-complete) .wheel__static { opacity: 0; }
+.loading-ready:not(.loading-complete) .wheel__static {
   animation: digit-enter var(--digit-duration) var(--ease-out) calc(var(--intro-delay) + var(--i) * var(--digit-stagger)) both;
 }
 @keyframes digit-enter {
   from { opacity: 0; transform: translateY(110%); }
   to { opacity: 1; transform: translateY(0); }
 }
-.wheel.is-settled .wheel__static { animation: none; }
-.wheel__drum {
+.loading-ready .wheel.is-settled .wheel__static { animation: none; }
+.year__cylinder {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
-  display: none;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
 }
 .wheel.is-spinning .wheel__static { visibility: hidden; }
-.wheel.is-spinning .wheel__drum { display: block; }
-.wheel__face {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  transform: rotateX(var(--face-angle)) translateZ(1.6em);
+.loading__progress {
+  position: absolute;
+  left: 50%;
+  bottom: max(clamp(26px, 6svh, 68px), env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  width: min(420px, 64vw);
+  height: 2px;
+  overflow: hidden;
+  background: rgba(255,255,255,.18);
 }
-.wheel.is-spinning .wheel__face { opacity: var(--face-opacity, 1); }
-.wheel__glyph { display: block; }
-.wheel.is-spinning .wheel__glyph { filter: var(--reel-filter); }
+.loading__progress-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--white);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
-@media (prefers-reduced-motion: reduce) { .wheel__static { animation: none; } .wheel__glyph { filter: none !important; } }
+@media (prefers-reduced-motion: reduce) {
+  .wheel__static { animation: none !important; }
+}
