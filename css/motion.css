@@ -6,14 +6,12 @@
   --signature-handoff: 180ms;
   --signature-write-first: 1450ms;
   --signature-write-second: 1000ms;
-  --signature-reading-time: 2500ms;
+  --signature-reading-time: 1000ms;
   --intro-exit: 480ms;
 }
 .loading { transition: opacity var(--intro-exit) var(--ease-soft); }
 .year { font-size: var(--counter-size); transition: opacity var(--signature-handoff) var(--ease-out), transform var(--signature-handoff) var(--ease-out); }
 .intro-signature .year { opacity: 0; transform: translateY(-.08em) scale(.97); }
-.loading__progress { transition: opacity var(--signature-handoff) var(--ease-out); }
-.intro-signature .loading__progress { opacity: 0; }
 
 /* Individual medial trajectories clipped to the original vector contours. */
 .loading__signature {
@@ -93,8 +91,7 @@
   transition: opacity 520ms var(--ease-out);
 }
 .snow-active .site-snow { opacity: 1; }
-.loading .year, .loading .loading__progress { position: relative; z-index: 1; }
-.loading .loading__progress { position: absolute; }
+.loading .year { position: relative; z-index: 1; }
 .snow-debug {
   position: fixed; z-index: 1003; top: max(12px, env(safe-area-inset-top));
   left: max(12px, env(safe-area-inset-left)); padding: 6px 9px;
@@ -120,7 +117,7 @@
 .section-motion-enter { --reveal-y: 14px; animation: landing-rise 500ms var(--ease-out) both; }
 .section-motion-pending:focus-within, .section-motion-enter:focus-within { opacity: 1; animation: none; transform: none; }
 @media (prefers-reduced-motion: reduce) {
-  .loading, .year, .loading__progress, .loading__signature { transition: none; }
+  .loading, .year, .loading__signature { transition: none; }
   .site-snow { display: none; }
   .landing-enter .hero__video-stack, .landing-enter .masthead__brands,
   .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {

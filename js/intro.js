@@ -106,7 +106,7 @@
   // is visible. This is not a transition delay between unfinished animations.
   function readSignature() {
     phase = "reading";
-    let remaining = token("--signature-reading-time", 2500);
+    let remaining = token("--signature-reading-time", 1000);
     let started = null, timer;
     function pause() {
       clearTimeout(timer);

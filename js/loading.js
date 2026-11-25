@@ -2,10 +2,8 @@
 (() => {
   const wheels = [...document.querySelectorAll(".wheel")];
   const label = document.getElementById("year-label");
-  const progress = document.getElementById("loading-progress");
-  const fill = document.getElementById("loading-progress-fill");
   let canvas = document.getElementById("cylinder-canvas");
-  if (wheels.length !== 4 || !label || !progress || !fill || !canvas) return;
+  if (wheels.length !== 4 || !label || !canvas) return;
 
   const root = document.documentElement;
   const mobile = matchMedia("(pointer: coarse)").matches;
@@ -21,7 +19,6 @@
   // The last digit lands directly into the spin, with no stationary hold.
   const initialHold=entrance.delay+Math.max(...entrance.offsets)+entrance.duration;
   const durations=[1320,1760,2200,2640];
-  const totalDuration=initialHold+durations[3];
   const acceleration=140, braking=920;
   const clamp = v => Math.max(0,Math.min(1,v));
   // Ten equally spaced digits on a complete circular reel.
@@ -32,7 +29,7 @@
   let cell = mobile ? 256 : Math.max(512, Math.min(1024, Math.ceil((parseFloat(getComputedStyle(wheels[0]).fontSize)||512)*Math.min(devicePixelRatio||1,2)/128)*128));
   let atlasSize = cell*4;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
-  let lastPercent = -1, needsResize = true, drawingStarted = false, progressMotion;
+  let needsResize = true, drawingStarted = false;
   let spinStarted = false;
   const drums = wheels.map((wheel, i) => {
     const start = Number(wheel.dataset.start), end = Number(wheel.dataset.end);
@@ -227,12 +224,6 @@
     needsResize=false;
   }
 
-  function updateProgress(elapsed){
-    const value=Math.max(0,Math.min(1,elapsed/totalDuration));
-    if(!progressMotion)fill.style.transform="scaleX("+value+")";
-    const percent=Math.floor(value*100);
-    if(percent!==lastPercent){lastPercent=percent;progress.setAttribute("aria-valuenow",String(percent));}
-  }
   function settle(d){
     if(d.settled)return;
     d.settled=true;d.phase=d.end;d.digit.textContent=String(d.end);
@@ -255,9 +246,7 @@
         renderer.dispose();renderer=null;
       }
     }
-    // Persist the exact end value before releasing the compositor animation.
-    if(progressMotion){fill.style.transform="scaleX(1)";progressMotion.cancel();progressMotion=null;}
-    updateProgress(totalDuration);label.textContent="2026";
+    label.textContent="2026";
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
   }
@@ -296,17 +285,7 @@
     lastRender=now;
     if(startedAt===null){
       startedAt=now;root.classList.add("loading-ready");
-      // Predetermined linear progress belongs to the compositor; the
-      // cylinder alone needs per-frame rendering for its curved texture.
-      if(typeof fill.animate==="function"){
-        try{
-          progressMotion=fill.animate([{transform:"scaleX(0)"},{transform:"scaleX(1)"}],
-            {duration:totalDuration,easing:"linear",fill:"forwards"});
-          progressMotion.startTime=now;
-        }catch{progressMotion?.cancel();progressMotion=null;}
-      }
     }
-    updateProgress(now-startedAt);
     const elapsed=now-startedAt-initialHold;
     if(needsResize)resize();
     if(renderer && !drawingStarted){
@@ -352,8 +331,6 @@
   document.addEventListener("intro-dismissed",()=>{
     finished=true;
     cancelAnimationFrame(frame);
-    progressMotion?.cancel();
-    progressMotion=null;
     renderer?.dispose?.();renderer=null;
     canvas.width=canvas.height=1;
     lifetime.abort();
