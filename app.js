@@ -206,7 +206,7 @@
     const height = Math.max(stage.offsetHeight, innerHeight);
     geometry = {
       compact, scale, start: scrollY + stage.getBoundingClientRect().top + height * (compact ? .004 : .01),
-      distance: height * (compact ? .15 : innerWidth <= 900 ? .17 : .23),
+      distance: Math.max(1, Math.min(height * (compact ? .15 : innerWidth <= 900 ? .17 : .23), Math.max(1, document.documentElement.scrollHeight - innerHeight - height * (compact ? .004 : .01)))),
       ax: left - a.left, ay: top + (rowHeight - ah) / 2 - a.top,
       bx: left + aw + gap - b.left, by: top + (rowHeight - bh) / 2 - b.top
     };

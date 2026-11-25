@@ -159,3 +159,93 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
   .hero--motion #voucher-form {grid-template-columns:minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){.campaign-word{transform:none!important}}
+
+/* Variant 08 — one campaign hero, not a title-only introduction. */
+.hero--integrated .hero__stage {
+  display:grid;
+  grid-template-rows:auto auto minmax(min-content,1fr);
+  align-items:center;
+  align-content:start;
+  justify-content:stretch;
+  gap:clamp(22px,4svh,54px);
+  min-height:100vh;
+  min-height:100svh;
+  padding:max(24px,env(safe-area-inset-top)) var(--page-x) clamp(36px,6svh,80px);
+}
+.hero--integrated .hero__stage .masthead {
+  position:relative;inset:auto;width:min(1440px,100%);margin-inline:auto;
+}
+.hero--integrated .campaign-lockup {width:min(1440px,100%);padding-block:clamp(8px,2svh,24px)}
+.hero--integrated .campaign-lockup .campaign-title {
+  font-size:var(--campaign-size,clamp(66px,14.5vw,270px));
+}
+.hero--integrated .hero__stage .hero__gradient {
+  background:linear-gradient(180deg,#000 0%,rgba(0,0,0,.5) 16%,rgba(0,0,0,.13) 38%,rgba(0,0,0,.64) 75%,#000 100%),
+    linear-gradient(90deg,rgba(0,0,0,.22),transparent 40%,rgba(0,0,0,.55));
+}
+.hero--integrated .hero__stage .hero__black-filter {background:rgba(0,0,0,.34)}
+.hero--integrated .hero__layout--claim {
+  width:min(1120px,100%);
+  padding:0;
+  grid-template-areas:"offer claim";
+  grid-template-columns:minmax(0,1.15fr) minmax(290px,.85fr);
+  gap:clamp(24px,6vw,96px);
+  align-content:center;
+  align-items:center;
+}
+.hero--integrated .offer-lockup h2 {gap:8px}
+.hero--integrated .offer-lockup .title-kicker {font-size:clamp(16px,1.65vw,26px)}
+.hero--integrated .offer-lockup .title-word {font-size:clamp(80px,10vw,164px);font-size:min(24cqw,164px)}
+.hero--integrated .offer-lockup .title-kicker--end {font-size:clamp(18px,2vw,32px)}
+.hero--integrated .hero-copy {margin-top:clamp(12px,2svh,23px)}
+.hero--integrated .hero-copy p {font-size:clamp(13px,1.1vw,16px)}
+.hero--integrated .voucher {padding:clamp(12px,2svh,22px) 0}
+.hero--integrated .hero__layout--details {
+  grid-template-areas:"instructions conditions";
+  grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);
+  width:min(1120px,100% - (2 * var(--page-x)));
+  gap:clamp(24px,6vw,96px);
+  padding:clamp(24px,4svh,48px) 0;
+  align-items:start;
+}
+.hero--integrated .legal {width:min(1120px,100% - (2 * var(--page-x)))}
+@media(max-width:900px) and (min-width:721px){
+  .hero--integrated .hero__layout--claim{grid-template-columns:minmax(0,1fr) minmax(260px,.95fr);gap:28px}
+}
+@media(max-width:720px){
+  .hero--integrated .hero__stage {
+    min-height:100svh;
+    grid-template-rows:auto auto auto;
+    align-content:center;
+    padding:max(18px,env(safe-area-inset-top)) 16px 32px;
+    gap:clamp(16px,3svh,28px);
+  }
+  .hero--integrated .campaign-lockup {width:min(480px,100%);padding-block:8px}
+  .hero--integrated .campaign-lockup .campaign-title {
+    gap:clamp(14px,3svh,30px);
+    font-size:var(--campaign-size,clamp(52px,21vw,136px));
+  }
+  .hero--integrated .hero__stage .hero__gradient {
+    background:linear-gradient(180deg,#000 0%,rgba(0,0,0,.25) 16%,rgba(0,0,0,.48) 42%,rgba(0,0,0,.82) 72%,#000 100%);
+  }
+  .hero--integrated .hero__layout--claim {
+    width:min(480px,100%);grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"offer" "claim";gap:16px;padding:0;
+  }
+  .hero--integrated .offer-lockup h2 {gap:4px}
+  .hero--integrated .offer-lockup .title-word {font-size:min(24cqw,116px)}
+  .hero--integrated .offer-lockup .title-kicker {font-size:15px}
+  .hero--integrated .offer-lockup .title-kicker--end {font-size:19px}
+  .hero--integrated .hero-copy {margin-top:9px}
+  .hero--integrated .hero-copy p {font-size:12px}
+  .hero--integrated .voucher {padding:10px 0 0}
+  .hero--integrated #voucher-form {grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hero--integrated .hero__layout--details {
+    width:min(480px,100% - 32px);grid-template-columns:minmax(0,1fr);
+    grid-template-areas:"instructions" "conditions";gap:24px;padding:16px 0 24px;
+  }
+  .hero--integrated .legal {width:min(480px,100% - 32px)}
+}
+@media(max-width:350px){
+  .hero--integrated #voucher-form{grid-template-columns:minmax(0,1fr)}
+}
