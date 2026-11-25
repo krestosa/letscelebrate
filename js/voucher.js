@@ -16,6 +16,10 @@
   const redeem = document.getElementById("redeem-code");
   const demoRedeem = document.getElementById("demo-redeem");
   const closeConfirmation = document.getElementById("close-confirmation");
+  const generated = document.getElementById("claim-generated");
+  const viewCode = document.getElementById("view-code");
+  const dragHandle = document.getElementById("confirmation-drag");
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
 
   // Integration contract: same-origin POST, JSON { email, phone, acceptedTerms: true }.
   // Success: HTTP 200/201 { code: "issued-by-commerce-system" }.
@@ -31,7 +35,8 @@
   const localPreview = location.protocol === "file:" ||
     ["localhost","127.0.0.1","[::1]","192.168.1.33"].includes(location.hostname);
   const demo = previewHost || localPreview;
-  let busy = false;
+  let busy = false, issuedCode = null;
+  let closeTimer = 0, closing = false, drag = null;
 
   demoNotice.hidden = !demo;
   demoLabel.hidden = !demo;
@@ -43,25 +48,108 @@
     phone.autocomplete = "off";
   }
 
-  function openConfirmation(code) {
-    codeField.value = code;
-    showFeedback(copyFeedback, "");
-    confirmation.showModal();
-    document.documentElement.classList.add("voucher-modal-open");
-    document.getElementById("confirmation-title").focus();
+  function clearClosing() {
+    clearTimeout(closeTimer);
+    closeTimer=0;
+    closing=false;
   }
-  closeConfirmation.addEventListener("click", () => confirmation.close());
-  confirmation.addEventListener("click", event => {
-    if (event.target === confirmation) {
-      const box = confirmation.getBoundingClientRect();
-      if (event.clientX < box.left || event.clientX > box.right ||
-          event.clientY < box.top || event.clientY > box.bottom) confirmation.close();
+  function clearDrag() {
+    const id=drag?.id;
+    drag=null;
+    if(id!==undefined && dragHandle.hasPointerCapture(id))dragHandle.releasePointerCapture(id);
+    delete confirmation.dataset.dragging;
+    confirmation.style.removeProperty("transform");
+    confirmation.style.removeProperty("--sheet-overlay");
+  }
+  function openConfirmation() {
+    if(!issuedCode)return;
+    codeField.value=issuedCode;
+    showFeedback(copyFeedback,"");
+    clearClosing();
+    clearDrag();
+    if(!confirmation.open){
+      delete confirmation.dataset.visible;
+      confirmation.showModal();
+      document.documentElement.classList.add("voucher-modal-open");
+      // Commit the off-screen starting position before enabling transition.
+      confirmation.getBoundingClientRect();
     }
+    confirmation.dataset.visible="";
+    document.getElementById("confirmation-title").focus({preventScroll:true});
+  }
+  function finishClose(){
+    if(!closing)return;
+    clearClosing();
+    if(confirmation.open)confirmation.close();
+  }
+  function requestClose(){
+    if(!confirmation.open||closing)return;
+    clearDrag();
+    closing=true;
+    delete confirmation.dataset.visible;
+    if(reducedMotion.matches){finishClose();return;}
+    const duration=parseFloat(getComputedStyle(confirmation).getPropertyValue("--sheet-duration"))||500;
+    closeTimer=setTimeout(finishClose,duration+80);
+  }
+  confirmation.addEventListener("transitionend",event=>{
+    if(event.target===confirmation&&event.propertyName==="transform"&&!event.pseudoElement&&closing)finishClose();
   });
-  confirmation.addEventListener("close", () => {
+  closeConfirmation.addEventListener("click",requestClose);
+  confirmation.addEventListener("cancel",event=>{event.preventDefault();requestClose();});
+  confirmation.addEventListener("click",event=>{
+    if(event.target!==confirmation||drag)return;
+    const box=confirmation.getBoundingClientRect();
+    if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)requestClose();
+  });
+  confirmation.addEventListener("close",()=>{
+    clearClosing();
+    clearDrag();
+    delete confirmation.dataset.visible;
     document.documentElement.classList.remove("voucher-modal-open");
-    submit.focus({preventScroll:true});
+    (issuedCode?viewCode:submit).focus({preventScroll:true});
   });
+  viewCode.addEventListener("click",openConfirmation);
+
+  // A captured pointer tracks the sheet directly; release uses the same
+  // interruptible drawer transition for both dismissal and snap-back.
+  dragHandle.addEventListener("pointerdown",event=>{
+    if(!confirmation.open||drag||!event.isPrimary||event.button!==0||reducedMotion.matches)return;
+    const style=getComputedStyle(confirmation);
+    const offset=style.transform==="none"?0:new DOMMatrixReadOnly(style.transform).m42;
+    const height=confirmation.offsetHeight;
+    clearClosing();
+    confirmation.style.transform="translateY("+offset+"px)";
+    confirmation.style.setProperty("--sheet-overlay",String(Math.max(0,1-Math.max(0,offset)/height)));
+    confirmation.dataset.dragging="";
+    confirmation.dataset.visible="";
+    drag={id:event.pointerId,startY:event.clientY,base:offset,y:offset,lastY:event.clientY,lastAt:performance.now(),velocity:0,height};
+    dragHandle.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  dragHandle.addEventListener("pointermove",event=>{
+    if(!drag||event.pointerId!==drag.id)return;
+    const now=performance.now(),delta=event.clientY-drag.startY;
+    const elapsed=now-drag.lastAt;
+    if(elapsed>0)drag.velocity=(event.clientY-drag.lastY)/elapsed;
+    drag.lastY=event.clientY;drag.lastAt=now;
+    const raw=drag.base+delta;
+    drag.y=raw<0?raw*.2:Math.min(raw,drag.height+Math.max(0,raw-drag.height)*.2);
+    confirmation.style.transform="translateY("+drag.y+"px)";
+    confirmation.style.setProperty("--sheet-overlay",String(Math.max(0,Math.min(1,1-drag.y/drag.height))));
+  });
+  function endDrag(event,cancelled=false){
+    if(!drag||event.pointerId!==drag.id)return;
+    const current=drag;
+    const velocity=performance.now()-current.lastAt<100?current.velocity:0;
+    const dismiss=!cancelled&&(current.y>current.height*.42||(current.y>12&&velocity>.11));
+    // Flush the tracked position before restoring the transition.
+    confirmation.getBoundingClientRect();
+    clearDrag();
+    if(dismiss)requestClose();
+  }
+  dragHandle.addEventListener("pointerup",event=>endDrag(event));
+  dragHandle.addEventListener("pointercancel",event=>endDrag(event,true));
+  dragHandle.addEventListener("lostpointercapture",event=>endDrag(event,true));
 
   function showFeedback(element, message, kind = "error") {
     element.textContent = message;
@@ -134,7 +222,7 @@
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    if (busy) return;
+    if (busy || issuedCode) return;
     showFeedback(feedback, "");
     const normalizedPhone = normalizePhone(phone.value);
     phone.setCustomValidity(normalizedPhone ? "" : "Ingresá un número de celular válido.");
@@ -148,8 +236,11 @@
         showFeedback(feedback, duplicateMessage);
         return;
       }
+      issuedCode=result.code;
       form.reset();
-      openConfirmation(result.code);
+      form.hidden=true;
+      generated.hidden=false;
+      openConfirmation();
     } catch (error) {
       showFeedback(feedback, error?.message === "voucher-service-unconfigured"
         ? "El servicio de códigos todavía no está configurado." : serviceMessage);

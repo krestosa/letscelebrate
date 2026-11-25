@@ -289,12 +289,15 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 .hero__grain{mask-image:linear-gradient(180deg,#000 0%,#000 72%,rgba(0,0,0,.55) 84%,transparent 96%)}
 .masthead{grid-template-columns:1fr;justify-items:center}
 .masthead__brands{grid-column:1;gap:clamp(14px,2vw,34px)}
-.masthead__campaign{font-size:clamp(11px,1vw,15px);font-weight:600;letter-spacing:-.035em;white-space:nowrap}
+.masthead__campaign{font-size:clamp(14px,1.35vw,20px);font-weight:600;letter-spacing:-.035em;white-space:nowrap}
 .title-lockup{position:relative;top:auto;left:auto;right:auto;transform:none;width:min(1400px,92vw);display:block;text-align:center;white-space:normal}
 .title-lockup h1{margin:0;display:flex;flex-direction:column;align-items:center;gap:clamp(8px,1.4vw,20px)}
 .title-word{font-family:Gazzetta,sans-serif;font-style:normal;font-synthesis:none;letter-spacing:normal;font-size:clamp(130px,23vw,360px);font-weight:900;line-height:.79;white-space:nowrap}
 .title-kicker{font-size:clamp(20px,2.25vw,42px);font-weight:600;line-height:1;letter-spacing:-.052em;text-transform:uppercase;text-shadow:0 1px 9px rgba(0,0,0,.72)}
 .title-kicker--end{font-size:clamp(21px,3.1vw,54px)}
+.title-celebrate{display:block;font-size:clamp(32px,5.5vw,86px);font-weight:700;line-height:.98;letter-spacing:-.055em;margin-top:.12em;overflow-wrap:normal}
+@media(min-width:900px){.hero .title-celebrate{font-size:clamp(38px,4.25vw,76px)}}
+@media(max-width:620px){.hero .title-celebrate{font-size:clamp(30px,8.8vw,54px)}}
 .hero-copy{position:relative;top:auto;bottom:auto;left:auto;transform:none;width:min(790px,88vw);margin-top:clamp(22px,4vh,42px)}
 .hero-copy p{font-size:clamp(12px,1.12vw,16px);font-weight:500;line-height:1.3}
 .proposal{padding:clamp(40px,6vh,76px) 0;overflow:visible}
@@ -380,21 +383,40 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 .feedback,.demo-notice{font-size:13px;line-height:1.45;color:rgba(255,255,255,.66);margin:14px 0 0}
 .feedback[data-kind=error]{color:#ffb399}
 .demo-notice{font-size:12px}
-/* Native dialog: top layer, keyboard dismissal and focus containment. */
+/* Keep the existing native dialog for modal accessibility and top-layer focus.
+   The sheet uses the Vaul drawer timing without adding a React runtime. */
+.claim-generated{text-align:center;display:grid;justify-items:center;gap:16px}
+.claim-generated__icon{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;color:var(--accent);background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.32)}
+.claim-generated h2{font-size:clamp(24px,2.2vw,34px);font-weight:650;line-height:1.08;letter-spacing:-.045em;margin:0}
+.claim-generated p{margin:0 0 4px;font-size:14px;line-height:1.5;color:rgba(255,255,255,.8)}
 html.voucher-modal-open{overflow:hidden}
 .confirmation{
-  position:fixed;inset:0;margin:auto;
-  width:min(460px,calc(100% - 32px));max-width:none;
-  max-height:calc(100dvh - 32px);padding:0;
-  color:#fff;background:rgba(19,23,31,.96);
-  border:1px solid rgba(255,255,255,.24);border-radius:18px;
-  box-shadow:0 20px 80px rgba(0,0,0,.48);overflow:auto;
+  --sheet-duration:500ms;
+  --ease-drawer:cubic-bezier(.32,.72,0,1);
+  position:fixed;inset:auto 0 0;margin:0 auto;
+  width:min(540px,100%);max-width:none;
+  max-height:calc(100dvh - 16px);padding:0;
+  color:#fff;background:rgb(19,23,31);
+  border:1px solid rgba(255,255,255,.24);border-bottom:0;border-radius:24px 24px 0 0;
+  box-shadow:0 -12px 64px rgba(0,0,0,.38);overflow:auto;overscroll-behavior:contain;
+  transform:translateY(100%);
+  transition:transform var(--sheet-duration) var(--ease-drawer);
 }
-.confirmation::backdrop{background:rgba(0,0,0,.58);backdrop-filter:blur(6px)}
-.confirmation__surface{position:relative;padding:clamp(22px,4vw,36px);text-align:center}
-.confirmation[open]{animation:confirmation-enter 240ms var(--ease-out) both}
-@keyframes confirmation-enter{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:none}}
-.confirmation__close{position:absolute;top:12px;right:12px;display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
+.confirmation[data-visible]{transform:translateY(0)}
+.confirmation[data-dragging]{transition:none}
+.confirmation::backdrop{
+  background:rgba(0,0,0,.58);
+  opacity:0;
+  transition:opacity var(--sheet-duration) var(--ease-drawer);
+}
+.confirmation[data-visible]::backdrop{opacity:1}
+.confirmation[data-dragging]::backdrop{transition:none;opacity:var(--sheet-overlay,1)}
+.confirmation__surface{position:relative;padding:40px clamp(22px,5vw,36px) max(28px,calc(env(safe-area-inset-bottom) + 16px));text-align:center}
+.confirmation__drag{position:absolute;top:0;left:0;right:0;height:36px;display:grid;place-items:center;touch-action:none;cursor:grab;user-select:none}
+.confirmation__drag span{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.36)}
+.confirmation[data-dragging] .confirmation__drag{cursor:grabbing}
+@media(min-width:761px){.confirmation{--sheet-duration:200ms;--ease-drawer:cubic-bezier(.165,.84,.44,1)}}
+.confirmation__close{position:absolute;top:36px;right:12px;display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
 .confirmation__close:hover{background:rgba(255,255,255,.16)}
 .confirmation p.confirmation__eyebrow{margin:0 0 20px;color:rgba(255,255,255,.72);font-size:12px;font-weight:600;letter-spacing:.06em}
 .confirmation h2{font-family:Gazzetta,sans-serif;font-size:clamp(70px,12vw,100px);font-weight:900;line-height:.82;text-transform:uppercase;margin:0 0 16px}
@@ -405,7 +427,7 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation .button{min-height:52px}
 .confirmation p.confirmation__instruction{margin:20px 0 12px;color:rgba(255,255,255,.8);font-size:13px}
 .confirmation .button+.button{margin-top:12px}
-@media(prefers-reduced-motion:reduce){.confirmation[open]{animation:none}}
+@media(prefers-reduced-motion:reduce){.confirmation,.confirmation::backdrop{transition:none}.confirmation__drag{display:none}}
 .instructions,.conditions{border-top:1px solid rgba(255,255,255,.15)}
 .instructions ol{list-style:none;counter-reset:steps;display:grid;gap:26px;padding:0;margin:0}
 .instructions li{display:grid;grid-template-columns:64px 1fr;align-items:start;gap:18px;counter-increment:steps;color:#fff;font-size:clamp(16px,1.35vw,22px);line-height:1.3;letter-spacing:-.025em;text-transform:uppercase}
@@ -413,5 +435,5 @@ html.voucher-modal-open{overflow:hidden}
 .conditions p{margin:0;color:#fff;font-size:clamp(15px,1.2vw,20px);line-height:1.4;letter-spacing:-.02em;text-transform:uppercase}
 .legal{width:min(1500px,100% - clamp(48px,6vw,128px));margin:0 auto;padding:24px 0 max(32px,env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.15);font-size:12px;line-height:1.55;color:rgba(255,255,255,.56);text-transform:uppercase}
 @media(max-width:980px){.proposal__shell{grid-template-columns:minmax(0,1fr);row-gap:26px}.proposal__header,.proposal__content{grid-column:1}.proposal__header h2{font-size:clamp(54px,10vw,100px)}}
-@media(max-width:620px){.hero{min-height:100svh;padding:88px 16px 48px}.hero__background{object-position:53% center}.masthead{top:22px}.masthead__sushiclub{width:104px}.masthead__campaign{font-size:11px}.title-word{font-size:clamp(86px,32vw,190px)}.title-kicker{font-size:clamp(18px,5vw,28px)}.title-kicker--end{font-size:clamp(21px,5.6vw,34px)}.hero-copy{width:88vw;margin-top:22px;text-align:center}.hero-copy p{font-size:12px;line-height:1.3}.proposal__shell,.legal{width:calc(100% - 40px)}.proposal{padding:36px 0}.claim-section{padding-top:0}.proposal__header h2{font-size:clamp(52px,13.8vw,74px)}.instructions li{grid-template-columns:42px 1fr;gap:12px}.instructions li::before{font-size:42px}.button{min-height:54px}}
+@media(max-width:620px){.hero{min-height:100svh;padding:88px 16px 48px}.hero__background{object-position:53% center}.masthead{top:22px}.masthead__sushiclub{width:104px}.masthead__campaign{font-size:13px}.title-word{font-size:clamp(86px,32vw,190px)}.title-kicker{font-size:clamp(18px,5vw,28px)}.title-kicker--end{font-size:clamp(21px,5.6vw,34px)}.hero-copy{width:88vw;margin-top:22px;text-align:center}.hero-copy p{font-size:12px;line-height:1.3}.proposal__shell,.legal{width:calc(100% - 40px)}.proposal{padding:36px 0}.claim-section{padding-top:0}.proposal__header h2{font-size:clamp(52px,13.8vw,74px)}.instructions li{grid-template-columns:42px 1fr;gap:12px}.instructions li::before{font-size:42px}.button{min-height:54px}}
 @media(prefers-reduced-motion:reduce){.hero__grain{display:none}.button{transition:none}}

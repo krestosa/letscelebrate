@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=hero-webp-11"></script>
-  <link rel="stylesheet" href="css/landing.css?v=blue-modal-16">
+  <link rel="stylesheet" href="css/landing.css?v=sheet-18">
   <link rel="stylesheet" href="css/loading.css?v=blue-modal-16">
   <link rel="stylesheet" href="css/motion.css?v=natural-17">
   <link rel="preload" href="assets/loading.jpg" as="image">
@@ -20,7 +20,7 @@
   <script src="js/signature.js" defer></script>
   <script src="js/snow.js?v=natural-17" defer></script>
   <script src="js/loading.js?v=release-9" defer></script>
-  <script src="js/voucher.js?v=blue-modal-16" defer></script>
+  <script src="js/voucher.js?v=sheet-18" defer></script>
 </head>
 <body>
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
@@ -56,7 +56,7 @@
       <div class="hero__layout">
         <div class="hero__message">
           <div class="title-lockup" id="offer-intro">
-            <h1 id="offer-title"><span class="title-kicker">Te regalamos</span> <span class="title-word">$25.000</span> <span class="title-kicker title-kicker--end">para tu Let’s Celebrate</span></h1>
+            <h1 id="offer-title"><span class="title-kicker">Te regalamos</span> <span class="title-word">$25.000</span> <span class="title-kicker title-kicker--end">para tu <strong class="title-celebrate">Let’s Celebrate</strong></span></h1>
           </div>
           <div class="hero-copy">
             <p>Dejá tu mail y tu celular y usá tu código en un combinado Let’s Celebrate o Superstar de 60 o 100 piezas para Navidad o Año Nuevo.</p>
@@ -82,6 +82,12 @@
               <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
               <noscript>Activá JavaScript para solicitar tu código.</noscript>
             </form>
+            <div id="claim-generated" class="claim-generated" hidden>
+              <div class="claim-generated__icon" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div>
+              <h2>Código generado</h2>
+              <p>Tu código está listo. Podés volver a consultarlo cuando quieras en esta página.</p>
+              <button type="button" class="button button--primary" id="view-code" aria-haspopup="dialog" aria-controls="confirmation">Ver mi código</button>
+            </div>
           </div>
         </section>
       </div>
@@ -104,6 +110,7 @@
   </main>
   <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-description">
     <div class="confirmation__surface">
+      <div class="confirmation__drag" id="confirmation-drag" aria-hidden="true"><span></span></div>
       <button type="button" class="confirmation__close" id="close-confirmation" aria-label="Cerrar confirmación">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
       </button>
