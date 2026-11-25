@@ -80,13 +80,14 @@
 }
 
 
-/* One persistent viewport layer, independent of the intro overlay. */
+/* One persistent document-space layer, independent of the intro overlay.
+   The canvas scrolls with the page, while its flakes keep their positions. */
+body { position: relative; }
 .site-snow {
-  position: fixed;
+  position: absolute;
   top: 0; left: 0;
   width: 100%;
-  height: 100vh;
-  height: 100lvh; /* Stable height while mobile browser bars move. */
+  height: 100%;
   z-index: 1001;
   pointer-events: none;
   contain: strict;
