@@ -416,9 +416,7 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation__drag{position:absolute;top:0;left:0;right:0;height:36px;display:grid;place-items:center;touch-action:none;cursor:grab;user-select:none}
 .confirmation__drag span{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.36)}
 .confirmation[data-dragging] .confirmation__drag{cursor:grabbing}
-.confirmation__close{position:absolute;top:36px;right:12px;display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
-.confirmation__close:hover{background:rgba(255,255,255,.16)}
-.confirmation h2{font-size:clamp(24px,5vw,32px);font-weight:650;line-height:1.15;letter-spacing:-.045em;margin:0 0 12px;padding-inline:40px}
+.confirmation h2{font-size:clamp(24px,5vw,32px);font-weight:650;line-height:1.15;letter-spacing:-.045em;margin:0 0 12px}
 .confirmation p:not(.feedback){margin:16px 0;color:#fff;font-size:15px;line-height:1.4}
 .confirmation p.confirmation__description{margin:0 0 20px;line-height:1.45;color:rgba(255,255,255,.88)}
 .code-box{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:0}
@@ -460,7 +458,6 @@ html.voucher-modal-open{overflow:hidden}
   .confirmation[data-visible]{opacity:1;transform:scale(1)}
   .confirmation__surface{padding:32px}
   .confirmation__drag{display:none}
-  .confirmation__close{top:12px;right:12px}
 }
 @media(prefers-reduced-motion:reduce){.confirmation,.confirmation::backdrop{transition:none}.confirmation__drag{display:none}}
 .instructions,.conditions{border-top:1px solid rgba(255,255,255,.15)}

@@ -13,8 +13,6 @@
   const codeField = document.getElementById("voucher-code-fallback");
   const copyButton = document.getElementById("copy-code");
   const copyFeedback = document.getElementById("copy-feedback");
-  const redeemInstruction = document.getElementById("redeem-instruction");
-  const closeConfirmation = document.getElementById("close-confirmation");
   const generated = document.getElementById("claim-generated");
   const viewCode = document.getElementById("view-code");
   const dragHandle = document.getElementById("confirmation-drag");
@@ -39,10 +37,6 @@
   let closeTimer = 0, closing = false, drag = null;
   let copyTimer=0, copyVersion=0;
 
-  if (demo) {
-    document.getElementById("confirmation-description").textContent = "Vista previa del beneficio de $25.000 para Let’s Celebrate.";
-    redeemInstruction.textContent = "En la promoción real, ingresá el código en “Código promocional” al finalizar la compra online.";
-  }
   if (demo) {
     form.autocomplete = "off";
     email.autocomplete = "off";
@@ -97,7 +91,6 @@
   confirmation.addEventListener("transitionend",event=>{
     if(event.target===confirmation&&event.propertyName==="transform"&&!event.pseudoElement&&closing)finishClose();
   });
-  closeConfirmation.addEventListener("click",requestClose);
   confirmation.addEventListener("cancel",event=>{event.preventDefault();requestClose();});
   confirmation.addEventListener("click",event=>{
     if(event.target!==confirmation||drag)return;

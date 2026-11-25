@@ -96,16 +96,31 @@
 .snow-active .site-snow { opacity: 1; }
 .loading .year { position: relative; z-index: 1; }
 
-/* The outgoing overlay reveals the image directly. Text follows its lead in
-   a tightly overlapped gesture, rather than a second serial entrance. */
-.landing-enter .masthead__brands { --reveal-y: -8px; animation: landing-rise 380ms var(--ease-out) both; }
-.landing-enter .title-kicker:not(.title-kicker--end) { --reveal-y: 10px; animation: landing-rise 440ms var(--ease-out) 20ms both; }
-.landing-enter .title-word { --reveal-y: 24px; animation: landing-rise 540ms var(--ease-out) both; }
-.landing-enter .title-kicker--end { --reveal-y: 10px; animation: landing-rise 440ms var(--ease-out) 65ms both; }
-.landing-enter .hero-copy p { --reveal-y: 8px; animation: landing-rise 420ms var(--ease-out) 115ms both; }
+/* Landing choreography: the offer leads; branding, supporting copy and the
+   form overlap the handoff. The photograph and frosted glass contents remain
+   static. Only opacity and translation move; no second entrance per child. */
+.landing-enter .title-lockup{
+  --reveal-y:32px;
+  animation:landing-rise 600ms var(--ease-out) 140ms backwards;
+}
+.landing-enter .masthead__brands{
+  --reveal-y:-10px;
+  animation:landing-rise 460ms var(--ease-out) 85ms backwards;
+}
+.landing-enter .hero-copy{
+  --reveal-y:14px;
+  animation:landing-rise 480ms var(--ease-out) 270ms backwards;
+}
+.landing-enter .voucher{
+  --reveal-y:22px;
+  animation:landing-rise 560ms var(--ease-out) 200ms backwards;
+}
+/* On focus the form is immediately visible and stable, including keyboard
+   navigation and a user who reaches a field during the entrance. */
+.landing-enter .voucher:focus-within{animation:none}
 @keyframes landing-rise {
   from { opacity: 0; transform: translate3d(0, var(--reveal-y, 16px), 0); }
-  to { opacity: 1; transform: translate3d(0, 0, 0); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes landing-fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -117,9 +132,12 @@
   .loading, .year, .loading__signature { transition: none; }
   .site-snow { display: none; }
   .landing-enter .masthead__brands,
-  .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {
-    animation: landing-fade 200ms ease both;
+  .landing-enter .title-lockup,
+  .landing-enter .hero-copy,
+  .landing-enter .voucher {
+    animation: landing-fade 200ms ease backwards;
   }
+  .landing-enter .voucher:focus-within{animation:none}
   .section-motion-pending, .section-motion-enter { opacity: 1; animation: none; transform: none; }
 }
 
@@ -130,10 +148,4 @@
 
 @media (pointer: fine) {
   .loading__signature { contain: layout; }
-  .landing-enter .masthead__brands,
-  .landing-enter .title-kicker,
-  .landing-enter .title-word,
-  .landing-enter .hero-copy p {
-    animation-fill-mode: backwards;
-  }
 }
