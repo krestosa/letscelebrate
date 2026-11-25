@@ -85,21 +85,13 @@
       page.inert = false;
       animateSections(page);
     }
-    // The hero is revealed by the same overlay crossfade; do not fade the
-    // video in separately or wait for a second entrance.
-    warmVideo();
+    // Reveal the preloaded static hero through the overlay crossfade.
     root.classList.add("landing-enter");
     if (overlay) overlay.inert = true;
     if (!overlay || reduced.matches) { dismiss(); return; }
     afterMotion(overlay, "opacity", token("--intro-exit", 420), dismiss);
     root.classList.add("intro-revealing");
     document.dispatchEvent(new Event("intro-revealing"));
-  }
-
-  function warmVideo() {
-    if(reduced.matches)return;
-    const video=document.querySelector(".hero__video");
-    if(video&&video.paused)video.play().catch(()=>{});
   }
 
   // A short, intentional reading interval, counted only while the document

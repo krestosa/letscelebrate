@@ -100,7 +100,7 @@
   font: 500 11px/1.2 Inter, sans-serif; pointer-events: none;
 }
 
-/* The outgoing overlay reveals the video directly. Text follows its lead in
+/* The outgoing overlay reveals the image directly. Text follows its lead in
    a tightly overlapped gesture, rather than a second serial entrance. */
 .landing-enter .masthead__brands { --reveal-y: -8px; animation: landing-rise 380ms var(--ease-out) both; }
 .landing-enter .title-kicker:not(.title-kicker--end) { --reveal-y: 10px; animation: landing-rise 440ms var(--ease-out) 20ms both; }
@@ -120,14 +120,14 @@
 @media (prefers-reduced-motion: reduce) {
   .loading, .year, .loading__signature { transition: none; }
   .site-snow { display: none; }
-  .landing-enter .hero__video-stack, .landing-enter .masthead__brands,
+  .landing-enter .masthead__brands,
   .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {
     animation: landing-fade 200ms ease both;
   }
   .section-motion-pending, .section-motion-enter { opacity: 1; animation: none; transform: none; }
 }
 
-/* Avoid a full-screen soft-light blend with a moving video on mobile. */
+/* Avoid a full-screen soft-light blend on mobile. */
 @media (pointer: coarse), (max-width: 600px) {
   .hero__grain { mix-blend-mode: normal; opacity: .045; mask-image: none; -webkit-mask-image: none; }
 }
