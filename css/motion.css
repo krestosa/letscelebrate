@@ -98,21 +98,6 @@
 .snow-active .site-snow { opacity: 1; }
 .loading .year, .loading .loading__progress { position: relative; z-index: 1; }
 .loading .loading__progress { position: absolute; }
-.snow-motion-permission {
-  position: fixed;
-  z-index: 1002;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(12px, env(safe-area-inset-bottom));
-  min-height: 36px;
-  padding: 7px 12px;
-  border: 1px solid rgba(255,255,255,.26);
-  border-radius: 100px;
-  color: var(--white);
-  background: rgba(0,0,0,.6);
-  font: 500 11px/1.2 "Inter", sans-serif;
-  opacity: .8;
-}
-.snow-motion-permission[hidden] { display: none; }
 .snow-debug {
   position: fixed; z-index: 1003; top: max(12px, env(safe-area-inset-top));
   left: max(12px, env(safe-area-inset-left)); padding: 6px 9px;
@@ -139,7 +124,7 @@
 .section-motion-pending:focus-within, .section-motion-enter:focus-within { opacity: 1; animation: none; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .loading, .year, .loading__progress, .loading__signature { transition: none; }
-  .site-snow, .snow-motion-permission { display: none; }
+  .site-snow { display: none; }
   .landing-enter .hero__video-stack, .landing-enter .masthead__brands,
   .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {
     animation: landing-fade 200ms ease both;

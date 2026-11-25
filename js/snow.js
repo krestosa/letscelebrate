@@ -1,7 +1,6 @@
 "use strict";
 (() => {
   const canvas = document.getElementById("intro-snow");
-  const button = document.getElementById("snow-motion-permission");
   if (!canvas) return;
   const ctx = canvas.getContext("2d", { alpha: true });
   if (!ctx) return;
@@ -37,6 +36,7 @@
     // This works even with the handset upright and avoids Euler-roll ambiguity.
     orientationReading = [Math.cos(beta)*Math.sin(gamma), Math.sin(beta)];
     orientationAt = performance.now();
+    setSensorState("orientation");
   }
   function onMotion(event) {
     const g = event.accelerationIncludingGravity;
@@ -52,6 +52,7 @@
     }
     motionReading = reading;
     motionAt = performance.now();
+    if(!orientationReading)setSensorState("motion");
   }
   function updateGravity(now) {
     const useOrientation=orientationReading && (now-orientationAt<1000 || !motionReading);
@@ -80,24 +81,60 @@
     if(motionSensor)window.addEventListener("devicemotion",onMotion,options);
     setSensorState("waiting");
     setTimeout(()=>{
-      if(!disposed&&!orientationReading&&!motionReading)setSensorState("no-data");
+      if(!disposed&&!orientationReading&&!motionReading&&sensorState==="waiting")setSensorState("no-data");
     },2500);
   }
-  async function permission() {
-    if (!button || disposed) return;
-    button.disabled = true;
-    // Invoke both permission APIs during the same user activation.
-    const requests=[orientationSensor,motionSensor].filter(s=>typeof s?.requestPermission==="function");
-    const pending=requests.map(s=>{try{return Promise.resolve(s.requestPermission());}catch(e){return Promise.reject(e);}});
+  // Chromium exposes requestPermission() too: its presence does not mean
+  // the user needs to tap an activation button. Read any already-authorized
+  // sensor immediately and query its permission state without a gesture.
+  const permissionApis = [...new Set([orientationSensor,motionSensor])]
+    .filter(api=>typeof api?.requestPermission==="function");
+  let permissionBusy=false, permissionGranted=false, gestureArmed=false;
+  function hasSensorData(){return !!(orientationReading||motionReading);}
+  function onFirstGesture(event){
+    if(!event.isTrusted||disposed||permissionGranted||hasSensorData())return;
+    // A native permission prompt may require transient user activation.
+    // Never prevent the underlying click or request permission after denial.
+    if(navigator.userActivation && !navigator.userActivation.isActive)return;
+    disarmGesture();
+    requestSensorPermission(true);
+  }
+  function disarmGesture(){
+    gestureArmed=false;
+    window.removeEventListener("click",onFirstGesture,true);
+    window.removeEventListener("keydown",onFirstGesture,true);
+  }
+  function armGesture(){
+    if(gestureArmed||disposed||permissionGranted||hasSensorData())return;
+    gestureArmed=true;
+    window.addEventListener("click",onFirstGesture,{capture:true,passive:true,signal:lifetime.signal});
+    window.addEventListener("keydown",onFirstGesture,{capture:true,passive:true,signal:lifetime.signal});
+  }
+  async function requestSensorPermission(userActivated=false){
+    if(disposed||permissionBusy||permissionGranted||hasSensorData()||!permissionApis.length)return;
+    permissionBusy=true;
+    // Execute both calls synchronously before awaiting either result.
+    const pending=permissionApis.map(api=>{
+      try{return Promise.resolve(api.requestPermission());}
+      catch(error){return Promise.reject(error);}
+    });
     const results=await Promise.allSettled(pending);
+    permissionBusy=false;
     if(disposed)return;
-    if(results.some(r=>r.status==="fulfilled"&&r.value==="granted")){
-      listenSensors();
-      button.hidden=true;
+    if(hasSensorData()||results.some(r=>r.status==="fulfilled"&&r.value==="granted")){
+      permissionGranted=true;
+      disarmGesture();
+      if(!hasSensorData())setSensorState("waiting");
+      return;
+    }
+    const requiresGesture=results.some(r=>r.status==="rejected"&&
+      (r.reason?.name==="NotAllowedError"||r.reason?.name==="InvalidStateError"));
+    if(!userActivated&&requiresGesture){
+      setSensorState("gesture-required");
+      armGesture();
     }else{
-      setSensorState("denied");
-      button.disabled=false;
-      button.textContent="Activar inclinación";
+      setSensorState(results.every(r=>r.status==="fulfilled"&&r.value==="denied")?"denied":"unavailable");
+      disarmGesture();
     }
   }
   // Opt-in, local-only diagnostics; never collect or transmit sensor values.
@@ -238,7 +275,6 @@
     root.classList.remove("snow-active");
     cancelAnimationFrame(frame);
     lifetime.abort();
-    if(button)button.hidden=true;
     debug?.remove();
     particles=[];
     canvas.width=canvas.height=1;
@@ -257,13 +293,10 @@
   if(mobile&&!reduced.matches){
     if(!window.isSecureContext)setSensorState("HTTPS-required");
     else if(!orientationSensor&&!motionSensor)setSensorState("unsupported");
-    else if(typeof orientationSensor?.requestPermission==="function"||typeof motionSensor?.requestPermission==="function"){
-      setSensorState("permission-required");
-      if(button){
-        button.hidden=false;
-        button.addEventListener("click",permission,{signal:lifetime.signal});
-      }
-    }else listenSensors();
+    else {
+      listenSensors();
+      if(permissionApis.length)requestSensorPermission();
+    }
   }else setSensorState("natural");
   document.addEventListener("loading-spin-start",start,{once:true,signal:lifetime.signal});
   const enterLanding=()=>{landing=true;start();};
