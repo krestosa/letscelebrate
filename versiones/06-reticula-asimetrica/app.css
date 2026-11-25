@@ -1,0 +1,102 @@
+@charset "UTF-8";
+@font-face{font-family:Gazzetta;src:url("../../fonts/Gazzetta Black.otf") format("opentype");font-weight:900;font-display:swap}
+@font-face{font-family:Gazzetta;src:url("../../fonts/Gazzetta Bold.otf") format("opentype");font-weight:700;font-display:swap}
+:root{color-scheme:dark;--white:#f7f5f0;--orange:#FF7700;--page-x:clamp(20px,4vw,72px);--rule:rgba(255,255,255,.28);font-family:Inter,Arial,sans-serif}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;background:#000;color:var(--white);min-height:100%}
+body{font-synthesis:none;text-rendering:geometricPrecision}
+[hidden]{display:none!important}
+button,input{font:inherit}
+a{color:inherit;text-underline-offset:3px}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;outline-offset:3px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.page{min-height:100vh;min-height:100dvh}
+.hero{isolation:isolate;position:relative;display:grid;grid-template-rows:auto minmax(min-content,1fr) auto;gap:clamp(12px,2.4dvh,32px);min-height:100vh;min-height:100dvh;padding:max(20px,env(safe-area-inset-top)) var(--page-x) max(14px,env(safe-area-inset-bottom))}
+.hero__video-stack,.hero__black-filter,.hero__gradient,.hero__grain{position:absolute;inset:0;pointer-events:none}
+.hero__video-stack{z-index:-4;overflow:hidden}
+.hero__video{display:block;width:100%;height:100%;object-fit:cover;object-position:center}
+.hero__black-filter{z-index:-3;background:rgba(0,0,0,.28)}
+.hero__gradient{z-index:-2;background:linear-gradient(0deg,#000 0%,rgba(0,0,0,.88) 18%,transparent 60%),linear-gradient(90deg,rgba(0,0,0,.14),rgba(0,0,0,.24) 52%,#000 100%),linear-gradient(180deg,#000 0%,rgba(0,0,0,.54) 20%,transparent 58%)}
+.hero__grain{z-index:-1;opacity:.14;background-image:radial-gradient(rgba(255,255,255,.24) .5px,transparent .8px);background-size:4px 4px;mix-blend-mode:soft-light}
+.masthead,.hero__layout,.legal{width:min(1440px,100%);margin-inline:auto;min-width:0}
+.masthead__brands{display:flex;align-items:center;justify-content:center;gap:clamp(14px,2vw,34px)}
+.masthead__sushiclub{display:block;width:clamp(112px,12vw,168px);height:auto}
+.masthead__campaign{font-size:clamp(10px,.85vw,13px);font-weight:650;letter-spacing:-.035em;white-space:nowrap}
+.hero__layout{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(290px,.8fr);grid-template-areas:"offer claim" "instructions conditions";gap:clamp(20px,4dvh,52px) clamp(32px,7vw,120px);align-content:center;align-items:center}
+.hero__offer{grid-area:offer;min-width:0;container-type:inline-size}
+.title-lockup h1{display:flex;flex-direction:column;align-items:flex-start;gap:clamp(6px,1.2dvh,16px);margin:0;text-transform:uppercase}
+.title-kicker{font-size:clamp(18px,2vw,32px);font-weight:500;line-height:1;letter-spacing:-.05em}
+.title-word{font-family:Gazzetta,Impact,sans-serif;font-weight:900;font-size:clamp(100px,17vw,290px);font-size:min(29cqw,31dvh,290px);line-height:.79;letter-spacing:normal;white-space:nowrap;color:#fff;text-shadow:0 0 16px rgba(255,255,255,.16)}
+.title-kicker--end{font-size:clamp(21px,2.9vw,46px);font-weight:600;line-height:1.03}
+.hero-copy{margin-top:clamp(16px,3dvh,34px);max-width:540px}
+.hero-copy p{margin:0;font-size:clamp(13px,1.2vw,17px);line-height:1.4;text-transform:uppercase}
+.claim-section{grid-area:claim;min-width:0}
+.voucher{padding:clamp(14px,2.8dvh,30px) 0;border-block:1px solid var(--rule)}
+.field+.field{margin-top:clamp(10px,2dvh,20px)}
+.field label{display:block;margin-bottom:7px;font-size:12px;line-height:1.1;font-weight:600;text-transform:uppercase}
+.field input{width:100%;min-width:0;min-height:48px;padding:10px 12px;border:0;border-bottom:1px solid rgba(255,255,255,.55);border-radius:0;background:rgba(0,0,0,.3);color:#fff;font-size:16px}
+.field input::placeholder{color:rgba(255,255,255,.48)}
+.field input:focus{outline:2px solid var(--orange);outline-offset:0}
+.consent{display:flex;align-items:flex-start;gap:10px;margin:clamp(12px,2.2dvh,22px) 0;font-size:13px;line-height:1.4;cursor:pointer}
+.consent input{width:20px;height:20px;flex:0 0 20px;margin:0;accent-color:var(--orange)}
+.button{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:12px 14px;border:1px solid transparent;border-radius:6px;font-size:15px;font-weight:700;line-height:1.1;letter-spacing:-.04em;text-align:center;text-decoration:none;text-transform:uppercase;cursor:pointer;transition:transform .18s,filter .18s}
+.button--primary{color:#000;background:var(--orange)}
+.button--primary:hover{filter:brightness(1.08)}
+.button--secondary{color:#fff;background:transparent;border-color:rgba(255,255,255,.65)}
+.button--secondary:hover{background:#fff;color:#000}
+.button:active{transform:scale(.98)}
+.button:disabled{opacity:.55;cursor:not-allowed}
+.feedback,.demo-notice{font-size:12px;line-height:1.35;margin:8px 0 0;color:rgba(255,255,255,.72)}
+.feedback[data-kind=error]{color:#ffb399}
+.demo-notice{font-size:10px}
+.confirmation h2{font:900 clamp(48px,5.8vw,88px)/.85 Gazzetta,Impact,sans-serif;text-transform:uppercase;margin:0 0 10px}
+.confirmation p:not(.feedback){margin:10px 0;font-size:14px;line-height:1.3}
+.code-box{margin:12px 0}
+.code-box input{width:100%;min-width:0;min-height:48px;padding:10px;border:1px solid var(--orange);border-radius:6px;background:#000;color:var(--orange);font:700 clamp(16px,1.8vw,24px)/1.1 ui-monospace,Consolas,monospace;text-align:center}
+.confirmation .button+.button{margin-top:8px}
+.proposal{min-width:0;align-self:start;border-top:1px solid var(--rule);padding-top:clamp(12px,2dvh,22px)}
+.instructions{grid-area:instructions}
+.conditions{grid-area:conditions}
+.proposal__shell{display:grid;gap:12px}
+.proposal__header h2{margin:0;font:700 clamp(32px,3.4vw,54px)/.9 Gazzetta,Impact,sans-serif;text-transform:uppercase}
+.instructions ol{display:grid;gap:9px;list-style:none;counter-reset:steps;margin:0;padding:0}
+.instructions li{display:grid;grid-template-columns:30px minmax(0,1fr);gap:8px;counter-increment:steps;align-items:start;font-size:clamp(11px,1vw,14px);line-height:1.3;text-transform:uppercase}
+.instructions li::before{content:counter(steps,decimal-leading-zero);color:var(--orange);font:900 30px/.85 Gazzetta,Impact,sans-serif}
+.conditions p{margin:0;font-size:clamp(11px,1vw,14px);line-height:1.45;text-transform:uppercase}
+.legal{border-top:1px solid var(--rule);padding-top:10px;font-size:10px;line-height:1.3;color:rgba(255,255,255,.62);text-transform:uppercase}
+@media(max-width:980px){.hero__layout{gap:24px 32px;grid-template-columns:minmax(0,1.05fr) minmax(260px,.95fr)}}
+@media(max-width:720px){
+.hero{padding:max(12px,env(safe-area-inset-top)) 16px max(10px,env(safe-area-inset-bottom));gap:12px;grid-template-rows:auto minmax(min-content,1fr) auto}
+.hero__gradient{background:linear-gradient(180deg,#000 0%,rgba(0,0,0,.28) 12%,rgba(0,0,0,.75) 35%,#000 80%)}
+.hero__layout{width:min(480px,100%);grid-template-columns:minmax(0,1fr);grid-template-areas:"offer" "claim" "instructions" "conditions";gap:clamp(8px,1.7dvh,16px);align-content:space-evenly}
+.masthead__sushiclub{width:110px}
+.title-lockup h1{align-items:center;text-align:center;gap:4px}
+.title-kicker{font-size:clamp(14px,4vw,19px)}
+.title-word{font-size:min(29cqw,16dvh,164px)}
+.title-kicker--end{font-size:clamp(18px,5vw,26px)}
+.hero-copy{margin:9px auto 0;text-align:center}
+.hero-copy p{font-size:12px;line-height:1.3}
+.voucher{padding:9px 0 0;border-bottom:0}
+#voucher-form{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.field+.field{margin:0}
+.field label{font-size:11px;margin-bottom:4px}
+.field input{min-height:44px;padding:8px}
+.consent{grid-column:1/-1;margin:0;font-size:12px;align-items:center}
+#claim-button,#form-feedback,noscript{grid-column:1/-1}
+.button{min-height:44px;padding:10px;font-size:14px}
+.proposal{padding-top:7px}
+.proposal__shell{gap:6px}
+.proposal__header h2{font-size:27px}
+.instructions ol{gap:4px}
+.instructions li{grid-template-columns:22px minmax(0,1fr);gap:6px;font-size:11px;line-height:1.25}
+.instructions li::before{font-size:22px}
+.conditions p{font-size:11px;line-height:1.3}
+.legal{width:min(480px,100%);padding-top:6px;font-size:10px}
+.confirmation h2{font-size:44px;margin-bottom:5px}
+.confirmation p:not(.feedback){font-size:12px;margin:7px 0}
+.code-box{margin:7px 0}
+.code-box input{min-height:44px}
+.confirmation .button+.button{margin-top:6px}
+}
+@media(max-width:350px){#voucher-form{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){.hero__video-stack{display:none}.button{transition:none}}
