@@ -15,7 +15,7 @@
   const root = document.documentElement;
   let w = 0, h = 0, active = false, disposed = false, frame = 0, last = 0, time = 0;
   let target = 0, wind = 0, previousSensor = -Infinity, particles = [], sensorListening = false;
-  let retiring = false, fieldOpacity = 1;
+  let landing = false, landingBlend = 0;
   let lastTick = 0, frameDebt = 0, step = mobile ? 1000/30 : 1000/60;
   const dragFactors = [0,0,0];
 
@@ -24,10 +24,14 @@
     const angle = (screen.orientation?.angle ?? Number(window.orientation ?? 0)) * Math.PI / 180;
     const gamma = event.gamma * Math.PI / 180;
     const beta = event.beta * Math.PI / 180;
-    const horizontal = Math.sin(gamma) * Math.cos(beta);
+    // Use screen-relative tilt rather than attenuating gamma by cos(beta):
+    // an upright phone should still react visibly to a small side tilt.
+    const horizontal = Math.sin(gamma);
     const vertical = Math.sin(beta);
     const projected = horizontal * Math.cos(angle) + vertical * Math.sin(angle);
-    target = Math.abs(projected) < .025 ? 0 : clamp(projected * 165, -125, 125);
+    const magnitude = Math.abs(projected);
+    // Tiny dead zone, strong response to small inclinations, bounded gusts.
+    target = magnitude < .012 ? 0 : Math.sign(projected) * Math.min(360, (magnitude-.012)*560);
     previousSensor = performance.now();
   }
   function listenOrientation() {
@@ -109,11 +113,11 @@
 
   function recycle(p) {
     const next = particle(false,p.layer);
-    if (Math.abs(wind)>30 && Math.random()<.32) {
+    if (Math.abs(wind)>30 && Math.random()<Math.min(.86,.32+Math.abs(wind)/600)) {
       next.x=wind>0?-next.radius*3:w+next.radius*3;
-      next.y=Math.random()*h*.8;
+      next.y=Math.random()*h;
     } else {
-      next.x=clamp(Math.random()*w-wind*.65,-w*.14,w*1.14);
+      next.x=clamp(Math.random()*w-wind*.25,-w*.14,w*1.14);
     }
     Object.assign(p,next);
   }
@@ -128,18 +132,18 @@
     if(last&&now-last<step-1.5){frame=requestAnimationFrame(render);return;}
     const dt=clamp((now-(last||now))/1000,0,.067);
     last=now;time+=dt;
-    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(2.4+layer*.5));
+    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(7.0+layer*1.1));
     // Orientation events may stop while the phone remains still; retain the
     // last valid gravity direction until a new reading replaces it.
     const targetWind = Number.isFinite(previousSensor) ? target : 0;
-    wind += (targetWind-wind)*(1-Math.exp(-dt*4.3));
+    wind += (targetWind-wind)*(1-Math.exp(-dt*10));
     const air = Math.sin(time*.75)*6+Math.sin(time*.27+1.3)*4;
-    if (retiring) fieldOpacity += (0-fieldOpacity)*(1-Math.exp(-dt*5));
+    landingBlend += ((landing?1:0)-landingBlend)*(1-Math.exp(-dt*4));
     ctx.clearRect(0,0,w,h);
     for (const p of particles) {
       p.age+=dt;
       p.phase+=dt*p.frequency;
-      const desiredX = (wind+air)*(.42+p.layer*.30)+Math.sin(p.phase)*p.sway;
+      const desiredX = (wind+air)*(.72+p.layer*.24)+Math.sin(p.phase)*p.sway;
       const desiredY = p.speed*(1+.08*Math.sin(p.phase*.7));
       const drag=dragFactors[p.layer];
       p.vx+=(desiredX-p.vx)*drag;
@@ -152,7 +156,7 @@
       if (birth<=0) continue;
       const dx=(p.x-w*.5)/(w*.32),dy=(p.y-h*.5)/(h*.23);
       const center=.38+.62*smooth(dx*dx+dy*dy);
-      const alpha=p.opacity*birth*center*fieldOpacity;
+      const alpha=p.opacity*birth*(center+(1-center)*landingBlend*.65)*(1-landingBlend*.12);
       if(alpha<.01)continue;
       ctx.globalAlpha=alpha;
       const size=p.radius*3;
@@ -165,6 +169,7 @@
   function dispose() {
     if (disposed) return;
     disposed=true; active=false;
+    root.classList.remove("snow-active");
     cancelAnimationFrame(frame);
     lifetime.abort();
     if(button)button.hidden=true;
@@ -178,8 +183,8 @@
     resize();
     if(!w||!h)return;
     active=true;last=0;lastTick=0;time=0;
-    root.classList.add("loading-spinning");
-    frame=requestAnimationFrame(render);
+    root.classList.add("snow-active");
+    if(!document.hidden)frame=requestAnimationFrame(render);
   }
 
   if (mobile && sensor && window.isSecureContext && !reduced.matches) {
@@ -191,8 +196,18 @@
     }else listenOrientation();
   }
   document.addEventListener("loading-spin-start",start,{once:true,signal:lifetime.signal});
-  document.addEventListener("intro-revealing",()=>{retiring=true;},{once:true,signal:lifetime.signal});
-  document.addEventListener("intro-dismissed",dispose,{once:true,signal:lifetime.signal});
+  const enterLanding=()=>{landing=true;start();};
+  document.addEventListener("intro-revealing",enterLanding,{once:true,signal:lifetime.signal});
+  document.addEventListener("intro-dismissed",enterLanding,{once:true,signal:lifetime.signal});
+  // Preserve particles and sensor state while the intro is removed.
+  // Suspend the animation when the page is hidden, then resume without a jump.
+  document.addEventListener("visibilitychange",()=>{
+    if(!active||disposed)return;
+    cancelAnimationFrame(frame);
+    last=0;lastTick=0;
+    if(!document.hidden)frame=requestAnimationFrame(render);
+  },{signal:lifetime.signal});
+  window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
   let resizePending=false;
   window.addEventListener("resize",()=>{
     if(!active||resizePending)return;

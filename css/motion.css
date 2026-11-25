@@ -44,24 +44,23 @@
 .signature-done .signature-art { opacity: 1; }
 .signature-done .signature-canvas { visibility: hidden; }
 
-/* One canvas, behind the title, signature and progress. */
-.loading__snow {
-  position: absolute;
+/* One persistent viewport layer, independent of the intro overlay. */
+.site-snow {
+  position: fixed;
   inset: 0;
   width: 100%; height: 100%;
-  z-index: 0;
+  z-index: 1001;
   pointer-events: none;
   contain: strict;
   opacity: 0;
   transition: opacity 520ms var(--ease-out);
 }
-.loading-spinning .loading__snow { opacity: 1; }
-.intro-revealing .loading__snow { opacity: .45; }
+.snow-active .site-snow { opacity: 1; }
 .loading .year, .loading .loading__progress { position: relative; z-index: 1; }
 .loading .loading__progress { position: absolute; }
 .snow-motion-permission {
-  position: absolute;
-  z-index: 3;
+  position: fixed;
+  z-index: 1002;
   right: max(16px, env(safe-area-inset-right));
   bottom: max(12px, env(safe-area-inset-bottom));
   min-height: 36px;
@@ -73,7 +72,7 @@
   font: 500 11px/1.2 "Inter", sans-serif;
   opacity: .8;
 }
-.intro-signature .snow-motion-permission, .intro-revealing .snow-motion-permission { display: none; }
+.snow-motion-permission[hidden] { display: none; }
 
 /* Hero entrance: overlap the lead amount with its supporting copy and brand. */
 .landing-enter .hero__video-stack { animation: landing-fade 650ms var(--ease-soft) both; }
@@ -94,7 +93,7 @@
 .section-motion-pending:focus-within, .section-motion-enter:focus-within { opacity: 1; animation: none; transform: none; }
 @media (prefers-reduced-motion: reduce) {
   .loading, .year, .loading__progress, .loading__signature { transition: none; }
-  .loading__snow, .snow-motion-permission { display: none; }
+  .site-snow, .snow-motion-permission { display: none; }
   .landing-enter .hero__video-stack, .landing-enter .masthead__brands,
   .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {
     animation: landing-fade 200ms ease both;
