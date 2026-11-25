@@ -9,7 +9,7 @@
 
   const root = document.documentElement;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const initialHold = 1160, durations = [1320,1760,2200,2640];
+  const initialHold = 1030, durations = [1320,1760,2200,2640];
   const totalDuration = initialHold + durations[3];
   const acceleration = 140, braking = 920;
   const entrance = {delay:100, stagger:140, duration:420};
