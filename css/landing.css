@@ -346,7 +346,9 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
     gap:clamp(40px,6vw,100px);
     justify-items:stretch;
   }
-  .hero__message{align-items:center}
+  .hero__message{align-items:flex-start;text-align:left}
+  .hero__message .title-lockup,.hero__message .hero-copy,.hero__message .title-kicker{text-align:left}
+  .hero__message .title-lockup h1{align-items:flex-start}
   .hero .title-word{font-size:clamp(116px,min(17vw,28vh),285px)}
   .hero .title-lockup h1{gap:clamp(8px,1.4vh,18px)}
   .hero .title-kicker{font-size:clamp(22px,2.15vw,40px)}
