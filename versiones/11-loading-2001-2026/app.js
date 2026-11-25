@@ -68,14 +68,21 @@
     const fragment = `
       precision highp float;
       uniform sampler2D uAtlas;
-      uniform float uPhase,uStep,uBlur,uLimit,uOpacity;
+      uniform float uPhase,uStep,uBlur,uLimit,uOpacity,uIsolation;
       varying float vAngle,vU;
       vec4 glyph(float phase){
         float n=phase+vAngle/uStep+0.5;
         float digit=mod(floor(n),10.0);
         vec2 uv=(vec2(mod(digit,4.0),floor(digit/4.0))*256.0+
           vec2(0.5+vU*255.0,0.5+fract(n)*255.0))/1024.0;
-        return texture2D(uAtlas,uv);
+        vec4 sampleColor=texture2D(uAtlas,uv);
+        // Peripheral digits are deliberately gray. As the reel settles,
+        // only the exact central digit remains visible.
+        float distanceToCenter=abs(floor(n)-uPhase);
+        float focus=1.0-smoothstep(0.18,0.85,distanceToCenter);
+        float central=1.0-step(0.5,distanceToCenter);
+        sampleColor.a*=mix(0.26,1.0,focus)*mix(1.0,central,uIsolation);
+        return sampleColor;
       }
       void main(){
         vec4 c=vec4(0.0);
@@ -114,17 +121,17 @@
     for(const key of [gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER])gl.texParameteri(gl.TEXTURE_2D,key,gl.LINEAR);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
-    const u=Object.fromEntries(["uSize","uCenter","uEm","uRadius","uCamera","uAtlas","uPhase","uStep","uBlur","uLimit","uOpacity"].map(n=>[n,gl.getUniformLocation(program,n)]));
+    const u=Object.fromEntries(["uSize","uCenter","uEm","uRadius","uCamera","uAtlas","uPhase","uStep","uBlur","uLimit","uOpacity","uIsolation"].map(n=>[n,gl.getUniformLocation(program,n)]));
     gl.uniform1i(u.uAtlas,0);gl.uniform1f(u.uRadius,radius);
     gl.uniform1f(u.uCamera,camera);gl.uniform1f(u.uStep,step);gl.uniform1f(u.uLimit,limit);
     gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     return {
       resize(w,h,dpr){gl.viewport(0,0,Math.round(w*dpr),Math.round(h*dpr));gl.uniform2f(u.uSize,w,h);},
       clear(){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);},
-      draw(d,pos,speed,opacity=1,offset=0){
+      draw(d,pos,speed,opacity=1,offset=0,isolation=0){
         gl.uniform2f(u.uCenter,d.x,d.y+offset*d.em);gl.uniform1f(u.uEm,d.em);
         gl.uniform1f(u.uPhase,((pos%10)+10)%10);
-        gl.uniform1f(u.uBlur,Math.min(.14,speed*7));gl.uniform1f(u.uOpacity,opacity);
+        gl.uniform1f(u.uBlur,Math.min(.14,speed*7));gl.uniform1f(u.uOpacity,opacity);gl.uniform1f(u.uIsolation,isolation);
         gl.drawArrays(gl.TRIANGLE_STRIP,0,vertices.length/2);
       }
     };
@@ -143,7 +150,7 @@
     return {
       resize(width,height,dpr){w=width;h=height;ctx.setTransform(dpr,0,0,dpr,0,0);},
       clear(){ctx.clearRect(0,0,w,h);},
-      draw(d,pos,speed,opacity=1,offset=0){
+      draw(d,pos,speed,opacity=1,offset=0,isolation=0){
         const n=192, blur=Math.min(.14,speed*7);
         const samples=blur>.015?[[-blur,.25],[0,.5],[blur,.25]]:[[0,1]];
         for(let i=0;i<n;i++){
@@ -159,7 +166,11 @@
             const fraction=index-Math.floor(index);
             const sy=Math.min(cell-1,Math.max(0,fraction*cell));
             const sh=Math.min(cell-sy,Math.max(1,(b-a)/step*cell));
-            ctx.globalAlpha=shade*edge*weight*opacity;
+            const distanceToCenter=Math.abs(Math.floor(index)-pos);
+            const f=clamp((distanceToCenter-.18)/(.85-.18));
+            const focus=1-f*f*(3-2*f);
+            const central=distanceToCenter<.5?1:0;
+            ctx.globalAlpha=shade*edge*weight*opacity*(.26+.74*focus)*(1-isolation+isolation*central);
             ctx.drawImage(atlas,(digit%4)*cell,Math.floor(digit/4)*cell+sy,cell,sh,dx,dy,dw,dh);
           }
         }
@@ -197,7 +208,7 @@
     if(finished)return;
     finished=true;cancelAnimationFrame(frame);
     drums.forEach(settle);
-    if(renderer && drawingStarted){renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0));}
+    if(renderer && drawingStarted){renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}
     updateProgress(totalDuration);label.textContent="2026";
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
@@ -250,9 +261,11 @@
     }else{
       for(const d of drums){
         if(!d.settled && elapsed>=d.duration)settle(d);
-        if(d.settled){if(renderer)renderer.draw(d,d.end,0);continue;}
+        if(d.settled){if(renderer)renderer.draw(d,d.end,0,1,0,1);continue;}
         const m=motion(elapsed,d.duration,d.steps);
-        if(renderer)renderer.draw(d,d.start+m.p,m.v);
+        const remaining=clamp((d.steps-m.p)/.4);
+        const isolation=1-remaining*remaining*(3-2*remaining);
+        if(renderer)renderer.draw(d,d.start+m.p,m.v,1,0,isolation);
       }
       if(drums.every(d=>d.settled)){finish();return;}
     }
@@ -267,7 +280,7 @@
     finish();
   },{once:true});
   reduced.addEventListener?.("change",()=>{if(reduced.matches)finish();});
-  addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0));}},{passive:true});
+  addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}},{passive:true});
   function launch(){
     if(launched||finished)return;
     launched=true;
