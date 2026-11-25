@@ -116,12 +116,14 @@
     const style=getComputedStyle(confirmation);
     const offset=style.transform==="none"?0:new DOMMatrixReadOnly(style.transform).m42;
     const height=confirmation.offsetHeight;
+    const viewportHeight=document.documentElement.clientHeight;
+    const maxOverdrag=Math.min(parseFloat(style.getPropertyValue("--sheet-overdrag"))||40,Math.max(0,viewportHeight-height-8));
     clearClosing();
     confirmation.style.transform="translateY("+offset+"px)";
     confirmation.style.setProperty("--sheet-overlay",String(Math.max(0,1-Math.max(0,offset)/height)));
     confirmation.dataset.dragging="";
     confirmation.dataset.visible="";
-    drag={id:event.pointerId,startY:event.clientY,base:offset,y:offset,lastY:event.clientY,lastAt:performance.now(),velocity:0,height};
+    drag={id:event.pointerId,startY:event.clientY,base:offset,y:offset,lastY:event.clientY,lastAt:performance.now(),velocity:0,height,maxOverdrag};
     dragHandle.setPointerCapture(event.pointerId);
     event.preventDefault();
   });
@@ -132,7 +134,10 @@
     if(elapsed>0)drag.velocity=(event.clientY-drag.lastY)/elapsed;
     drag.lastY=event.clientY;drag.lastAt=now;
     const raw=drag.base+delta;
-    drag.y=raw<0?raw*.2:Math.min(raw,drag.height+Math.max(0,raw-drag.height)*.2);
+    // Increasing resistance approaches a bounded upward extension without
+    // exposing the page underneath or pushing the sheet above the viewport.
+    const limit=drag.maxOverdrag;
+    drag.y=raw<0?(limit>0?-limit*(1-Math.exp(raw*.2/limit)):0):Math.min(raw,drag.height+Math.max(0,raw-drag.height)*.2);
     confirmation.style.transform="translateY("+drag.y+"px)";
     confirmation.style.setProperty("--sheet-overlay",String(Math.max(0,Math.min(1,1-drag.y/drag.height))));
   });
