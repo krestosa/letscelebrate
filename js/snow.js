@@ -30,30 +30,37 @@
     // When the phone lies flat, retain normal snowfall. A slight tilt
     // produces visible diagonal fall instead of amplifying sensor noise.
     const weight=smooth((magnitude-.04)/.34);
-    const gx=weight*x/Math.max(magnitude,.001)*1.25;
+    const gx=weight*x/Math.max(magnitude,.001)*1.9;
     const gy=1-weight+weight*y/Math.max(magnitude,.001);
     const length=Math.hypot(gx,gy)||1;
     return {x:gx/length,y:gy/length};
   }
   let gravityX=0,gravityY=1;
-  let orientationSample=null,motionSample=null,gravitySample=null;
-  let sensorSource="none", sensorCount=0, sensorStatus="waiting";
-  const sensorCounts={orientation:0,gravity:0,motion:0};
+  // Keep all sensor sources independent. A constant legacy orientation
+  // sample must not hide working Chromium accelerometer data.
+  const samples=Object.create(null), sensors=new Map();
+  const sensorCounts={orientation:0,gravity:0,accelerometer:0,motion:0};
+  const sensorErrors=Object.create(null), permissionStates=Object.create(null);
+  let sensorSource="none",sensorCount=0,sensorStatus="waiting",permissionRequestRunning=false;
   const sensorStart=performance.now();
-  let gravitySensor=null, permissionButton=null, permissionRequested=false;
-  let debugPanel=null, debugLast=0;
+  let debugPanel=null,debugLast=0;
   const debug=new URLSearchParams(location.search).get("snowDebug")==="1";
   const screenAngle=()=>Number(screen.orientation?.angle??window.orientation??0)||0;
   function noteSample(source,x,y,z){
-    if(!Number.isFinite(x)||!Number.isFinite(y))return;
-    const sample={x,y,z};
-    if(source==="orientation")orientationSample=sample;
-    else if(source==="gravity")gravitySample=sample;
-    else motionSample=sample;
+    if(![x,y,z].every(Number.isFinite))return;
+    const prev=samples[source],now=performance.now();
+    // The raw accelerometer includes short linear impulses; low-pass
+    // only that source. Dedicated gravity and orientation are fused by OS.
+    if(source==="accelerometer"&&prev&&now-prev.at<500){
+      const k=1-Math.exp(-Math.max(1,now-prev.at)/85);
+      x=prev.x+(x-prev.x)*k;
+      y=prev.y+(y-prev.y)*k;
+      z=prev.z+(z-prev.z)*k;
+    }
+    samples[source]={x,y,z,at:now};
     sensorCount++;
     sensorCounts[source]++;
     sensorStatus="active";
-    if(permissionButton)permissionButton.hidden=true;
   }
   function sampleOrientation(event){
     if(!Number.isFinite(event.beta)||!Number.isFinite(event.gamma))return;
@@ -61,76 +68,131 @@
     noteSample("orientation",g.x,g.y,Math.cos(event.beta*radians)*Math.cos(event.gamma*radians));
   }
   function sampleAcceleration(source,a){
-    if(!a||!Number.isFinite(a.x)||!Number.isFinite(a.y)||!Number.isFinite(a.z))return;
+    if(!a||![a.x,a.y,a.z].every(Number.isFinite))return;
     const norm=Math.hypot(a.x,a.y,a.z);
     if(norm<3||norm>20)return;
-    // Proper acceleration is opposite to gravity; CSS Y points down.
+    // Android proper acceleration opposes physical gravity; CSS Y is down.
     noteSample(source,-a.x/norm,a.y/norm,a.z/norm);
   }
-  function getGravity(){
-    const alternative=gravitySample||motionSample;
-    let sample=orientationSample;
-    let source="orientation";
-    // An orientation implementation can emit flat/zero readings while
-    // accelerometer data is already valid. Prefer the working source then.
-    if(!sample||(Math.hypot(sample.x,sample.y)<.03&&alternative&&Math.hypot(alternative.x,alternative.y)>.13)){
-      sample=alternative;
-      source=gravitySample?"gravity":"motion";
+  function sampleMotion(event){
+    const a=event.accelerationIncludingGravity,linear=event.acceleration;
+    if(a&&linear&&[a.x,a.y,a.z,linear.x,linear.y,linear.z].every(Number.isFinite)){
+      const g={x:a.x-linear.x,y:a.y-linear.y,z:a.z-linear.z};
+      const n=Math.hypot(g.x,g.y,g.z);
+      if(n>=3&&n<=20){sampleAcceleration("motion",g);return;}
     }
-    if(!sample){sensorSource="none";return {x:0,y:1};}
-    sensorSource=source;
-    const g=screenGravity(sample.x,sample.y,screenAngle());
+    sampleAcceleration("motion",a);
+  }
+  function chooseGravity(now=performance.now()){
+    // A dedicated gravity estimate or a streaming accelerometer wins over
+    // a frozen orientation event. Orientation remains the Firefox fallback.
+    for(const source of ["gravity","accelerometer"]){
+      if(samples[source]&&now-samples[source].at<1800)return {source,sample:samples[source]};
+    }
+    const o=samples.orientation,m=samples.motion;
+    if(o&&now-o.at<1800)return {source:"orientation",sample:o};
+    if(m&&now-m.at<1800)return {source:"motion",sample:m};
+    // Do not reset gravity just because an event-driven device is still.
+    const latest=Object.entries(samples).sort((a,b)=>b[1].at-a[1].at)[0];
+    return latest?{source:latest[0],sample:latest[1]}:null;
+  }
+  function getGravity(){
+    const selected=chooseGravity();
+    if(!selected){sensorSource="none";return {x:0,y:1};}
+    sensorSource=selected.source;
+    const g=screenGravity(selected.sample.x,selected.sample.y,screenAngle());
     return snowDirection(g.x,g.y);
   }
-  function startGravitySensor(){
-    if(gravitySensor||typeof window.GravitySensor!=="function")return;
+  function startSensor(name,source){
+    if(disposed||permissionStates.accelerometer==="denied"||sensors.has(source)||typeof window[name]!=="function")return;
+    let sensor;
     try{
-      const sensor=new window.GravitySensor({frequency:25,referenceFrame:"device"});
-      gravitySensor=sensor;
-      sensor.addEventListener("reading",()=>sampleAcceleration("gravity",sensor),options);
-      sensor.addEventListener("error",()=>{gravitySensor=null;gravitySample=null;try{sensor.stop();}catch{}},options);
+      sensor=new window[name]({frequency:30,referenceFrame:"device"});
+      sensors.set(source,sensor);
+      sensor.addEventListener("reading",()=>sampleAcceleration(source,sensor),options);
+      sensor.addEventListener("error",event=>{
+        sensorErrors[source]=event.error?.name||"SensorError";
+        sensors.delete(source);
+        delete samples[source];
+        try{sensor.stop();}catch{}
+      },options);
       sensor.start();
-    }catch{gravitySensor=null;}
+      delete sensorErrors[source];
+    }catch(error){
+      sensors.delete(source);
+      sensorErrors[source]=error?.name||"SensorError";
+    }
   }
-  function initSensors(){
-    if(!mobile){sensorStatus="no touch device";return;}
-    if(!window.isSecureContext){sensorStatus="HTTPS required";return;}
-    // Legacy events work in Firefox and Chromium; no Generic Sensor API
-    // dependency on Firefox. Attach immediately even during the intro.
+  function startGenericSensors(){
+    startSensor("GravitySensor","gravity");
+    startSensor("Accelerometer","accelerometer");
+  }
+  function attachLegacy(){
+    window.removeEventListener("deviceorientation",sampleOrientation);
+    window.removeEventListener("deviceorientationabsolute",sampleOrientation);
+    window.removeEventListener("devicemotion",sampleMotion);
     window.addEventListener("deviceorientation",sampleOrientation,options);
     window.addEventListener("deviceorientationabsolute",sampleOrientation,options);
-    window.addEventListener("devicemotion",event=>{
-      const a=event.accelerationIncludingGravity,linear=event.acceleration;
-      if(a&&linear&&[a.x,a.y,a.z,linear.x,linear.y,linear.z].every(Number.isFinite)){
-        sampleAcceleration("motion",{x:a.x-linear.x,y:a.y-linear.y,z:a.z-linear.z});
-      }else sampleAcceleration("motion",a);
-    },options);
-    startGravitySensor();
-    const permissionAPIs=[window.DeviceOrientationEvent,window.DeviceMotionEvent]
-      .filter(api=>typeof api?.requestPermission==="function");
-    if(!permissionAPIs.length)return;
-    // Request only from an explicit gesture, never on load or unrelated taps.
-    permissionButton=document.createElement("button");
-    permissionButton.type="button";
-    permissionButton.className="snow-permission";
-    permissionButton.textContent="Activar movimiento de nieve";
-    permissionButton.hidden=true;
-    document.body.appendChild(permissionButton);
-    const offerPermission=()=>{if(!sensorCount&&!permissionRequested)permissionButton.hidden=false;};
-    document.addEventListener("intro-dismissed",offerPermission,{once:true,signal:lifetime.signal});
-    if(!document.getElementById("intro-screen"))offerPermission();
-    permissionButton.addEventListener("click",async()=>{
-      if(permissionRequested)return;
-      permissionRequested=true;
-      permissionButton.disabled=true;
-      const results=await Promise.allSettled(permissionAPIs.map(api=>{
-        try{return api.requestPermission();}catch(error){return Promise.reject(error);}
-      }));
+    window.addEventListener("devicemotion",sampleMotion,options);
+  }
+  // Chromium 151+ exposes requestPermission too. An already granted
+  // permission can be queried without a gesture; a prompt cannot.
+  async function requestExistingPermission(){
+    if(disposed||permissionRequestRunning||chooseGravity())return;
+    const apis=[["orientation",window.DeviceOrientationEvent],["motion",window.DeviceMotionEvent]]
+      .filter(([,api])=>typeof api?.requestPermission==="function");
+    if(!apis.length)return;
+    if(["accelerometer","gyroscope"].some(name=>["denied","prompt"].includes(permissionStates[name])))return;
+    permissionRequestRunning=true;
+    const results=await Promise.allSettled(apis.map(async([name,api])=>{
+      try{
+        const result=await api.requestPermission();
+        permissionStates[name]=result;
+        return result;
+      }catch(error){
+        permissionStates[name]=error?.name||"unavailable";
+        return null;
+      }
+    }));
+    permissionRequestRunning=false;
+    if(disposed)return;
+    if(results.some(r=>r.status==="fulfilled"&&r.value==="granted")){
+      attachLegacy();
+      startGenericSensors();
+    }
+  }
+  async function inspectPermission(name){
+    try{
+      const permission=await navigator.permissions.query({name});
       if(disposed)return;
-      sensorStatus=sensorCount?"active":results.some(r=>r.status==="fulfilled"&&r.value==="granted")?"granted":"denied";
-      permissionButton.hidden=true;
-      startGravitySensor();
-    },options);
+      permissionStates[name]=permission.state;
+      permission.addEventListener("change",()=>{
+        permissionStates[name]=permission.state;
+        if(permission.state==="granted"){
+          attachLegacy();
+          startGenericSensors();
+          requestExistingPermission();
+        }else if(permission.state==="denied"){
+          // Revoking gyroscope access need not disable an independently
+          // granted accelerometer. The browser enforces each permission.
+          if(name==="accelerometer"){
+            for(const [source,sensor] of sensors){try{sensor.stop();}catch{} sensors.delete(source);}
+            for(const source of Object.keys(samples))delete samples[source];
+          }else{
+            delete samples.orientation;
+          }
+          sensorStatus="denied";
+        }
+      },options);
+    }catch{permissionStates[name]="unsupported";}
+  }
+  function initSensors(){
+    // Do not depend on touch detection: Chromium desktop-site mode can
+    // report a fine pointer despite running on a phone.
+    if(!window.isSecureContext){sensorStatus="HTTPS required";return;}
+    attachLegacy();
+    startGenericSensors();
+    Promise.all(["accelerometer","gyroscope"].map(inspectPermission)).then(requestExistingPermission);
   }
   function updateDebug(now){
     if(!debug||now-debugLast<250)return;
@@ -140,10 +202,12 @@
       debugPanel.className="snow-debug";
       document.body.appendChild(debugPanel);
     }
-    const status=sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
+    const status=sensorSource!=="none"?"active":Object.values(permissionStates).includes("denied")?"denied":sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
     debugPanel.textContent="Snow | "+status+" | "+sensorSource+
       "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
-      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+
+      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+
+      "\npermission: "+Object.entries(permissionStates).map(([key,value])=>key+":"+value).join(" ")+
+      "\nerrors: "+Object.entries(sensorErrors).map(([key,value])=>key+":"+value).join(" ")+
       "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
   }
 
@@ -303,8 +367,8 @@
     disposed=true;active=false;
     cancelAnimationFrame(frame);
     observer?.disconnect();
-    try{gravitySensor?.stop();}catch{}
-    permissionButton?.remove();
+    for(const sensor of sensors.values()){try{sensor.stop();}catch{}}
+    sensors.clear();
     debugPanel?.remove();
     lifetime.abort();
     root.classList.remove("snow-active");
@@ -316,7 +380,10 @@
     if(!active||disposed)return;
     cancelAnimationFrame(frame);
     resetClock();
-    if(!document.hidden)frame=requestAnimationFrame(render);
+    if(!document.hidden){
+      if(window.isSecureContext){attachLegacy();startGenericSensors();requestExistingPermission();}
+      frame=requestAnimationFrame(render);
+    }
   },options);
   window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
   reduced.addEventListener?.("change",()=>{if(reduced.matches)dispose();},{signal:lifetime.signal});
