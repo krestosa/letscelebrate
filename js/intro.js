@@ -93,6 +93,7 @@
     if (!overlay || reduced.matches) { dismiss(); return; }
     afterMotion(overlay, "opacity", token("--intro-exit", 420), dismiss);
     root.classList.add("intro-revealing");
+    document.dispatchEvent(new Event("intro-revealing"));
   }
 
   function writeSignature() {
@@ -106,9 +107,9 @@
     phase = "signature";
     // The first pass starts only after all four reels have settled.
     // Finish on the mask's last animation event, not the scaling transition.
-    const writeDuration = token("--signature-write-first", 1250)
-      + token("--signature-write-second", 800)
-      + token("--signature-write-finish", 160);
+    const writeDuration = token("--signature-write-first", 1450)
+      + token("--signature-write-second", 1000)
+      + token("--signature-write-finish", 90);
     afterMotion(lastStroke, "signature-finish", writeDuration, () => {
       if (phase !== "signature") return;
       holdTimer = setTimeout(reveal, token("--signature-hold", 180));

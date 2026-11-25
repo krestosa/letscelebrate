@@ -5,9 +5,9 @@
   --counter-size: min(37vw, 65svh, 620px);
   --year-hold: 160ms;
   --signature-lift: 420ms;
-  --signature-write-first: 1250ms;
-  --signature-write-second: 800ms;
-  --signature-write-finish: 160ms;
+  --signature-write-first: 1450ms;
+  --signature-write-second: 1000ms;
+  --signature-write-finish: 90ms;
   --signature-hold: 180ms;
   --intro-exit: 420ms;
 }
@@ -17,8 +17,7 @@
 .loading__progress { transition: opacity 280ms var(--ease-out); }
 .intro-signature .loading__progress { opacity: 0; }
 
-/* Exact SVG artwork, revealed by two diagonal writing passes.
-   The filled Illustrator outlines remain intact. */
+/* Individual medial trajectories clipped to the original vector contours. */
 .loading__signature {
   position: absolute;
   top: 50%; left: 50%;
@@ -42,17 +41,23 @@
   stroke-linejoin: round;
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
+  opacity: 0;
 }
-.intro-signature .signature-trace--first {
-  animation: signature-write-first var(--signature-write-first) linear both;
+.signature-ink { opacity: 0; }
+.intro-signature .signature-trace {
+  animation: signature-trace-write var(--trace-duration) linear var(--trace-delay) both;
 }
-.intro-signature .signature-trace--second {
-  animation: signature-write-second var(--signature-write-second) linear var(--signature-write-first) both;
+.intro-signature .signature-ink {
+  animation: signature-ink-settle 45ms linear var(--ink-delay) both;
 }
-@keyframes signature-write-first { to { stroke-dashoffset: 0; } }
-@keyframes signature-write-second { to { stroke-dashoffset: 0; } }
+@keyframes signature-trace-write {
+  0% { opacity: 0; stroke-dashoffset: 1; }
+  1% { opacity: 1; }
+  100% { opacity: 1; stroke-dashoffset: 0; }
+}
+@keyframes signature-ink-settle { to { opacity: 1; } }
 .intro-signature .signature-complete {
-  animation: signature-finish var(--signature-write-finish) linear calc(var(--signature-write-first) + var(--signature-write-second)) both;
+  animation: signature-finish var(--signature-write-finish) linear var(--signature-total, calc(var(--signature-write-first) + var(--signature-write-second))) both;
 }
 @keyframes signature-finish { to { opacity: 1; } }
 
@@ -64,9 +69,10 @@
   z-index: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 380ms var(--ease-out);
+  transition: opacity 520ms var(--ease-out);
 }
 .loading-spinning .loading__snow { opacity: 1; }
+.intro-revealing .loading__snow { opacity: .45; }
 .loading .year, .loading .loading__progress { position: relative; z-index: 1; }
 .loading .loading__progress { position: absolute; }
 .snow-motion-permission {
@@ -105,7 +111,7 @@
 @media (prefers-reduced-motion: reduce) {
   .loading, .year, .loading__progress, .loading__signature { transition: none; }
   .loading__snow, .snow-motion-permission { display: none; }
-  .signature-trace { animation: none !important; stroke-dashoffset: 0; }
+  .signature-trace, .signature-ink { animation: none !important; opacity: 1; stroke-dashoffset: 0; }
   .signature-complete { animation: none !important; opacity: 1; }
   .landing-enter .hero__video-stack, .landing-enter .masthead__brands,
   .landing-enter .title-kicker, .landing-enter .title-word, .landing-enter .hero-copy p {
