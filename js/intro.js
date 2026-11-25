@@ -88,6 +88,7 @@
       animateSections(page);
     }
     // The hero starts its own entrance while the overlay is dissolving.
+    warmVideo();
     root.classList.add("landing-enter");
     if (overlay) overlay.inert = true;
     if (!overlay || reduced.matches) { dismiss(); return; }
@@ -96,25 +97,37 @@
     document.dispatchEvent(new Event("intro-revealing"));
   }
 
+  function warmVideo() {
+    if(reduced.matches)return;
+    const video=document.querySelector(".hero__video");
+    if(video&&video.paused)video.play().catch(()=>{});
+  }
+
   function writeSignature() {
-    if (phase !== "counter-hold") return;
-    const signature = document.getElementById("intro-signature");
-    const lastStroke = signature?.querySelector(".signature-complete");
-    if (reduced.matches || !lastStroke) {
-      reveal();
-      return;
+    if(phase!=="counter-hold")return;
+    const signature=document.getElementById("intro-signature");
+    if(reduced.matches||!signature){reveal();return;}
+    phase="signature";
+    const writeDuration=token("--signature-write-first",1450)+token("--signature-write-second",1000);
+    let done=false, timer;
+    function cleanup(){
+      clearTimeout(timer);
+      document.removeEventListener("signature-written",completed);
     }
-    phase = "signature";
-    // The first pass starts only after all four reels have settled.
-    // Finish on the mask's last animation event, not the scaling transition.
-    const writeDuration = token("--signature-write-first", 1450)
-      + token("--signature-write-second", 1000)
-      + token("--signature-write-finish", 90);
-    afterMotion(lastStroke, "signature-finish", writeDuration, () => {
-      if (phase !== "signature") return;
-      holdTimer = setTimeout(reveal, token("--signature-hold", 180));
-    }, true);
+    function completed(){
+      if(done||phase!=="signature")return;
+      done=true;cleanup();cancelTransition=()=>{};
+      const art=document.getElementById("signature-art");
+      if(art?.complete&&art.naturalWidth)signature.classList.add("signature-done");
+      warmVideo();
+      holdTimer=setTimeout(reveal,token("--signature-hold",180)+token("--signature-write-finish",90));
+    }
+    cancelTransition();
+    cancelTransition=()=>{done=true;cleanup();};
+    document.addEventListener("signature-written",completed,{once:true});
+    timer=setTimeout(completed,writeDuration+350);
     root.classList.add("intro-signature");
+    document.dispatchEvent(new Event("intro-signature-start"));
   }
 
   function counterComplete() {

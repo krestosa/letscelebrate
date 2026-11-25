@@ -8,6 +8,9 @@
   if (wheels.length !== 4 || !label || !progress || !fill || !canvas) return;
 
   const root = document.documentElement;
+  const mobile = matchMedia("(pointer: coarse)").matches || Math.min(innerWidth, innerHeight) <= 600;
+  let pixelRatioCap = mobile ? 1.25 : 2;
+  let lastRender = -Infinity, slowFrames = 0, loweredResolution = false;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const tokens=getComputedStyle(root);
   const entrance={
@@ -56,7 +59,7 @@
   }
 
   function webGLRenderer(atlas) {
-    const gl = canvas.getContext("webgl", {alpha:true, antialias:true, premultipliedAlpha:true, preserveDrawingBuffer:true});
+    const gl = canvas.getContext("webgl", {alpha:true, antialias:!mobile, depth:false, stencil:false, premultipliedAlpha:true, preserveDrawingBuffer:false});
     if (!gl) return null;
     const vertex = `
       attribute vec2 aSurface;
@@ -72,6 +75,7 @@
         gl_Position=vec4(center*w+offset,0.0,w);
         vAngle=angle;vU=aSurface.x+0.5;
       }`;
+    const blurSamples = mobile ? 3 : 7;
     const fragment = `
       precision highp float;
       uniform sampler2D uAtlas;
@@ -98,14 +102,15 @@
           c=glyph(uPhase);
         }else{
           c=vec4(0.0);
-          for(int i=0;i<7;i++){
-            float f=(float(i)-3.0)/3.0;
+          for(int i=0;i<${blurSamples};i++){
+            float f=(float(i)-${((mobile?3:7)-1)/2}.0)/${((mobile?3:7)-1)/2}.0;
             c+=glyph(uPhase+f*uBlur)*(1.0-0.65*abs(f));
           }
-          c/=4.4;
+          c/=${mobile ? "1.7" : "4.4"};
         }
         float edge=1.0-smoothstep(uLimit*0.70,uLimit,abs(vAngle));
-        float light=0.18+0.82*pow(max(0.0,cos(vAngle)),3.0);
+        float lit=max(0.0,cos(vAngle));
+        float light=0.18+0.82*lit*lit*lit;
         gl_FragColor=vec4(vec3(0.9686,0.9608,0.9412)*light,clamp(c.a*edge*uOpacity,0.0,1.0));
       }`;
     const compile=(kind,src)=>{
@@ -114,15 +119,18 @@
       return s;
     };
     const program=gl.createProgram();
-    gl.attachShader(program,compile(gl.VERTEX_SHADER,vertex));
-    gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));
+    const vs=compile(gl.VERTEX_SHADER,vertex), fs=compile(gl.FRAGMENT_SHADER,fragment);
+    gl.attachShader(program,vs);
+    gl.attachShader(program,fs);
     gl.linkProgram(program);
     if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
     gl.useProgram(program);
+    gl.deleteShader(vs); gl.deleteShader(fs);
     // 96 connected curved segments per reel; perspective-correct texture mapping.
     const vertices=[];
-    for(let i=0;i<=96;i++){
-      const a=-limit+2*limit*i/96;
+    const segments=mobile?48:96;
+    for(let i=0;i<=segments;i++){
+      const a=-limit+2*limit*i/segments;
       vertices.push(-.5,a,.5,a);
     }
     const buffer=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buffer);
@@ -139,6 +147,8 @@
     gl.uniform1f(u.uCamera,camera);gl.uniform1f(u.uStep,step);gl.uniform1f(u.uLimit,limit);
     gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA,gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
     return {
+      gpu:true,
+      dispose(){gl.deleteTexture(texture);gl.deleteBuffer(buffer);gl.deleteProgram(program);},
       resize(w,h,dpr){gl.viewport(0,0,Math.round(w*dpr),Math.round(h*dpr));gl.uniform2f(u.uSize,w,h);},
       clear(){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);},
       draw(d,pos,speed,opacity=1,offset=0,isolation=0){
@@ -160,30 +170,37 @@
       const z=radius*(Math.cos(a)-1), scale=camera/(camera-z);
       return {y:radius*Math.sin(a)*scale, scale};
     };
+    const n=mobile?48:128;
+    const mesh=Array.from({length:n},(_,i)=>{
+      const a=-limit+2*limit*i/n,b=-limit+2*limit*(i+1)/n,mid=(a+b)/2;
+      const p=project(a),q=project(b),m=project(mid);
+      const edge=clamp((limit-Math.abs(mid))/(limit*.2));
+      const shade=.18+.82*Math.pow(Math.cos(mid),3);
+      return {y:p.y,dy:q.y-p.y,scale:m.scale,mid,alpha:edge*shade,sh:(b-a)/step*cell};
+    });
+    const single=[[0,1]];
     return {
+      gpu:false,
       resize(width,height,dpr){w=width;h=height;ctx.setTransform(dpr,0,0,dpr,0,0);},
       clear(){ctx.clearRect(0,0,w,h);},
       draw(d,pos,speed,opacity=1,offset=0,isolation=0){
-        const n=192, blur=Math.min(.14,speed*7);
-        const samples=blur>.015?[[-blur,.25],[0,.5],[blur,.25]]:[[0,1]];
-        for(let i=0;i<n;i++){
-          const a=-limit+2*limit*i/n,b=-limit+2*limit*(i+1)/n,mid=(a+b)/2;
-          const p=project(a),q=project(b),m=project(mid);
-          const dy=d.y+(p.y+offset)*d.em, dh=Math.max(.25,(q.y-p.y)*d.em+.25);
-          const dx=d.x-d.em*m.scale/2,dw=d.em*m.scale;
-          const edge=Math.min(1,Math.max(0,(limit-Math.abs(mid))/(limit*.2)));
-          const shade=.18+.82*Math.pow(Math.cos(mid),3.0);
+        const blur=Math.min(.14,speed*7);
+        const samples=!mobile&&blur>.015?[[-blur,.25],[0,.5],[blur,.25]]:single;
+        for(const m of mesh){
+          const mid=m.mid;
+          const dy=d.y+(m.y+offset)*d.em,dh=Math.max(.25,m.dy*d.em+.25);
+          const dw=d.em*m.scale,dx=d.x-dw/2;
           for(const [offset,weight] of samples){
             const index=pos+offset+mid/step+.5;
             const digit=((Math.floor(index)%10)+10)%10;
             const fraction=index-Math.floor(index);
             const sy=Math.min(cell-1,Math.max(0,fraction*cell));
-            const sh=Math.min(cell-sy,Math.max(1,(b-a)/step*cell));
+            const sh=Math.min(cell-sy,Math.max(1,m.sh));
             const distanceToCenter=Math.abs(Math.floor(index)-pos);
             const f=clamp((distanceToCenter-.18)/(.85-.18));
             const focus=1-f*f*(3-2*f);
             const central=distanceToCenter<.5?1:0;
-            ctx.globalAlpha=shade*edge*weight*opacity*(.26+.74*focus)*(1-isolation+isolation*central);
+            ctx.globalAlpha=m.alpha*weight*opacity*(.26+.74*focus)*(1-isolation+isolation*central);
             ctx.drawImage(atlas,(digit%4)*cell,Math.floor(digit/4)*cell+sy,cell,sh,dx,dy,dw,dh);
           }
         }
@@ -193,7 +210,7 @@
   }
 
   function resize(){
-    const box=canvas.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,2);
+    const box=canvas.getBoundingClientRect(), dpr=Math.min(devicePixelRatio||1,pixelRatioCap);
     if(!box.width||!box.height)return;
     canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);
     renderer?.resize(box.width,box.height,dpr);
@@ -221,7 +238,18 @@
     if(finished)return;
     finished=true;cancelAnimationFrame(frame);
     drums.forEach(settle);
-    if(renderer && drawingStarted){renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}
+    if(renderer && drawingStarted){
+      renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));
+      if(renderer.gpu){
+        // Copy the final composited frame while the GL drawing buffer is valid.
+        // Release GPU resources before starting the signature.
+        const still=canvas.cloneNode(false);
+        still.width=canvas.width;still.height=canvas.height;
+        const ctx=still.getContext("2d");
+        if(ctx){ctx.drawImage(canvas,0,0);canvas.replaceWith(still);canvas=still;}
+        renderer.dispose();renderer=null;
+      }
+    }
     // Persist the exact end value before releasing the compositor animation.
     if(progressMotion){fill.style.transform="scaleX(1)";progressMotion.cancel();progressMotion=null;}
     updateProgress(totalDuration);label.textContent="2026";
@@ -254,6 +282,13 @@
   }
   function render(now){
     if(finished)return;
+    const gap=now-lastRender;
+    if(mobile&&gap<14.5){frame=requestAnimationFrame(render);return;}
+    if(mobile&&spinStarted&&!loweredResolution&&Number.isFinite(gap)){
+      slowFrames=gap>24?slowFrames+1:Math.max(0,slowFrames-1);
+      if(slowFrames>=5){pixelRatioCap=1;loweredResolution=true;needsResize=true;}
+    }
+    lastRender=now;
     if(startedAt===null){
       startedAt=now;root.classList.add("loading-ready");
       // Predetermined linear progress belongs to the compositor; the
@@ -314,7 +349,8 @@
     cancelAnimationFrame(frame);
     progressMotion?.cancel();
     progressMotion=null;
-    renderer=null;
+    renderer?.dispose?.();renderer=null;
+    canvas.width=canvas.height=1;
     lifetime.abort();
   },{once:true});
   if(reduced.matches){finish();return;}
@@ -326,11 +362,11 @@
   },{once:true});
   reduced.addEventListener?.("change",()=>{
     if(!reduced.matches)return;
-    renderer?.clear();renderer=null;drawingStarted=false;
+    renderer?.clear();renderer?.dispose?.();renderer=null;drawingStarted=false;
     for(const d of drums)d.wheel.classList.remove("is-rendered","is-spinning");
     finish();
   },{signal:lifetime.signal});
-  addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}},{passive:true,signal:lifetime.signal});
+  addEventListener("resize",()=>{if(!finished)needsResize=true;},{passive:true,signal:lifetime.signal});
   function launch(){
     if(launched||finished)return;
     launched=true;

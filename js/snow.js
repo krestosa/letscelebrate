@@ -8,7 +8,7 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const lifetime = new AbortController();
   const options = { passive: true, signal: lifetime.signal };
-  const mobile = matchMedia("(pointer: coarse)").matches;
+  const mobile = matchMedia("(pointer: coarse)").matches || Math.min(innerWidth,innerHeight)<=600;
   const sensor = window.DeviceOrientationEvent;
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   const smooth = v => { const t = clamp(v, 0, 1); return t*t*(3-2*t); };
@@ -16,6 +16,8 @@
   let w = 0, h = 0, active = false, disposed = false, frame = 0, last = 0, time = 0;
   let target = 0, wind = 0, previousSensor = -Infinity, particles = [], sensorListening = false;
   let retiring = false, fieldOpacity = 1;
+  let lastTick = 0, frameDebt = 0, step = mobile ? 1000/30 : 1000/60;
+  const dragFactors = [0,0,0];
 
   function onOrientation(event) {
     if (!Number.isFinite(event.gamma) || !Number.isFinite(event.beta)) return;
@@ -93,11 +95,11 @@
     if (!bounds.width || !bounds.height) return;
     const oldW = w, oldH = h;
     w = bounds.width; h = bounds.height;
-    const dpr = Math.min(devicePixelRatio || 1, mobile ? 1.25 : 1.5);
+    const dpr = Math.min(devicePixelRatio || 1, mobile ? 0.9 : 1.5);
     canvas.width = Math.round(w*dpr);
     canvas.height = Math.round(h*dpr);
     ctx.setTransform(canvas.width/w,0,0,canvas.height/h,0,0);
-    const count = Math.round(clamp(w*h/6500, 48, mobile?100:180));
+    const count = Math.round(mobile ? clamp(w*h/7200,32,72) : clamp(w*h/6500,48,180));
     if (oldW && oldH) for (const p of particles) {
       p.x *= w/oldW; p.y *= h/oldH;
     }
@@ -118,8 +120,15 @@
 
   function render(now) {
     if (!active || disposed) return;
-    const dt = clamp((now-(last||now))/1000,0,.04);
-    last=now; time+=dt;
+    const gap=now-(lastTick||now);lastTick=now;
+    if(!mobile){
+      frameDebt=gap>24?Math.min(12,frameDebt+1):Math.max(0,frameDebt-.25);
+      step=frameDebt>=6?1000/30:1000/60;
+    }
+    if(last&&now-last<step-1.5){frame=requestAnimationFrame(render);return;}
+    const dt=clamp((now-(last||now))/1000,0,.067);
+    last=now;time+=dt;
+    for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(2.4+layer*.5));
     // Orientation events may stop while the phone remains still; retain the
     // last valid gravity direction until a new reading replaces it.
     const targetWind = Number.isFinite(previousSensor) ? target : 0;
@@ -132,7 +141,7 @@
       p.phase+=dt*p.frequency;
       const desiredX = (wind+air)*(.42+p.layer*.30)+Math.sin(p.phase)*p.sway;
       const desiredY = p.speed*(1+.08*Math.sin(p.phase*.7));
-      const drag=1-Math.exp(-dt*(2.4+p.layer*.5));
+      const drag=dragFactors[p.layer];
       p.vx+=(desiredX-p.vx)*drag;
       p.vy+=(desiredY-p.vy)*drag;
       p.x+=p.vx*dt; p.y+=p.vy*dt;
@@ -142,7 +151,7 @@
       const birth=smooth(p.age/p.fade);
       if (birth<=0) continue;
       const dx=(p.x-w*.5)/(w*.32),dy=(p.y-h*.5)/(h*.23);
-      const center=.38+.62*smooth(Math.hypot(dx,dy));
+      const center=.38+.62*smooth(dx*dx+dy*dy);
       const alpha=p.opacity*birth*center*fieldOpacity;
       if(alpha<.01)continue;
       ctx.globalAlpha=alpha;
@@ -168,7 +177,7 @@
     if(disposed||active||reduced.matches)return;
     resize();
     if(!w||!h)return;
-    active=true; last=0; time=0;
+    active=true;last=0;lastTick=0;time=0;
     root.classList.add("loading-spinning");
     frame=requestAnimationFrame(render);
   }
@@ -184,6 +193,11 @@
   document.addEventListener("loading-spin-start",start,{once:true,signal:lifetime.signal});
   document.addEventListener("intro-revealing",()=>{retiring=true;},{once:true,signal:lifetime.signal});
   document.addEventListener("intro-dismissed",dispose,{once:true,signal:lifetime.signal});
-  window.addEventListener("resize",()=>{if(active)resize();},options);
+  let resizePending=false;
+  window.addEventListener("resize",()=>{
+    if(!active||resizePending)return;
+    resizePending=true;
+    requestAnimationFrame(()=>{resizePending=false;if(active)resize();});
+  },options);
   reduced.addEventListener?.("change",()=>{if(reduced.matches)dispose();},{signal:lifetime.signal});
 })();

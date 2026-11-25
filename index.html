@@ -34,14 +34,8 @@
       </span>
     </div>
     <div class="loading__signature" id="intro-signature" aria-hidden="true">
-      <svg viewBox="0 0 2316 804" width="2316" height="804" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <mask id="signature-writing-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="2316" height="804">
-            <rect class="signature-complete" x="0" y="0" width="2316" height="804" fill="white" opacity="0"/>
-          </mask>
-        </defs>
-        <image href="assets/firma.svg" width="2316" height="804" mask="url(#signature-writing-mask)"/>
-      </svg>
+      <canvas id="signature-canvas" class="signature-canvas" width="1" height="1" aria-hidden="true"></canvas>
+      <img id="signature-art" class="signature-art" src="assets/firma.svg" width="2316" height="804" alt="" decoding="async">
     </div>
     <div class="loading__progress" id="loading-progress" role="progressbar" aria-label="Progreso de la apertura" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <span class="loading__progress-fill" id="loading-progress-fill"></span>
@@ -51,7 +45,7 @@
   <main class="page" id="landing-page">
     <section class="hero" aria-labelledby="offer-title">
       <div class="hero__video-stack" aria-hidden="true">
-        <video class="hero__video is-active" autoplay muted loop playsinline preload="metadata" disablepictureinpicture disableremoteplayback>
+        <video class="hero__video is-active" muted loop playsinline preload="metadata" disablepictureinpicture disableremoteplayback>
           <source src="assets/hero-loop.webm" type="video/webm">
         </video>
       </div>
