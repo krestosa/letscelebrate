@@ -104,9 +104,9 @@
 
   // A short, intentional reading interval, counted only while the document
   // is visible. This is not a transition delay between unfinished animations.
-  function readSignature() {
-    phase = "reading";
-    let remaining = token("--signature-reading-time", 1000);
+  function holdVisible(nextPhase, duration, next) {
+    phase = nextPhase;
+    let remaining = duration;
     let started = null, timer;
     function pause() {
       clearTimeout(timer);
@@ -121,11 +121,11 @@
     }
     function sync() {
       pause();
-      if (document.hidden || phase !== "reading") return;
+      if (document.hidden || phase !== nextPhase) return;
       if (remaining <= 0) {
         cleanup();
         cancelTransition = () => {};
-        reveal();
+        next();
         return;
       }
       started = performance.now();
@@ -137,7 +137,7 @@
   }
 
   function writeSignature() {
-    if(phase!=="counter")return;
+    if(phase!=="year-hold")return;
     const signature=document.getElementById("intro-signature");
     if(reduced.matches||!signature){reveal();return;}
     phase="signature";
@@ -153,7 +153,7 @@
       const art=document.getElementById("signature-art");
       if(art?.complete&&art.naturalWidth)signature.classList.add("signature-done");
       // Keep the entire signature visible before starting the landing crossfade.
-      readSignature();
+      holdVisible("reading", token("--signature-reading-time", 1000), reveal);
     }
     cancelTransition();
     cancelTransition=()=>{done=true;cleanup();};
@@ -167,9 +167,8 @@
     if (phase !== "counter") return;
     clearTimeout(watchdog);
     if (reduced.matches) { reveal(); return; }
-    // The final 2026 is already settled. Start its exit and the signature
-    // together; both share the same visual handoff, not a separate pause.
-    writeSignature();
+    // Let the finished year remain legible before the overlapping handoff.
+    holdVisible("year-hold", token("--year-reading-time", 450), writeSignature);
   }
 
   document.addEventListener("DOMContentLoaded", () => {

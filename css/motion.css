@@ -3,6 +3,7 @@
 /* Shared timeline: cylinder -> signature -> landing. */
 :root {
   --counter-size: min(37vw, 65svh, 620px);
+  --year-reading-time: 450ms;
   --signature-handoff: 180ms;
   --signature-write-first: 1450ms;
   --signature-write-second: 1000ms;
