@@ -3,7 +3,7 @@
   const root = document.documentElement;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   let phase = "counter";
-  let holdTimer, watchdog, cancelTransition = () => {};
+  let watchdog, cancelTransition = () => {};
   let sectionsObserver;
   root.classList.add("intro-active");
 
@@ -65,7 +65,6 @@
   function dismiss() {
     if (phase === "done") return;
     phase = "done";
-    clearTimeout(holdTimer);
     clearTimeout(watchdog);
     cancelTransition();
     const page = document.getElementById("landing-page");
@@ -78,7 +77,6 @@
   function reveal() {
     if (phase === "reveal" || phase === "done") return;
     phase = "reveal";
-    clearTimeout(holdTimer);
     clearTimeout(watchdog);
     cancelTransition();
     const overlay = document.getElementById("intro-screen");
@@ -87,7 +85,8 @@
       page.inert = false;
       animateSections(page);
     }
-    // The hero starts its own entrance while the overlay is dissolving.
+    // The hero is revealed by the same overlay crossfade; do not fade the
+    // video in separately or wait for a second entrance.
     warmVideo();
     root.classList.add("landing-enter");
     if (overlay) overlay.inert = true;
@@ -104,7 +103,7 @@
   }
 
   function writeSignature() {
-    if(phase!=="counter-hold")return;
+    if(phase!=="counter")return;
     const signature=document.getElementById("intro-signature");
     if(reduced.matches||!signature){reveal();return;}
     phase="signature";
@@ -119,8 +118,8 @@
       done=true;cleanup();cancelTransition=()=>{};
       const art=document.getElementById("signature-art");
       if(art?.complete&&art.naturalWidth)signature.classList.add("signature-done");
-      warmVideo();
-      holdTimer=setTimeout(reveal,token("--signature-hold",180)+token("--signature-write-finish",90));
+      // No idle hold: the completed artwork stays visible during the crossfade.
+      reveal();
     }
     cancelTransition();
     cancelTransition=()=>{done=true;cleanup();};
@@ -134,8 +133,9 @@
     if (phase !== "counter") return;
     clearTimeout(watchdog);
     if (reduced.matches) { reveal(); return; }
-    phase = "counter-hold";
-    holdTimer = setTimeout(writeSignature, token("--year-hold", 160));
+    // The final 2026 is already settled. Start its exit and the signature
+    // together; both share the same visual handoff, not a separate pause.
+    writeSignature();
   }
 
   document.addEventListener("DOMContentLoaded", () => {

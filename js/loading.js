@@ -14,11 +14,12 @@
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
   const tokens=getComputedStyle(root);
   const entrance={
-    delay:parseFloat(tokens.getPropertyValue("--intro-delay"))||100,
-    duration:parseFloat(tokens.getPropertyValue("--digit-duration"))||420,
+    delay:Math.max(0,parseFloat(tokens.getPropertyValue("--intro-delay"))||0),
+    duration:parseFloat(tokens.getPropertyValue("--digit-duration"))||340,
     offsets:wheels.map(w=>parseFloat(w.style.getPropertyValue("--digit-offset"))||0)
   };
-  const initialHold=entrance.delay+Math.max(...entrance.offsets)+entrance.duration+90;
+  // The last digit lands directly into the spin, with no stationary hold.
+  const initialHold=entrance.delay+Math.max(...entrance.offsets)+entrance.duration;
   const durations=[1320,1760,2200,2640];
   const totalDuration=initialHold+durations[3];
   const acceleration=140, braking=920;
@@ -387,6 +388,12 @@
     }catch{renderer=null;}
     frame=requestAnimationFrame(render);
   }
-  setTimeout(launch,1200);
-  if(document.fonts?.ready)document.fonts.ready.then(launch,launch);else launch();
+  // Wait only for the local display font, not the unrelated remote UI font.
+  const fallback=setTimeout(launch,1200);
+  if(document.fonts?.load){
+    document.fonts.load("900 32px Gazzetta","0123456789").then(
+      ()=>{clearTimeout(fallback);launch();},
+      ()=>{clearTimeout(fallback);launch();}
+    );
+  }else{clearTimeout(fallback);launch();}
 })();
