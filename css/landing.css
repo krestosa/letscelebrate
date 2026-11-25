@@ -423,10 +423,19 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation p:not(.feedback){margin:16px 0;color:#fff;font-size:15px;line-height:1.4}
 .confirmation p.confirmation__description{margin:0 0 20px;line-height:1.45;color:rgba(255,255,255,.88)}
 .confirmation p.confirmation__demo{margin:12px 0 0;color:rgba(255,255,255,.65);font-size:12px}
-.code-box{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;gap:8px;margin:0}
-.code-box input{width:100%;min-width:0;min-height:52px;padding:8px;border:1px solid var(--accent);border-radius:6px;background:#090c13;color:var(--accent);font-family:ui-monospace,Consolas,monospace;font-size:clamp(13px,3.2vw,19px);font-weight:700;text-align:center}
+.code-box{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin:0}
+.code-box__button,.code-box input{width:100%;min-width:0;min-height:56px;padding:12px;border:1px solid var(--accent);border-radius:6px;background:#090c13;color:var(--accent);font-family:ui-monospace,Consolas,monospace;font-size:clamp(14px,3.8vw,22px);font-weight:700;text-align:center}
+.code-box__button{display:grid;grid-template-columns:18px minmax(0,1fr) 18px;align-items:center;gap:8px;cursor:pointer;transition:transform 150ms var(--ease-out)}
+.code-box__button::before{content:""}
+.code-box__button span{overflow-wrap:anywhere}
+.code-box__button:active{transform:scale(.975)}
+@media(hover:hover) and (pointer:fine){.code-box__button:hover{background:rgba(var(--accent-rgb),.08)}}
+.confirmation__actions{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.5fr);gap:10px;margin-top:12px;align-items:stretch}
+.confirmation__actions .button{min-width:0;padding:12px 8px;font-size:clamp(12px,2.9vw,14px);line-height:1.2;letter-spacing:-.02em}
+.confirmation .confirmation__actions .button+.button{margin-top:0}
+.confirmation__actions .button--secondary{background:transparent}
+@media(prefers-reduced-motion:reduce){.code-box__button{transition:none}}
 .confirmation .button{min-height:52px}
-.code-box .button{width:auto;padding:12px 18px;font-size:14px;letter-spacing:-.02em;text-transform:none}
 .confirmation .feedback{margin:10px 0 0}
 .confirmation p.confirmation__instruction{margin:20px 0 12px;color:rgba(255,255,255,.8);font-size:13px}
 .confirmation .button+.button{margin-top:12px}

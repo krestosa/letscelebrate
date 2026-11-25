@@ -8,11 +8,12 @@
   const submit = document.getElementById("claim-button");
   const feedback = document.getElementById("form-feedback");
   const confirmation = document.getElementById("confirmation");
-  const codeField = document.getElementById("voucher-code");
+  const codeButton = document.getElementById("voucher-code");
+  const codeText = document.getElementById("voucher-code-text");
+  const codeField = document.getElementById("voucher-code-fallback");
   const copyButton = document.getElementById("copy-code");
   const copyFeedback = document.getElementById("copy-feedback");
   const demoLabel = document.getElementById("confirmation-demo");
-  const redeem = document.getElementById("redeem-code");
   const redeemInstruction = document.getElementById("redeem-instruction");
   const closeConfirmation = document.getElementById("close-confirmation");
   const generated = document.getElementById("claim-generated");
@@ -39,7 +40,6 @@
   let closeTimer = 0, closing = false, drag = null;
 
   demoLabel.hidden = !demo;
-  redeem.hidden = demo;
   if (demo) redeemInstruction.textContent = "Cuando la promoción esté habilitada, ingresá tu código en “Código promocional” al finalizar la compra online.";
   if (demo) {
     form.autocomplete = "off";
@@ -63,6 +63,9 @@
   function openConfirmation() {
     if(!issuedCode)return;
     codeField.value=issuedCode;
+    codeField.hidden=true;
+    codeText.textContent=issuedCode;
+    codeButton.setAttribute("aria-label","Copiar código "+issuedCode);
     showFeedback(copyFeedback,"");
     clearClosing();
     clearDrag();
@@ -254,23 +257,33 @@
     }
   });
 
-  copyButton.addEventListener("click", async () => {
-    if (!codeField.value) return;
-    let copied = false;
+  async function copyIssuedCode(event) {
+    if(!issuedCode)return;
+    const trigger=event.currentTarget;
+    let copied=false;
     try {
-      if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(codeField.value);
-        copied = true;
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(issuedCode);
+        copied=true;
       }
-    } catch { /* Try selection-based clipboard support. */ }
-    if (!copied) {
-      codeField.focus();
+    }catch{ /* Use selection-based clipboard support. */ }
+    if(!copied){
+      codeField.hidden=false;
+      codeField.value=issuedCode;
+      codeField.focus({preventScroll:true});
       codeField.select();
-      codeField.setSelectionRange(0, codeField.value.length);
-      try { copied = document.execCommand("copy"); } catch { /* manual copy */ }
+      codeField.setSelectionRange(0,issuedCode.length);
+      try{copied=document.execCommand("copy");}catch{}
+      if(copied){
+        codeField.hidden=true;
+        trigger.focus({preventScroll:true});
+      }
     }
-    showFeedback(copyFeedback, copied ? "Código copiado." : "Seleccioná y copiá el código.", copied ? "success" : "error");
-  });
+    if(copied)codeField.hidden=true;
+    showFeedback(copyFeedback,copied?"Código copiado.":"Seleccioná y copiá el código.",copied?"success":"error");
+  }
+  codeButton.addEventListener("click",copyIssuedCode);
+  copyButton.addEventListener("click",copyIssuedCode);
 
   submit.disabled = false;
 })();
