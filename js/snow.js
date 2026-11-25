@@ -16,6 +16,136 @@
   let last=0, time=0, lastTick=0, nextPaint=0, frameDebt=0, step=1000/60;
   const particles=[];
   const dragFactors=[0,0,0];
+  const radians=Math.PI/180;
+  // Sensor axes are relative to the device's natural orientation, not CSS.
+  function orientationGravity(beta,gamma){
+    return {x:Math.cos(beta*radians)*Math.sin(gamma*radians),y:Math.sin(beta*radians)};
+  }
+  function screenGravity(x,y,angle){
+    const a=angle*radians,c=Math.cos(a),s=Math.sin(a);
+    return {x:x*c+y*s,y:-x*s+y*c};
+  }
+  function snowDirection(x,y){
+    const magnitude=Math.hypot(x,y);
+    // When the phone lies flat, retain normal snowfall. A slight tilt
+    // produces visible diagonal fall instead of amplifying sensor noise.
+    const weight=smooth((magnitude-.04)/.34);
+    const gx=weight*x/Math.max(magnitude,.001)*1.25;
+    const gy=1-weight+weight*y/Math.max(magnitude,.001);
+    const length=Math.hypot(gx,gy)||1;
+    return {x:gx/length,y:gy/length};
+  }
+  let gravityX=0,gravityY=1;
+  let orientationSample=null,motionSample=null,gravitySample=null;
+  let sensorSource="none", sensorCount=0, sensorStatus="waiting";
+  const sensorCounts={orientation:0,gravity:0,motion:0};
+  const sensorStart=performance.now();
+  let gravitySensor=null, permissionButton=null, permissionRequested=false;
+  let debugPanel=null, debugLast=0;
+  const debug=new URLSearchParams(location.search).get("snowDebug")==="1";
+  const screenAngle=()=>Number(screen.orientation?.angle??window.orientation??0)||0;
+  function noteSample(source,x,y,z){
+    if(!Number.isFinite(x)||!Number.isFinite(y))return;
+    const sample={x,y,z};
+    if(source==="orientation")orientationSample=sample;
+    else if(source==="gravity")gravitySample=sample;
+    else motionSample=sample;
+    sensorCount++;
+    sensorCounts[source]++;
+    sensorStatus="active";
+    if(permissionButton)permissionButton.hidden=true;
+  }
+  function sampleOrientation(event){
+    if(!Number.isFinite(event.beta)||!Number.isFinite(event.gamma))return;
+    const g=orientationGravity(event.beta,event.gamma);
+    noteSample("orientation",g.x,g.y,Math.cos(event.beta*radians)*Math.cos(event.gamma*radians));
+  }
+  function sampleAcceleration(source,a){
+    if(!a||!Number.isFinite(a.x)||!Number.isFinite(a.y)||!Number.isFinite(a.z))return;
+    const norm=Math.hypot(a.x,a.y,a.z);
+    if(norm<3||norm>20)return;
+    // Proper acceleration is opposite to gravity; CSS Y points down.
+    noteSample(source,-a.x/norm,a.y/norm,a.z/norm);
+  }
+  function getGravity(){
+    const alternative=gravitySample||motionSample;
+    let sample=orientationSample;
+    let source="orientation";
+    // An orientation implementation can emit flat/zero readings while
+    // accelerometer data is already valid. Prefer the working source then.
+    if(!sample||(Math.hypot(sample.x,sample.y)<.03&&alternative&&Math.hypot(alternative.x,alternative.y)>.13)){
+      sample=alternative;
+      source=gravitySample?"gravity":"motion";
+    }
+    if(!sample){sensorSource="none";return {x:0,y:1};}
+    sensorSource=source;
+    const g=screenGravity(sample.x,sample.y,screenAngle());
+    return snowDirection(g.x,g.y);
+  }
+  function startGravitySensor(){
+    if(gravitySensor||typeof window.GravitySensor!=="function")return;
+    try{
+      const sensor=new window.GravitySensor({frequency:25,referenceFrame:"device"});
+      gravitySensor=sensor;
+      sensor.addEventListener("reading",()=>sampleAcceleration("gravity",sensor),options);
+      sensor.addEventListener("error",()=>{gravitySensor=null;gravitySample=null;try{sensor.stop();}catch{}},options);
+      sensor.start();
+    }catch{gravitySensor=null;}
+  }
+  function initSensors(){
+    if(!mobile){sensorStatus="no touch device";return;}
+    if(!window.isSecureContext){sensorStatus="HTTPS required";return;}
+    // Legacy events work in Firefox and Chromium; no Generic Sensor API
+    // dependency on Firefox. Attach immediately even during the intro.
+    window.addEventListener("deviceorientation",sampleOrientation,options);
+    window.addEventListener("deviceorientationabsolute",sampleOrientation,options);
+    window.addEventListener("devicemotion",event=>{
+      const a=event.accelerationIncludingGravity,linear=event.acceleration;
+      if(a&&linear&&[a.x,a.y,a.z,linear.x,linear.y,linear.z].every(Number.isFinite)){
+        sampleAcceleration("motion",{x:a.x-linear.x,y:a.y-linear.y,z:a.z-linear.z});
+      }else sampleAcceleration("motion",a);
+    },options);
+    startGravitySensor();
+    const permissionAPIs=[window.DeviceOrientationEvent,window.DeviceMotionEvent]
+      .filter(api=>typeof api?.requestPermission==="function");
+    if(!permissionAPIs.length)return;
+    // Request only from an explicit gesture, never on load or unrelated taps.
+    permissionButton=document.createElement("button");
+    permissionButton.type="button";
+    permissionButton.className="snow-permission";
+    permissionButton.textContent="Activar movimiento de nieve";
+    permissionButton.hidden=true;
+    document.body.appendChild(permissionButton);
+    const offerPermission=()=>{if(!sensorCount&&!permissionRequested)permissionButton.hidden=false;};
+    document.addEventListener("intro-dismissed",offerPermission,{once:true,signal:lifetime.signal});
+    if(!document.getElementById("intro-screen"))offerPermission();
+    permissionButton.addEventListener("click",async()=>{
+      if(permissionRequested)return;
+      permissionRequested=true;
+      permissionButton.disabled=true;
+      const results=await Promise.allSettled(permissionAPIs.map(api=>{
+        try{return api.requestPermission();}catch(error){return Promise.reject(error);}
+      }));
+      if(disposed)return;
+      sensorStatus=sensorCount?"active":results.some(r=>r.status==="fulfilled"&&r.value==="granted")?"granted":"denied";
+      permissionButton.hidden=true;
+      startGravitySensor();
+    },options);
+  }
+  function updateDebug(now){
+    if(!debug||now-debugLast<250)return;
+    debugLast=now;
+    if(!debugPanel){
+      debugPanel=document.createElement("output");
+      debugPanel.className="snow-debug";
+      document.body.appendChild(debugPanel);
+    }
+    const status=sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
+    debugPanel.textContent="Snow | "+status+" | "+sensorSource+
+      "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
+      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+
+      "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
+  }
 
   // Paint the soft depth-of-field sprites once, not a blur on every frame.
   const sprites = [0,1,2].map(layer => {
@@ -54,7 +184,7 @@
       sway: (near?10:middle?6:3)+Math.random()*5,
       age: initial ? .45 + Math.random()*.45 : 0,
       fade: .45 + Math.random()*.45,
-      vx: 0
+      vx: gravityX*speed, vy: gravityY*speed
     };
   }
   function layerFor(i) {
@@ -88,6 +218,16 @@
   function recycle(p) {
     const next=particle(false,p.layer);
     next.fade=.18+Math.random()*.25;
+    const pad=next.radius*4+12;
+    // Inject from the upstream edge in proportion to incoming flux.
+    const horizontal=Math.abs(gravityX)*h,vertical=Math.abs(gravityY)*w;
+    if(Math.random()*(horizontal+vertical)<horizontal){
+      next.x=gravityX>0?-pad:w+pad;
+      next.y=Math.random()*h;
+    }else{
+      next.x=Math.random()*w;
+      next.y=gravityY>=0?-pad:h+pad;
+    }
     Object.assign(p,next);
   }
 
@@ -103,20 +243,28 @@
     const dt=clamp((now-(last||now))/1000,0,.067);
     last=now; time+=dt;
     for(let layer=0;layer<3;layer++)dragFactors[layer]=1-Math.exp(-dt*(6.2+layer*1.1));
+    const target=getGravity();
+    const gravityBlend=1-Math.exp(-dt*10);
+    gravityX+=(target.x-gravityX)*gravityBlend;
+    gravityY+=(target.y-gravityY)*gravityBlend;
     const air=Math.sin(time*.72)*3.2+Math.sin(time*.24+1.3)*2.1;
+    updateDebug(now);
     ctx.clearRect(0,0,w,h);
     for(const p of particles){
       p.age+=dt;
       p.phase+=dt*p.frequency;
       const sway=Math.sin(p.phase)*p.sway+air;
-      p.vx+=(sway-p.vx)*dragFactors[p.layer];
+      // Each flake steers gradually instead of rotating/teleporting the
+      // canvas. Different depth layers retain different inertia.
+      const targetX=gravityX*p.speed+sway*gravityY;
+      const targetY=gravityY*p.speed-sway*gravityX;
+      p.vx+=(targetX-p.vx)*dragFactors[p.layer];
+      p.vy+=(targetY-p.vy)*dragFactors[p.layer];
       p.x+=p.vx*dt;
-      p.y+=p.speed*dt;
-      const pad=p.radius*4;
-      // Recycle only at the bottom. Wrap sideways without resetting age.
-      if(p.y>h+pad)recycle(p);
-      else if(p.x<-pad)p.x=w+pad;
-      else if(p.x>w+pad)p.x=-pad;
+      p.y+=p.vy*dt;
+      const pad=p.radius*4+44;
+      if((p.x<-pad&&p.vx<0)||(p.x>w+pad&&p.vx>0)||
+         (p.y<-pad&&p.vy<0)||(p.y>h+pad&&p.vy>0))recycle(p);
       const alpha=p.opacity*smooth(p.age/p.fade);
       if(alpha<.01)continue;
       ctx.globalAlpha=alpha;
@@ -155,6 +303,9 @@
     disposed=true;active=false;
     cancelAnimationFrame(frame);
     observer?.disconnect();
+    try{gravitySensor?.stop();}catch{}
+    permissionButton?.remove();
+    debugPanel?.remove();
     lifetime.abort();
     root.classList.remove("snow-active");
     particles.length=0;
@@ -170,5 +321,6 @@
   window.addEventListener("pagehide",event=>{if(!event.persisted)dispose();},options);
   reduced.addEventListener?.("change",()=>{if(reduced.matches)dispose();},{signal:lifetime.signal});
   // A single field persists from the opening through the entire landing.
+  initSensors();
   start();
 })();
