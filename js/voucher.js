@@ -12,6 +12,10 @@
   const copyButton = document.getElementById("copy-code");
   const copyFeedback = document.getElementById("copy-feedback");
   const demoNotice = document.getElementById("demo-notice");
+  const demoLabel = document.getElementById("confirmation-demo");
+  const redeem = document.getElementById("redeem-code");
+  const demoRedeem = document.getElementById("demo-redeem");
+  const closeConfirmation = document.getElementById("close-confirmation");
 
   // Integration contract: same-origin POST, JSON { email, phone, acceptedTerms: true }.
   // Success: HTTP 200/201 { code: "issued-by-commerce-system" }.
@@ -20,13 +24,44 @@
   const endpoint = "/api/lets-celebrate/voucher";
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
-  const demo = location.protocol === "file:" ||
-    (["localhost", "127.0.0.1", "[::1]"].includes(location.hostname) &&
-      new URLSearchParams(location.search).get("demo") === "1");
-  const demoKey = "letscelebrate.demo.claims.v1";
+  // GitHub Pages is a static preview, not the commerce backend.
+  // Explicit preview hosts issue non-redeemable sample codes only.
+  const previewHost = location.hostname === "krestosa.github.io" &&
+    /^\/letscelebrate(?:\/|$)/.test(location.pathname);
+  const localPreview = location.protocol === "file:" ||
+    ["localhost","127.0.0.1","[::1]","192.168.1.33"].includes(location.hostname);
+  const demo = previewHost || localPreview;
   let busy = false;
 
   demoNotice.hidden = !demo;
+  demoLabel.hidden = !demo;
+  redeem.hidden = demo;
+  demoRedeem.hidden = !demo;
+  if (demo) {
+    form.autocomplete = "off";
+    email.autocomplete = "off";
+    phone.autocomplete = "off";
+  }
+
+  function openConfirmation(code) {
+    codeField.value = code;
+    showFeedback(copyFeedback, "");
+    confirmation.showModal();
+    document.documentElement.classList.add("voucher-modal-open");
+    document.getElementById("confirmation-title").focus();
+  }
+  closeConfirmation.addEventListener("click", () => confirmation.close());
+  confirmation.addEventListener("click", event => {
+    if (event.target === confirmation) {
+      const box = confirmation.getBoundingClientRect();
+      if (event.clientX < box.left || event.clientX > box.right ||
+          event.clientY < box.top || event.clientY > box.bottom) confirmation.close();
+    }
+  });
+  confirmation.addEventListener("close", () => {
+    document.documentElement.classList.remove("voucher-modal-open");
+    submit.focus({preventScroll:true});
+  });
 
   function showFeedback(element, message, kind = "error") {
     element.textContent = message;
@@ -55,25 +90,10 @@
     return /^[1-9]\d{9}$/.test(digits) ? "+549" + digits : null;
   }
 
-  async function digest(value) {
-    if (!globalThis.crypto?.subtle) throw new Error("Demo storage unavailable");
-    const bytes = new TextEncoder().encode("letscelebrate-demo:" + value);
-    const hash = await crypto.subtle.digest("SHA-256", bytes);
-    return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, "0")).join("");
-  }
-
-  async function claimDemo(data) {
-    const keys = await Promise.all([digest("email:" + data.email), digest("phone:" + data.phone)]);
-    const claim = () => {
-      const previous = JSON.parse(localStorage.getItem(demoKey) || "[]");
-      if (!Array.isArray(previous)) throw new Error("Invalid demo storage");
-      if (keys.some(key => previous.includes(key))) return { duplicate: true };
-      const bytes = crypto.getRandomValues(new Uint8Array(5));
-      const code = "DEMO-" + Array.from(bytes, b => b.toString(16).padStart(2, "0")).join("").toUpperCase();
-      localStorage.setItem(demoKey, JSON.stringify([...previous, ...keys]));
-      return { code };
-    };
-    return navigator.locks ? navigator.locks.request(demoKey, claim) : claim();
+  function claimDemo() {
+    // No identifier hashing, persistence, requests or commerce side effects.
+    const bytes = crypto.getRandomValues(new Uint8Array(5));
+    return { code: "DEMO-" + Array.from(bytes, b => b.toString(16).padStart(2,"0")).join("").toUpperCase() };
   }
 
   async function claimReal(data) {
@@ -89,6 +109,7 @@
         signal: controller.signal
       });
       if (response.status === 409) return { duplicate: true };
+      if (response.status === 404 || response.status === 405) throw new Error("voucher-service-unconfigured");
       if (!response.ok) throw new Error("Voucher request failed");
       const payload = await response.json();
       if (payload.status === "already_claimed") return { duplicate: true };
@@ -122,18 +143,16 @@
     if (!data.acceptedTerms) return;
     setBusy(true);
     try {
-      const result = await (demo ? claimDemo(data) : claimReal(data));
+      const result = demo ? claimDemo() : await claimReal(data);
       if (result.duplicate) {
         showFeedback(feedback, duplicateMessage);
         return;
       }
-      codeField.value = result.code;
       form.reset();
-      form.hidden = true;
-      confirmation.hidden = false;
-      document.getElementById("confirmation-title").focus();
-    } catch {
-      showFeedback(feedback, serviceMessage);
+      openConfirmation(result.code);
+    } catch (error) {
+      showFeedback(feedback, error?.message === "voucher-service-unconfigured"
+        ? "El servicio de códigos todavía no está configurado." : serviceMessage);
     } finally {
       setBusy(false);
     }

@@ -10,8 +10,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=hero-webp-11"></script>
-  <link rel="stylesheet" href="css/landing.css?v=columns-15">
-  <link rel="stylesheet" href="css/loading.css?v=release-9">
+  <link rel="stylesheet" href="css/landing.css?v=blue-modal-16">
+  <link rel="stylesheet" href="css/loading.css?v=blue-modal-16">
   <link rel="stylesheet" href="css/motion.css?v=hero-webp-11">
   <link rel="preload" href="assets/loading.jpg" as="image">
   <link rel="preload" href="assets/hero%20bg.webp" as="image">
@@ -20,7 +20,7 @@
   <script src="js/signature.js" defer></script>
   <script src="js/snow.js?v=sensors-14" defer></script>
   <script src="js/loading.js?v=release-9" defer></script>
-  <script src="js/voucher.js" defer></script>
+  <script src="js/voucher.js?v=blue-modal-16" defer></script>
 </head>
 <body>
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
@@ -64,6 +64,7 @@
         </div>
         <section class="claim-section" aria-label="Solicitá tu código">
           <div class="voucher">
+            <p id="demo-notice" class="demo-notice" hidden>Modo demostración: usá datos ficticios. No enviamos ni guardamos datos y los códigos no son canjeables.</p>
             <form id="voucher-form" action="" method="post">
               <div class="field">
                 <label for="email">Tu mail</label>
@@ -81,19 +82,6 @@
               <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
               <noscript>Activá JavaScript para solicitar tu código.</noscript>
             </form>
-            <section id="confirmation" class="confirmation" aria-labelledby="confirmation-title" hidden>
-              <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
-              <p>Este es tu código de $25.000:</p>
-              <div class="code-box">
-                <label for="voucher-code" class="sr-only">Tu código promocional</label>
-                <input id="voucher-code" readonly aria-label="Tu código promocional" spellcheck="false">
-              </div>
-              <p>Cargalo al finalizar la compra en “Código promocional”.</p>
-              <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
-              <a class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
-              <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
-            </section>
-            <p id="demo-notice" class="demo-notice" hidden>Vista de prueba local: usá datos ficticios. Los códigos DEMO no son válidos para comprar.</p>
           </div>
         </section>
       </div>
@@ -114,5 +102,25 @@
       Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
     </footer>
   </main>
+  <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-description">
+    <div class="confirmation__surface">
+      <button type="button" class="confirmation__close" id="close-confirmation" aria-label="Cerrar confirmación">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+      <p class="confirmation__eyebrow">LET’S CELEBRATE</p>
+      <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
+      <p id="confirmation-description">Este es tu código de $25.000:</p>
+      <p id="confirmation-demo" class="confirmation__demo" hidden>Código de demostración · No válido para compras</p>
+      <div class="code-box">
+        <label for="voucher-code" class="sr-only">Tu código promocional</label>
+        <input id="voucher-code" readonly aria-label="Tu código promocional" spellcheck="false">
+      </div>
+      <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
+      <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
+      <p class="confirmation__instruction">Cargalo al finalizar la compra en “Código promocional”.</p>
+      <a id="redeem-code" class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
+      <button type="button" id="demo-redeem" class="button button--primary" disabled hidden>Pedir mi Let’s Celebrate</button>
+    </div>
+  </dialog>
 </body>
 </html>
