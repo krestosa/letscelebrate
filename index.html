@@ -10,11 +10,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=hero-webp-11"></script>
-  <link rel="stylesheet" href="css/landing.css?v=light-12">
+  <link rel="stylesheet" href="css/landing.css?v=glass-13">
   <link rel="stylesheet" href="css/loading.css?v=release-9">
   <link rel="stylesheet" href="css/motion.css?v=hero-webp-11">
   <link rel="preload" href="assets/loading.jpg" as="image">
-  <link rel="preload" href="assets/hero_bg.jpg" as="image">
+  <link rel="preload" href="assets/hero%20bg.webp" as="image">
   <link rel="preload" href="assets/firma.svg" as="image">
   <link rel="preload" href="fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
   <script src="js/signature.js" defer></script>
@@ -43,7 +43,7 @@
   </section>
   <main class="page" id="landing-page">
     <section class="hero" aria-labelledby="offer-title">
-      <img class="hero__background" src="assets/hero_bg.jpg" alt="" aria-hidden="true" decoding="async" loading="eager">
+      <img class="hero__background" src="assets/hero%20bg.webp" alt="" aria-hidden="true" decoding="async" loading="eager">
       <div class="hero__black-filter" aria-hidden="true"></div>
       <div class="hero__gradient" aria-hidden="true"></div>
       <div class="hero__grain" aria-hidden="true"></div>
@@ -59,42 +59,40 @@
       <div class="hero-copy">
         <p>Dejá tu mail y tu celular y usá tu código en un combinado Let’s Celebrate o Superstar de 60 o 100 piezas para Navidad o Año Nuevo.</p>
       </div>
-    </section>
-    <section class="proposal claim-section" aria-label="Solicitá tu código">
-      <div class="proposal__shell">
-      <div class="voucher">
-        <form id="voucher-form" action="" method="post">
-          <div class="field">
-            <label for="email">Tu mail</label>
-            <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
-          </div>
-          <div class="field">
-            <label for="phone">Tu celular</label>
-            <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="11 2345 6789" required>
-          </div>
-          <label class="consent">
-            <input id="terms" name="terms" type="checkbox" required>
-            <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
-          </label>
-          <button type="submit" class="button button--primary" id="claim-button" disabled>Quiero mi código</button>
-          <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
-          <noscript>Activá JavaScript para solicitar tu código.</noscript>
-        </form>
-        <section id="confirmation" class="confirmation" aria-labelledby="confirmation-title" hidden>
-          <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
-          <p>Este es tu código de $25.000:</p>
-          <div class="code-box">
-            <label for="voucher-code" class="sr-only">Tu código promocional</label>
-            <input id="voucher-code" readonly aria-label="Tu código promocional" spellcheck="false">
-          </div>
-          <p>Cargalo al finalizar la compra en “Código promocional”.</p>
-          <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
-          <a class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
-          <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
-        </section>
-        <p id="demo-notice" class="demo-notice" hidden>Vista de prueba local: usá datos ficticios. Los códigos DEMO no son válidos para comprar.</p>
-      </div>
-      </div>
+      <section class="claim-section" aria-label="Solicitá tu código">
+        <div class="voucher">
+          <form id="voucher-form" action="" method="post">
+            <div class="field">
+              <label for="email">Tu mail</label>
+              <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
+            </div>
+            <div class="field">
+              <label for="phone">Tu celular</label>
+              <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="11 2345 6789" required>
+            </div>
+            <label class="consent">
+              <input id="terms" name="terms" type="checkbox" required>
+              <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
+            </label>
+            <button type="submit" class="button button--primary" id="claim-button" disabled>Quiero mi código</button>
+            <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
+            <noscript>Activá JavaScript para solicitar tu código.</noscript>
+          </form>
+          <section id="confirmation" class="confirmation" aria-labelledby="confirmation-title" hidden>
+            <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
+            <p>Este es tu código de $25.000:</p>
+            <div class="code-box">
+              <label for="voucher-code" class="sr-only">Tu código promocional</label>
+              <input id="voucher-code" readonly aria-label="Tu código promocional" spellcheck="false">
+            </div>
+            <p>Cargalo al finalizar la compra en “Código promocional”.</p>
+            <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
+            <a class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
+            <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
+          </section>
+          <p id="demo-notice" class="demo-notice" hidden>Vista de prueba local: usá datos ficticios. Los códigos DEMO no son válidos para comprar.</p>
+        </div>
+      </section>
     </section>
     <section class="proposal instructions" aria-labelledby="instructions-title">
       <div class="proposal__shell"><header class="proposal__header"><h2 id="instructions-title">Cómo usarlo</h2></header>
