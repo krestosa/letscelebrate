@@ -328,8 +328,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 .voucher .field input{background:rgba(0,0,0,.27);border-color:rgba(255,255,255,.38)}
 .voucher .field input::placeholder{color:rgba(255,255,255,.65)}
 .voucher .field input:focus{border-color:var(--accent)}
-.voucher .feedback,.voucher .demo-notice{color:rgba(255,255,255,.82)}
-.voucher .demo-notice{margin:0 0 20px;padding:10px 12px;border:1px solid rgba(var(--accent-rgb),.28);background:rgba(var(--accent-rgb),.10);border-radius:6px;line-height:1.4}
+.voucher .feedback{color:rgba(255,255,255,.82)}
 .hero__layout{
   position:relative;
   width:min(1400px,100%);
@@ -380,15 +379,13 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 .button--secondary:hover{background:#fff;color:#000}
 .button:active{transform:scale(.975)}
 .button:disabled{opacity:.55;cursor:not-allowed}
-.feedback,.demo-notice{font-size:13px;line-height:1.45;color:rgba(255,255,255,.66);margin:14px 0 0}
+.feedback{font-size:13px;line-height:1.45;color:rgba(255,255,255,.66);margin:14px 0 0}
 .feedback[data-kind=error]{color:#ffb399}
-.demo-notice{font-size:12px}
 /* Keep the existing native dialog for modal accessibility and top-layer focus.
    The sheet uses the Vaul drawer timing without adding a React runtime. */
 .claim-generated{text-align:center;display:grid;justify-items:center;gap:16px}
 .claim-generated__icon{display:grid;place-items:center;width:64px;height:64px;border-radius:50%;color:var(--accent);background:rgba(var(--accent-rgb),.14);border:1px solid rgba(var(--accent-rgb),.32)}
 .claim-generated h2{font-size:clamp(24px,2.2vw,34px);font-weight:650;line-height:1.08;letter-spacing:-.045em;margin:0}
-.claim-generated p{margin:0 0 4px;font-size:14px;line-height:1.5;color:rgba(255,255,255,.8)}
 html.voucher-modal-open{overflow:hidden}
 .confirmation{
   --sheet-duration:500ms;
@@ -418,13 +415,14 @@ html.voucher-modal-open{overflow:hidden}
 @media(min-width:761px){.confirmation{--sheet-duration:200ms;--ease-drawer:cubic-bezier(.165,.84,.44,1)}}
 .confirmation__close{position:absolute;top:36px;right:12px;display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#fff;cursor:pointer}
 .confirmation__close:hover{background:rgba(255,255,255,.16)}
-.confirmation p.confirmation__eyebrow{margin:0 0 20px;color:rgba(255,255,255,.72);font-size:12px;font-weight:600;letter-spacing:.06em}
-.confirmation h2{font-family:Gazzetta,sans-serif;font-size:clamp(70px,12vw,100px);font-weight:900;line-height:.82;text-transform:uppercase;margin:0 0 16px}
+.confirmation h2{font-size:clamp(24px,5vw,32px);font-weight:650;line-height:1.15;letter-spacing:-.045em;margin:0 0 22px;padding-inline:40px}
 .confirmation p:not(.feedback){margin:16px 0;color:#fff;font-size:15px;line-height:1.4}
-.confirmation p.confirmation__demo{padding:8px;border-radius:6px;color:#b9d8ff;background:rgba(var(--accent-rgb),.12);font-size:12px}
-.code-box{margin:20px 0 14px}
-.code-box input{width:100%;min-width:0;min-height:60px;padding:12px;border:1px solid var(--accent);border-radius:6px;background:#090c13;color:var(--accent);font-family:ui-monospace,Consolas,monospace;font-size:clamp(16px,4vw,24px);font-weight:700;text-align:center}
+.confirmation p.confirmation__demo{margin:12px 0 0;color:rgba(255,255,255,.65);font-size:12px}
+.code-box{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:stretch;gap:8px;margin:0}
+.code-box input{width:100%;min-width:0;min-height:52px;padding:8px;border:1px solid var(--accent);border-radius:6px;background:#090c13;color:var(--accent);font-family:ui-monospace,Consolas,monospace;font-size:clamp(13px,3.2vw,19px);font-weight:700;text-align:center}
 .confirmation .button{min-height:52px}
+.code-box .button{width:auto;padding:12px 18px;font-size:14px;letter-spacing:-.02em;text-transform:none}
+.confirmation .feedback{margin:10px 0 0}
 .confirmation p.confirmation__instruction{margin:20px 0 12px;color:rgba(255,255,255,.8);font-size:13px}
 .confirmation .button+.button{margin-top:12px}
 @media(prefers-reduced-motion:reduce){.confirmation,.confirmation::backdrop{transition:none}.confirmation__drag{display:none}}

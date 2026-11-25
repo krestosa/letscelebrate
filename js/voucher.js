@@ -11,10 +11,9 @@
   const codeField = document.getElementById("voucher-code");
   const copyButton = document.getElementById("copy-code");
   const copyFeedback = document.getElementById("copy-feedback");
-  const demoNotice = document.getElementById("demo-notice");
   const demoLabel = document.getElementById("confirmation-demo");
   const redeem = document.getElementById("redeem-code");
-  const demoRedeem = document.getElementById("demo-redeem");
+  const redeemInstruction = document.getElementById("redeem-instruction");
   const closeConfirmation = document.getElementById("close-confirmation");
   const generated = document.getElementById("claim-generated");
   const viewCode = document.getElementById("view-code");
@@ -38,10 +37,9 @@
   let busy = false, issuedCode = null;
   let closeTimer = 0, closing = false, drag = null;
 
-  demoNotice.hidden = !demo;
   demoLabel.hidden = !demo;
   redeem.hidden = demo;
-  demoRedeem.hidden = !demo;
+  redeemInstruction.hidden = demo;
   if (demo) {
     form.autocomplete = "off";
     email.autocomplete = "off";
