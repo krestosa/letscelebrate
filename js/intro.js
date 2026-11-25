@@ -102,6 +102,40 @@
     if(video&&video.paused)video.play().catch(()=>{});
   }
 
+  // A short, intentional reading interval, counted only while the document
+  // is visible. This is not a transition delay between unfinished animations.
+  function readSignature() {
+    phase = "reading";
+    let remaining = token("--signature-reading-time", 2500);
+    let started = null, timer;
+    function pause() {
+      clearTimeout(timer);
+      if (started !== null) {
+        remaining = Math.max(0, remaining - (performance.now() - started));
+        started = null;
+      }
+    }
+    function cleanup() {
+      pause();
+      document.removeEventListener("visibilitychange", sync);
+    }
+    function sync() {
+      pause();
+      if (document.hidden || phase !== "reading") return;
+      if (remaining <= 0) {
+        cleanup();
+        cancelTransition = () => {};
+        reveal();
+        return;
+      }
+      started = performance.now();
+      timer = setTimeout(sync, Math.ceil(remaining));
+    }
+    cancelTransition = cleanup;
+    document.addEventListener("visibilitychange", sync);
+    sync();
+  }
+
   function writeSignature() {
     if(phase!=="counter")return;
     const signature=document.getElementById("intro-signature");
@@ -118,8 +152,8 @@
       done=true;cleanup();cancelTransition=()=>{};
       const art=document.getElementById("signature-art");
       if(art?.complete&&art.naturalWidth)signature.classList.add("signature-done");
-      // No idle hold: the completed artwork stays visible during the crossfade.
-      reveal();
+      // Keep the entire signature visible before starting the landing crossfade.
+      readSignature();
     }
     cancelTransition();
     cancelTransition=()=>{done=true;cleanup();};

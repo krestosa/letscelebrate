@@ -6,6 +6,7 @@
   --signature-handoff: 180ms;
   --signature-write-first: 1450ms;
   --signature-write-second: 1000ms;
+  --signature-reading-time: 2500ms;
   --intro-exit: 480ms;
 }
 .loading { transition: opacity var(--intro-exit) var(--ease-soft); }
