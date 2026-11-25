@@ -111,13 +111,10 @@
   --reveal-y:14px;
   animation:landing-rise 480ms var(--ease-out) 270ms backwards;
 }
-.landing-enter .voucher{
+.landing-enter .claim-section:not([data-entrance-complete]){
   --reveal-y:22px;
   animation:landing-rise 560ms var(--ease-out) 200ms backwards;
 }
-/* On focus the form is immediately visible and stable, including keyboard
-   navigation and a user who reaches a field during the entrance. */
-.landing-enter .voucher:focus-within{animation:none}
 @keyframes landing-rise {
   from { opacity: 0; transform: translate3d(0, var(--reveal-y, 16px), 0); }
   to { opacity: 1; transform: none; }
@@ -134,10 +131,9 @@
   .landing-enter .masthead__brands,
   .landing-enter .title-lockup,
   .landing-enter .hero-copy,
-  .landing-enter .voucher {
+  .landing-enter .claim-section:not([data-entrance-complete]) {
     animation: landing-fade 200ms ease backwards;
   }
-  .landing-enter .voucher:focus-within{animation:none}
   .section-motion-pending, .section-motion-enter { opacity: 1; animation: none; transform: none; }
 }
 

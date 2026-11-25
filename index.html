@@ -10,9 +10,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=hero-webp-11"></script>
-  <link rel="stylesheet" href="css/landing.css?v=landing-entrance-25">
+  <link rel="stylesheet" href="css/landing.css?v=phone-form-26">
   <link rel="stylesheet" href="css/loading.css?v=blue-modal-16">
-  <link rel="stylesheet" href="css/motion.css?v=landing-entrance-25">
+  <link rel="stylesheet" href="css/motion.css?v=phone-form-26">
   <link rel="preload" href="assets/loading.jpg" as="image">
   <link rel="preload" href="assets/hero_bg.jpg" as="image">
   <link rel="preload" href="assets/firma.svg" as="image">
@@ -20,7 +20,8 @@
   <script src="js/signature.js" defer></script>
   <script src="js/snow.js?v=natural-17" defer></script>
   <script src="js/loading.js?v=release-9" defer></script>
-  <script src="js/voucher.js?v=landing-entrance-25" defer></script>
+  <script src="js/libphonenumber-min.js?v=1.13.17" defer></script>
+  <script src="js/voucher.js?v=phone-form-26" defer></script>
 </head>
 <body>
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
@@ -71,7 +72,7 @@
               </div>
               <div class="field">
                 <label for="phone">Celular</label>
-                <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="11 2345 6789" required>
+                <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="(011) 1234-1234" required>
               </div>
               <label class="consent">
                 <input id="terms" name="terms" type="checkbox" required>

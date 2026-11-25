@@ -103,7 +103,12 @@
     resetCopiedState();
     delete confirmation.dataset.visible;
     document.documentElement.classList.remove("voucher-modal-open");
-    (issuedCode?viewCode:submit).focus({preventScroll:true});
+    if(issuedCode){
+      form.reset();
+      form.hidden=true;
+      generated.hidden=false;
+      viewCode.focus({preventScroll:true});
+    }else submit.focus({preventScroll:true});
   });
   viewCode.addEventListener("click",openConfirmation);
 
@@ -160,25 +165,79 @@
     element.hidden = !message;
   }
 
-  function normalizePhone(value) {
-    const raw = value.trim();
-    if (!/^\+?[\d\s().-]+$/.test(raw)) return null;
-    let digits = raw.replace(/\D/g, "");
-    const international = raw.startsWith("+") || digits.startsWith("00");
-    if (digits.startsWith("00")) digits = digits.slice(2);
-    if (international && !digits.startsWith("54")) {
-      return /^[1-9]\d{7,14}$/.test(digits) ? "+" + digits : null;
+  // Local-only phone metadata: libphonenumber-js 1.13.17 (MIT).
+  // Preserve the user's dialing style while typing; canonicalize at submit.
+  function phoneDialString(value){
+    const raw=String(value).trim();
+    let digits=raw.replace(/\D/g,"");
+    if(raw.startsWith("+"))return "+"+digits;
+    if(digits.startsWith("00")&&digits.length>2)return "+"+digits.slice(2);
+    if(digits.startsWith("54")&&digits.length>=12)return "+"+digits;
+    return digits;
+  }
+  function formatPhone(value){
+    const dial=phoneDialString(value);
+    if(!dial||dial==="+")return dial;
+    const api=window.libphonenumber;
+    if(!api?.AsYouType)return dial;
+    // A bare Argentine mobile 9 + area code is a common pasted format.
+    const bareMobile=!dial.startsWith("+")&&/^9\d/.test(dial);
+    const formatter=new api.AsYouType("AR");
+    let formatted=formatter.input(bareMobile?"+54"+dial:dial);
+    if(bareMobile)formatted=formatted.replace(/^\+54\s*/,"");
+    if(bareMobile||dial.startsWith("+54")||!dial.startsWith("+")){
+      // Argentine subscriber groups use a hyphen before the final block.
+      if(bareMobile||dial.startsWith("+54")){
+        const groups=formatted.split(" ");
+        const last=groups.length-1;
+        const minGroups=bareMobile?4:dial.startsWith("+549")?5:4;
+        if(groups.length>=minGroups){
+          if(/^\d{1,4}$/.test(groups[last])&&/^\d{3,4}$/.test(groups[last-1])){
+            groups[last-1]+="-"+groups[last];
+            groups.pop();formatted=groups.join(" ");
+          }
+        }
+      }else formatted=formatted.replace(/^(0\d{2,4})\s/,"($1) ").replace(/^(\(0\d{2,4}\)|\d{2,4}) 15-/,"$1 15 ");
     }
-    if (digits.startsWith("54") && digits.length >= 12) digits = digits.slice(2);
-    if (digits.length === 11 && digits.startsWith("9")) digits = digits.slice(1);
-    if (digits.startsWith("0")) digits = digits.slice(1);
-    if (digits.length === 12) {
-      const candidates = [2, 3, 4].filter(i => digits.slice(i, i + 2) === "15");
-      if (candidates.length !== 1) return null;
-      const i = candidates[0];
-      digits = digits.slice(0, i) + digits.slice(i + 2);
+    return formatted;
+  }
+  function normalizePhone(value){
+    const raw=String(value).trim();
+    if(!/^\+?[\d\s().-]+$/.test(raw))return null;
+    let dial=phoneDialString(raw);
+    if(!dial.startsWith("+")&&/^9\d{10}$/.test(dial))dial="+54"+dial;
+    const api=window.libphonenumber;
+    if(!api?.parsePhoneNumberFromString)return null;
+    const parsed=api.parsePhoneNumberFromString(dial,"AR");
+    if(!parsed?.isPossible())return null;
+    // Celular is the requested field: infer the mobile 9 for a complete
+    // local Argentine number without an explicit mobile marker.
+    if(parsed.country==="AR"&&parsed.nationalNumber.length===10){
+      return "+549"+parsed.nationalNumber;
     }
-    return /^[1-9]\d{9}$/.test(digits) ? "+549" + digits : null;
+    return parsed.number;
+  }
+  function updatePhoneFormat(){
+    phone.setCustomValidity("");
+    const before=phone.value;
+    const caret=phone.selectionStart??before.length;
+    const countBefore=before.slice(0,caret).replace(/\D/g,"").length;
+    const formatted=formatPhone(before);
+    if(formatted===before)return;
+    const removedPrefix=before.replace(/\D/g,"").startsWith("00")&&formatted.startsWith("+")?2:0;
+    const digitTarget=Math.max(0,countBefore-removedPrefix);
+    phone.value=formatted;
+    if(caret===before.length){
+      phone.setSelectionRange(formatted.length,formatted.length);
+      return;
+    }
+    let pos=0,digits=0;
+    while(pos<formatted.length&&digits<digitTarget){
+      if(/\d/.test(formatted[pos]))digits++;
+      pos++;
+    }
+    if(digitTarget===0&&formatted.startsWith("+"))pos=1;
+    phone.setSelectionRange(pos,pos);
   }
 
   function claimDemo() {
@@ -221,11 +280,23 @@
     submit.textContent = value ? "Solicitando código…" : "Quiero mi código";
   }
 
-  phone.addEventListener("input", () => phone.setCustomValidity(""));
+  phone.addEventListener("input",updatePhoneFormat);
+  phone.addEventListener("blur",updatePhoneFormat);
+
+  // Permanently finish the one-shot entrance on interaction; blur must
+  // never restart an opacity animation on the form.
+  const claimSection=form.closest(".claim-section");
+  function completeFormEntrance(){claimSection.dataset.entranceComplete="";}
+  claimSection.addEventListener("pointerdown",completeFormEntrance,{once:true});
+  claimSection.addEventListener("focusin",completeFormEntrance,{once:true});
+  claimSection.addEventListener("animationend",event=>{
+    if(event.target===claimSection)completeFormEntrance();
+  });
 
   form.addEventListener("submit", async event => {
     event.preventDefault();
-    if (busy || issuedCode) return;
+    if (busy) return;
+    if (issuedCode) { openConfirmation(); return; }
     showFeedback(feedback, "");
     const normalizedPhone = normalizePhone(phone.value);
     phone.setCustomValidity(normalizedPhone ? "" : "Ingresá un número de celular válido.");
@@ -240,9 +311,8 @@
         return;
       }
       issuedCode=result.code;
-      form.reset();
-      form.hidden=true;
-      generated.hidden=false;
+      // Keep the filled form visible and unchanged behind the modal.
+      // Swap to the generated state only after dismissal completes.
       openConfirmation();
     } catch (error) {
       showFeedback(feedback, error?.message === "voucher-service-unconfigured"
