@@ -9,19 +9,19 @@
 
   const root = document.documentElement;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const initialHold = 1160, durations = [1120,1350,1580,1810];
+  const initialHold = 1160, durations = [1320,1760,2200,2640];
   const totalDuration = initialHold + durations[3];
-  const acceleration = 120, braking = 560;
-  const step = Math.PI * 2 / 10;
-  const radius = 1 / step, camera = 1.45;
+  const acceleration = 140, braking = 920;
+  const step = Math.PI / 3;
+  const radius = .95, camera = 1.4;
   const limit = Math.acos(radius / (camera + radius));
   const cell = 256, atlasSize = 1024;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
-  let lastPercent = -1, needsResize = true;
+  let lastPercent = -1, needsResize = true, drawingStarted = false;
   const drums = wheels.map((wheel, i) => {
     const start = Number(wheel.dataset.start), end = Number(wheel.dataset.end);
-    return {wheel, start, end, steps:[3,4,4,5][i]*10+(end-start+10)%10,
-      duration:durations[i], digit:wheel.querySelector(".wheel__static"), settled:false};
+    return {wheel, start, end, steps:[2,2,2,2][i]*10+(end-start+10)%10,
+      duration:durations[i], digit:wheel.querySelector(".wheel__static"), settled:false, phase:start};
   });
   root.classList.add("loading-preparing");
 
@@ -46,7 +46,7 @@
   }
 
   function webGLRenderer(atlas) {
-    const gl = canvas.getContext("webgl", {alpha:true, antialias:true, premultipliedAlpha:true});
+    const gl = canvas.getContext("webgl", {alpha:true, antialias:true, premultipliedAlpha:true, preserveDrawingBuffer:true});
     if (!gl) return null;
     const vertex = `
       attribute vec2 aSurface;
@@ -63,7 +63,7 @@
         vAngle=angle;vU=aSurface.x+0.5;
       }`;
     const fragment = `
-      precision mediump float;
+      precision highp float;
       uniform sampler2D uAtlas;
       uniform float uPhase,uStep,uBlur,uLimit;
       varying float vAngle,vU;
@@ -81,8 +81,8 @@
           c+=glyph(uPhase+f*uBlur)*(1.0-0.65*abs(f));
         }
         c/=4.4;
-        float edge=1.0-smoothstep(uLimit*0.80,uLimit,abs(vAngle));
-        float light=0.24+0.76*pow(max(0.0,cos(vAngle)),1.65);
+        float edge=1.0-smoothstep(uLimit*0.70,uLimit,abs(vAngle));
+        float light=0.12+0.88*pow(max(0.0,cos(vAngle)),2.5);
         gl_FragColor=vec4(vec3(0.9686,0.9608,0.9412)*light,clamp(c.a*edge,0.0,1.0));
       }`;
     const compile=(kind,src)=>{
@@ -120,7 +120,7 @@
       clear(){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);},
       draw(d,pos,speed){
         gl.uniform2f(u.uCenter,d.x,d.y);gl.uniform1f(u.uEm,d.em);
-        gl.uniform1f(u.uPhase,pos);gl.uniform1f(u.uBlur,Math.min(.38,speed*8));
+        gl.uniform1f(u.uPhase,((pos%10)+10)%10);gl.uniform1f(u.uBlur,Math.min(.20,speed*4));
         gl.drawArrays(gl.TRIANGLE_STRIP,0,vertices.length/2);
       }
     };
@@ -140,7 +140,7 @@
       resize(width,height,dpr){w=width;h=height;ctx.setTransform(dpr,0,0,dpr,0,0);},
       clear(){ctx.clearRect(0,0,w,h);},
       draw(d,pos,speed){
-        const n=160, blur=Math.min(.38,speed*8);
+        const n=192, blur=Math.min(.20,speed*4);
         const samples=blur>.015?[[-blur,.25],[0,.5],[blur,.25]]:[[0,1]];
         for(let i=0;i<n;i++){
           const a=-limit+2*limit*i/n,b=-limit+2*limit*(i+1)/n,mid=(a+b)/2;
@@ -148,7 +148,7 @@
           const dy=d.y+p.y*d.em, dh=Math.max(.25,(q.y-p.y)*d.em+.4);
           const dx=d.x-d.em*m.scale/2,dw=d.em*m.scale;
           const edge=Math.min(1,Math.max(0,(limit-Math.abs(mid))/(limit*.2)));
-          const shade=.24+.76*Math.pow(Math.cos(mid),1.65);
+          const shade=.12+.88*Math.pow(Math.cos(mid),2.5);
           for(const [offset,weight] of samples){
             const index=pos+offset+mid/step+.5;
             const digit=((Math.floor(index)%10)+10)%10;
@@ -185,13 +185,16 @@
   }
   function settle(d){
     if(d.settled)return;
-    d.settled=true;d.digit.textContent=String(d.end);
+    d.settled=true;d.phase=d.end;d.digit.textContent=String(d.end);
     d.wheel.classList.add("is-settled");d.wheel.classList.remove("is-spinning");
+    if(renderer && drawingStarted)d.wheel.classList.add("is-rendered");
   }
   function finish(){
     if(finished)return;
-    finished=true;cancelAnimationFrame(frame);renderer?.clear();
-    drums.forEach(settle);updateProgress(totalDuration);label.textContent="2026";
+    finished=true;cancelAnimationFrame(frame);
+    drums.forEach(settle);
+    if(renderer && drawingStarted){renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0));}
+    updateProgress(totalDuration);label.textContent="2026";
     root.classList.add("loading-complete");
     document.dispatchEvent(new Event("loading-complete"));
   }
@@ -208,13 +211,14 @@
     updateProgress(now-startedAt);
     const elapsed=now-startedAt-initialHold;
     if(needsResize)resize();
-    renderer?.clear();
     if(elapsed>=0){
+      drawingStarted=Boolean(renderer);
+      renderer?.clear();
       for(const d of drums){
-        if(d.settled)continue;
-        if(elapsed>=d.duration){settle(d);continue;}
+        if(!d.settled && elapsed>=d.duration)settle(d);
+        if(d.settled){if(renderer)renderer.draw(d,d.end,0);continue;}
         const m=motion(elapsed,d.duration,d.steps);
-        if(renderer){d.wheel.classList.add("is-spinning");renderer.draw(d,d.start+m.p,m.v);}
+        if(renderer){d.wheel.classList.add("is-spinning","is-rendered");renderer.draw(d,d.start+m.p,m.v);}
       }
       if(drums.every(d=>d.settled)){finish();return;}
     }
@@ -223,7 +227,7 @@
 
   if(reduced.matches){finish();return;}
   reduced.addEventListener?.("change",()=>{if(reduced.matches)finish();});
-  addEventListener("resize",()=>{needsResize=true;},{passive:true});
+  addEventListener("resize",()=>{needsResize=true;if(finished && renderer && drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0));}},{passive:true});
   function launch(){
     if(launched||finished)return;
     launched=true;

@@ -31,29 +31,29 @@ body { font-synthesis: none; text-rendering: geometricPrecision; }
   margin: 0;
   font: 900 min(37vw, 65svh, 620px)/1 Gazzetta, Impact, "Arial Narrow", sans-serif;
   font-variant-numeric: tabular-nums;
-  letter-spacing: -.055em;
+  letter-spacing: -.075em;
 }
 .year__wheels {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 1.28em;
+  height: 1.46em;
   padding-inline: .035em;
   overflow: hidden;
   /* Fade the projected curved surfaces before the shared aperture ends. */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 17%, #000 83%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, #000 17%, #000 83%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 23%, #000 77%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 23%, #000 77%, transparent 100%);
 }
 .wheel {
   position: relative;
   display: block;
-  flex: 0 0 .49em;
-  width: .49em;
+  flex: 0 0 .455em;
+  width: .455em;
   height: 1.08em;
   overflow: visible;
 }
-.wheel + .wheel { margin-left: -.018em; }
+.wheel + .wheel { margin-left: -.025em; }
 .wheel__static {
   display: grid;
   place-items: center;
@@ -78,7 +78,7 @@ body { font-synthesis: none; text-rendering: geometricPrecision; }
   display: block;
   pointer-events: none;
 }
-.wheel.is-spinning .wheel__static { visibility: hidden; }
+.wheel.is-spinning .wheel__static, .wheel.is-rendered .wheel__static { visibility: hidden; }
 .loading__progress {
   position: absolute;
   left: 50%;
