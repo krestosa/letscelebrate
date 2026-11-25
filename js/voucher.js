@@ -13,7 +13,6 @@
   const codeField = document.getElementById("voucher-code-fallback");
   const copyButton = document.getElementById("copy-code");
   const copyFeedback = document.getElementById("copy-feedback");
-  const demoLabel = document.getElementById("confirmation-demo");
   const redeemInstruction = document.getElementById("redeem-instruction");
   const closeConfirmation = document.getElementById("close-confirmation");
   const generated = document.getElementById("claim-generated");
@@ -38,9 +37,12 @@
   const demo = previewHost || localPreview;
   let busy = false, issuedCode = null;
   let closeTimer = 0, closing = false, drag = null;
+  let copyTimer=0, copyVersion=0;
 
-  demoLabel.hidden = !demo;
-  if (demo) redeemInstruction.textContent = "Cuando la promoción esté habilitada, ingresá tu código en “Código promocional” al finalizar la compra online.";
+  if (demo) {
+    document.getElementById("confirmation-description").textContent = "Vista previa del beneficio de $25.000 para Let’s Celebrate.";
+    redeemInstruction.textContent = "En la promoción real, ingresá el código en “Código promocional” al finalizar la compra online.";
+  }
   if (demo) {
     form.autocomplete = "off";
     email.autocomplete = "off";
@@ -64,8 +66,7 @@
     if(!issuedCode)return;
     codeField.value=issuedCode;
     codeField.hidden=true;
-    codeText.textContent=issuedCode;
-    codeButton.setAttribute("aria-label","Copiar código "+issuedCode);
+    resetCopiedState();
     showFeedback(copyFeedback,"");
     clearClosing();
     clearDrag();
@@ -106,6 +107,7 @@
   confirmation.addEventListener("close",()=>{
     clearClosing();
     clearDrag();
+    resetCopiedState();
     delete confirmation.dataset.visible;
     document.documentElement.classList.remove("voucher-modal-open");
     (issuedCode?viewCode:submit).focus({preventScroll:true});
@@ -257,9 +259,31 @@
     }
   });
 
+  function resetCopiedState(){
+    clearTimeout(copyTimer);
+    copyVersion++;
+    delete codeButton.dataset.copied;
+    codeText.textContent=issuedCode||"";
+    codeButton.setAttribute("aria-label","Copiar código "+(issuedCode||""));
+    copyFeedback.classList.remove("sr-only");
+  }
+  function showCopiedState(){
+    clearTimeout(copyTimer);
+    codeButton.dataset.copied="";
+    codeText.textContent="Código copiado";
+    codeButton.setAttribute("aria-label","Código copiado. Volver a copiar");
+    copyFeedback.classList.add("sr-only");
+    showFeedback(copyFeedback,"Código copiado.","success");
+    copyTimer=setTimeout(()=>{
+      resetCopiedState();
+      showFeedback(copyFeedback,"");
+    },1800);
+  }
   async function copyIssuedCode(event) {
     if(!issuedCode)return;
     const trigger=event.currentTarget;
+    const version=++copyVersion;
+    clearTimeout(copyTimer);
     let copied=false;
     try {
       if(navigator.clipboard?.writeText){
@@ -267,6 +291,7 @@
         copied=true;
       }
     }catch{ /* Use selection-based clipboard support. */ }
+    if(version!==copyVersion||!confirmation.open)return;
     if(!copied){
       codeField.hidden=false;
       codeField.value=issuedCode;
@@ -279,8 +304,13 @@
         trigger.focus({preventScroll:true});
       }
     }
-    if(copied)codeField.hidden=true;
-    showFeedback(copyFeedback,copied?"Código copiado.":"Seleccioná y copiá el código.",copied?"success":"error");
+    if(copied){
+      codeField.hidden=true;
+      showCopiedState();
+    }else{
+      resetCopiedState();
+      showFeedback(copyFeedback,"Seleccioná y copiá el código.","error");
+    }
   }
   codeButton.addEventListener("click",copyIssuedCode);
   copyButton.addEventListener("click",copyIssuedCode);
