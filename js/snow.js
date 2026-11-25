@@ -10,7 +10,7 @@
   const options = { passive: true, signal: lifetime.signal };
   const mobile = matchMedia("(any-pointer: coarse)").matches || navigator.maxTouchPoints > 0;
   const root = document.documentElement;
-  const page = document.getElementById("landing-page");
+  const page=document.getElementById("landing-page");
   const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
   const smooth = v => { const t = clamp(v, 0, 1); return t*t*(3-2*t); };
   let w=0, h=0, dpr=0, active=false, disposed=false, frame=0;
@@ -40,10 +40,7 @@
   const sensorCounts={orientation:0,absolute:0,gravity:0,accelerometer:0,motion:0};
   const sensorErrors=Object.create(null), permissionStates=Object.create(null);
   let sensorSource="none",sensorCount=0,sensorStatus="waiting",permissionRequestRunning=false;
-  const sensorStart=window.__snowSensorBootstrap?.startedAt??performance.now();
-  let firstSampleAt=null, firstDirectionApplied=false;
-  let debugPanel=null,debugLast=0;
-  const debug=new URLSearchParams(location.search).get("snowDebug")==="1";
+  let firstDirectionApplied=false;
   const screenAngle=()=>Number(screen.orientation?.angle??window.orientation??0)||0;
   function noteSample(source,x,y,z){
     if(![x,y,z].every(Number.isFinite))return;
@@ -56,7 +53,6 @@
     }
     samples[source]={x,y,z,at:now};
     sensorCount++;
-    if(firstSampleAt===null)firstSampleAt=now;
     sensorCounts[source]++;
     sensorStatus="active";
   }
@@ -87,20 +83,14 @@
     }
     const orientation=!samples.absolute||samples.orientation?.at>=samples.absolute.at?samples.orientation:samples.absolute;
     const motion=samples.motion;
-    if(motion&&now-motion.at<500&&(!orientation||
-       now-orientation.at>180||
-       (Math.hypot(orientation.x,orientation.y)<.035&&Math.hypot(motion.x,motion.y)>.12))){
-      return {source:"motion",sample:motion};
-    }
+    if(motion&&now-motion.at<500&&(!orientation||now-orientation.at>180||
+      (Math.hypot(orientation.x,orientation.y)<.035&&Math.hypot(motion.x,motion.y)>.12)))return {source:"motion",sample:motion};
     for(const source of legacySources){
       const sample=samples[source];
       if(sample&&now-sample.at<1800)return {source,sample};
     }
     let latest=null,source=null;
-    for(const key of allSources){
-      const sample=samples[key];
-      if(sample&&(!latest||sample.at>latest.at)){latest=sample;source=key;}
-    }
+    for(const key of allSources){const sample=samples[key];if(sample&&(!latest||sample.at>latest.at)){latest=sample;source=key;}}
     return latest?{source,sample:latest}:null;
   }
   function getGravity(){
@@ -208,24 +198,6 @@
     window.addEventListener("focus",startGenericSensors,options);
     window.addEventListener("pageshow",startGenericSensors,options);
   }
-  function updateDebug(now){
-    if(!debug||now-debugLast<250)return;
-    debugLast=now;
-    if(!debugPanel){
-      debugPanel=document.createElement("output");
-      debugPanel.className="snow-debug";
-      document.body.appendChild(debugPanel);
-    }
-    const status=sensorSource!=="none"?"active":Object.values(permissionStates).includes("denied")?"denied":sensorStatus==="waiting"&&now-sensorStart>4000?"no sensor samples":sensorStatus;
-    debugPanel.textContent="Snow 34 | "+status+" | "+sensorSource+
-      "\nHTTPS: "+window.isSecureContext+" | samples: "+sensorCount+
-      "\nO: "+sensorCounts.orientation+" | M: "+sensorCounts.motion+" | G: "+sensorCounts.gravity+" | A: "+sensorCounts.accelerometer+" | Abs: "+sensorCounts.absolute+
-      "\npermission: "+Object.entries(permissionStates).map(([key,value])=>key+":"+value).join(" ")+
-      "\nerrors: "+Object.entries(sensorErrors).map(([key,value])=>key+":"+value).join(" ")+
-      "\nfirst: "+(firstSampleAt===null?"waiting":Math.round(firstSampleAt-sensorStart)+"ms")+" | field: "+w+"×"+h+
-      "\nangle: "+screenAngle()+"° | x: "+gravityX.toFixed(2)+" y: "+gravityY.toFixed(2);
-  }
-
   const sprites = [0,1,2].map(layer => {
     const image = document.createElement("canvas");
     image.width = image.height = 48;
@@ -272,9 +244,7 @@
   function resize() {
     if (disposed) return false;
     const width=canvas.clientWidth, height=canvas.clientHeight;
-    const ratio=Math.min(devicePixelRatio || 1, mobile ? .9 : 1.5,
-      Math.sqrt((mobile?2400000:4800000)/Math.max(1,width*height)),
-      4096/Math.max(1,width,height));
+    const ratio=Math.min(devicePixelRatio || 1, mobile ? .9 : 1.5,Math.sqrt((mobile?2400000:4800000)/Math.max(1,width*height)),4096/Math.max(1,width,height));
     if (!width || !height) return false;
     if (width===w && height===h && ratio===dpr) return true;
     const oldW=w, oldH=h;
@@ -288,8 +258,8 @@
       if(h<oldH)for(let i=particles.length-1;i>=0;i--)if(particles[i].y>h+44)particles.splice(i,1);
     }
     const count=Math.round(mobile ? clamp(w*h/7200,32,320) : clamp(w*h/6500,48,640));
-    if (particles.length>count) particles.length=count;
-    while (particles.length<count){
+    if(particles.length>count)particles.length=count;
+    while(particles.length<count){
       const p=particle(true,layerFor(particles.length));
       if(oldH&&h>oldH)p.y=oldH+Math.random()*(h-oldH);
       particles.push(p);
@@ -333,9 +303,7 @@
       gravityY+=(target.y-gravityY)*gravityBlend;
     }
     const air=Math.sin(time*.72)*3.2+Math.sin(time*.24+1.3)*2.1;
-    updateDebug(now);
-    const viewHeight=window.innerHeight||h;
-    const scrollTop=window.scrollY||0;
+    const viewHeight=window.innerHeight||h,scrollTop=window.scrollY||0;
     const visibleTop=clamp(Math.floor(scrollTop-viewHeight*.6-32),0,h);
     const visibleBottom=clamp(Math.ceil(scrollTop+viewHeight*1.6+32),0,h);
     if(paintedBottom>paintedTop)ctx.clearRect(0,Math.max(0,paintedTop-16),w,Math.min(h,paintedBottom+16)-Math.max(0,paintedTop-16));
@@ -394,7 +362,6 @@
     observer?.disconnect();
     for(const sensor of sensors.values()){try{sensor.stop();}catch{}}
     sensors.clear();
-    debugPanel?.remove();
     lifetime.abort();
     root.classList.remove("snow-active");
     particles.length=0;

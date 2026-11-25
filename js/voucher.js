@@ -22,20 +22,10 @@
   const endpoint = "/api/lets-celebrate/voucher";
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
-  const previewHost = location.hostname === "krestosa.github.io" &&
-    /^\/letscelebrate(?:\/|$)/.test(location.pathname);
-  const localPreview = location.protocol === "file:" ||
-    ["localhost","127.0.0.1","[::1]","192.168.1.33"].includes(location.hostname);
-  const demo = previewHost || localPreview;
   let busy = false, issuedCode = null;
   let closeTimer = 0, closing = false, drag = null;
   let copyTimer=0, copyVersion=0;
 
-  if (demo) {
-    form.autocomplete = "off";
-    email.autocomplete = "off";
-    phone.autocomplete = "off";
-  }
 
   function clearClosing() {
     clearTimeout(closeTimer);
@@ -217,11 +207,6 @@
     phone.setSelectionRange(pos,pos);
   }
 
-  function claimDemo() {
-    const bytes = crypto.getRandomValues(new Uint8Array(5));
-    return { code: "DEMO-" + Array.from(bytes, b => b.toString(16).padStart(2,"0")).join("").toUpperCase() };
-  }
-
   async function claimReal(data) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
@@ -238,6 +223,7 @@
       if (response.status === 404 || response.status === 405) throw new Error("voucher-service-unconfigured");
       if (!response.ok) throw new Error("Voucher request failed");
       const payload = await response.json();
+      if (!payload || typeof payload !== "object") throw new Error("Invalid voucher response");
       if (payload.status === "already_claimed") return { duplicate: true };
       if (typeof payload.code !== "string" || !payload.code.trim() ||
           payload.code.length > 128 || /^DEMO-/i.test(payload.code)) {
@@ -279,7 +265,7 @@
     if (!data.acceptedTerms) return;
     setBusy(true);
     try {
-      const result = demo ? claimDemo() : await claimReal(data);
+      const result = await claimReal(data);
       if (result.duplicate) {
         showFeedback(feedback, duplicateMessage);
         return;

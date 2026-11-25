@@ -143,4 +143,3 @@ body { position: relative; }
   .loading__signature { contain: layout; }
 }
 
-.snow-debug{position:fixed;left:8px;top:8px;z-index:1003;padding:8px;border-radius:6px;background:#111e;color:white;font:12px/1.45 monospace;white-space:pre;pointer-events:none}
