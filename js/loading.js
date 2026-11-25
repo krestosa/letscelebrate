@@ -8,7 +8,7 @@
   if (wheels.length !== 4 || !label || !progress || !fill || !canvas) return;
 
   const root = document.documentElement;
-  const mobile = matchMedia("(pointer: coarse)").matches || Math.min(innerWidth, innerHeight) <= 600;
+  const mobile = matchMedia("(pointer: coarse)").matches;
   let pixelRatioCap = mobile ? 1.25 : 2;
   let lastRender = -Infinity, slowFrames = 0, loweredResolution = false;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
@@ -27,7 +27,9 @@
   const step = Math.PI * 2 / 10;
   const radius = 1.45, camera = .65;
   const limit = Math.acos(radius / (camera + radius));
-  const cell = 256, atlasSize = 1024;
+  // Desktop glyph texture tracks the actual display pixel size; mobile retains 256px.
+  let cell = mobile ? 256 : Math.max(512, Math.min(1024, Math.ceil((parseFloat(getComputedStyle(wheels[0]).fontSize)||512)*Math.min(devicePixelRatio||1,2)/128)*128));
+  let atlasSize = cell*4;
   let renderer, frame = 0, startedAt = null, finished = false, launched = false;
   let lastPercent = -1, needsResize = true, drawingStarted = false, progressMotion;
   let spinStarted = false;
@@ -59,8 +61,10 @@
   }
 
   function webGLRenderer(atlas) {
-    const gl = canvas.getContext("webgl", {alpha:true, antialias:!mobile, depth:false, stencil:false, premultipliedAlpha:true, preserveDrawingBuffer:false});
+    const gl = canvas.getContext("webgl", {alpha:true, antialias:!mobile, depth:false, stencil:false, premultipliedAlpha:true, preserveDrawingBuffer:!mobile});
     if (!gl) return null;
+    const maxTexture=gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    if(atlasSize>maxTexture){cell=Math.floor(maxTexture/4);atlasSize=cell*4;atlas=makeAtlas();}
     const vertex = `
       attribute vec2 aSurface;
       uniform vec2 uSize,uCenter;
@@ -84,8 +88,8 @@
       vec4 glyph(float phase){
         float n=phase+vAngle/uStep+0.5;
         float digit=mod(floor(n),10.0);
-        vec2 uv=(vec2(mod(digit,4.0),floor(digit/4.0))*256.0+
-          vec2(0.5+vU*255.0,0.5+fract(n)*255.0))/1024.0;
+        vec2 uv=(vec2(mod(digit,4.0),floor(digit/4.0))*${cell}.0+
+          vec2(0.5+vU*${cell-1}.0,0.5+fract(n)*${cell-1}.0))/${atlasSize}.0;
         vec4 sampleColor=texture2D(uAtlas,uv);
         // Peripheral digits are deliberately gray. As the reel settles,
         // only the exact central digit remains visible.
@@ -170,7 +174,7 @@
       const z=radius*(Math.cos(a)-1), scale=camera/(camera-z);
       return {y:radius*Math.sin(a)*scale, scale};
     };
-    const n=mobile?48:128;
+    const n=mobile?48:192;
     const mesh=Array.from({length:n},(_,i)=>{
       const a=-limit+2*limit*i/n,b=-limit+2*limit*(i+1)/n,mid=(a+b)/2;
       const p=project(a),q=project(b),m=project(mid);
@@ -240,7 +244,7 @@
     drums.forEach(settle);
     if(renderer && drawingStarted){
       renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));
-      if(renderer.gpu){
+      if(renderer.gpu&&mobile){
         // Copy the final composited frame while the GL drawing buffer is valid.
         // Release GPU resources before starting the signature.
         const still=canvas.cloneNode(false);
@@ -366,7 +370,10 @@
     for(const d of drums)d.wheel.classList.remove("is-rendered","is-spinning");
     finish();
   },{signal:lifetime.signal});
-  addEventListener("resize",()=>{if(!finished)needsResize=true;},{passive:true,signal:lifetime.signal});
+  addEventListener("resize",()=>{
+    if(!finished)needsResize=true;
+    else if(!mobile&&renderer&&drawingStarted){resize();renderer.clear();drums.forEach(d=>renderer.draw(d,d.end,0,1,0,1));}
+  },{passive:true,signal:lifetime.signal});
   function launch(){
     if(launched||finished)return;
     launched=true;

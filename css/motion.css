@@ -33,8 +33,7 @@
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
-/* The pen is rasterized incrementally from the original contour data.
-   A stable, exact SVG replaces the canvas once the writing is complete. */
+/* Touch-only incremental canvas; final artwork stays the original SVG. */
 .loading__signature { aspect-ratio: 2316 / 804; contain: layout paint; }
 .signature-canvas, .signature-art {
   position: absolute; inset: 0; display: block;
@@ -43,6 +42,47 @@
 .signature-art { opacity: 0; }
 .signature-done .signature-art { opacity: 1; }
 .signature-done .signature-canvas { visibility: hidden; }
+
+/* Desktop uses the original SVG contour geometry throughout the reveal.
+   Only touch devices use the incremental canvas renderer. */
+.signature-vector {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.signature-vector-trace {
+  fill: none;
+  stroke: white;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  opacity: 0;
+}
+.signature-vector-ink { opacity: 0; }
+.intro-signature .signature-vector-trace {
+  animation: signature-vector-write var(--trace-duration) linear var(--trace-delay) both;
+}
+.intro-signature .signature-vector-ink {
+  animation: signature-vector-settle 45ms linear var(--ink-delay) both;
+}
+@keyframes signature-vector-write {
+  0% { opacity: 0; stroke-dashoffset: 1; }
+  1% { opacity: 1; }
+  100% { opacity: 1; stroke-dashoffset: 0; }
+}
+@keyframes signature-vector-settle { to { opacity: 1; } }
+.signature-done .signature-vector { visibility: hidden; }
+@media (prefers-reduced-motion: reduce) {
+  .signature-vector-trace, .signature-vector-ink {
+    animation: none !important;
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+}
+
 
 /* One persistent viewport layer, independent of the intro overlay. */
 .site-snow {
@@ -104,4 +144,14 @@
 /* Avoid a full-screen soft-light blend with a moving video on mobile. */
 @media (pointer: coarse), (max-width: 600px) {
   .hero__grain { mix-blend-mode: normal; opacity: .045; mask-image: none; -webkit-mask-image: none; }
+}
+
+@media (pointer: fine) {
+  .loading__signature { contain: layout; }
+  .landing-enter .masthead__brands,
+  .landing-enter .title-kicker,
+  .landing-enter .title-word,
+  .landing-enter .hero-copy p {
+    animation-fill-mode: backwards;
+  }
 }

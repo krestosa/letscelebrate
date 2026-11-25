@@ -8,13 +8,76 @@
   const canvas = document.getElementById("signature-canvas");
   const art = document.getElementById("signature-art");
   if (!host || !canvas || !art) return;
+  // Keep the original vector geometry on precise-pointer desktops, even
+  // in a narrow browser window. Canvas remains exclusive to touch devices.
+  const mobile = matchMedia("(pointer: coarse)").matches;
+  if (!mobile) {
+    canvas.hidden = true;
+    const ns = "http://www.w3.org/2000/svg";
+    const node = (tag, attrs) => {
+      const el = document.createElementNS(ns, tag);
+      for (const [key, value] of Object.entries(attrs)) el.setAttribute(key, value);
+      return el;
+    };
+    const vector = node("svg", {
+      viewBox: "0 0 2316 804", class: "signature-vector",
+      "aria-hidden": "true"
+    });
+    const defs = node("defs", {});
+    const ink = node("g", {fill: "white"});
+    vector.append(defs, ink);
+    host.insertBefore(vector, art);
+    const css = getComputedStyle(document.documentElement);
+    const budgets = [
+      parseFloat(css.getPropertyValue("--signature-write-first")) || 1450,
+      parseFloat(css.getPropertyValue("--signature-write-second")) || 1000
+    ];
+    let start = 0, last = null;
+    for (const row of [0, 1]) {
+      const items = contours.filter(c => c.row === row);
+      const weights = items.map(c => Math.max(20, c.strokes.reduce((a,p)=>a+p[1],0)));
+      const total = weights.reduce((a,b)=>a+b,0);
+      let at = start;
+      items.forEach((c,i)=>{
+        const duration = budgets[row]*weights[i]/total;
+        const id = "signature-desktop-contour-"+row+"-"+i;
+        const clip = node("clipPath",{id,clipPathUnits:"userSpaceOnUse"});
+        clip.append(node("path",{d:c.d,"clip-rule":"evenodd"}));
+        defs.append(clip);
+        const group = node("g",{"clip-path":"url(#"+id+")"});
+        const length = c.strokes.reduce((a,p)=>a+p[1],0);
+        let elapsed = 0;
+        c.strokes.forEach(([d,len])=>{
+          const span = duration*len/length;
+          const trace = node("path",{d,pathLength:"1","stroke-width":c.width,class:"signature-vector-trace"});
+          trace.style.setProperty("--trace-delay",(at+elapsed)+"ms");
+          trace.style.setProperty("--trace-duration",Math.max(1,span)+"ms");
+          group.append(trace);
+          elapsed+=span;
+        });
+        const exact=node("path",{d:c.d,"fill-rule":"evenodd",class:"signature-vector-ink"});
+        exact.style.setProperty("--ink-delay",(at+duration)+"ms");
+        group.append(exact);
+        ink.append(group);
+        last=exact;
+        at+=duration;
+      });
+      start+=budgets[row];
+    }
+    // Native SVG contours stay vectorial for the entire writing animation.
+    // Each stroke is clipped to its own contour, not the neighboring letters.
+    if(last)last.addEventListener("animationend",()=>{
+      document.dispatchEvent(new Event("signature-written"));
+    },{once:true});
+    return;
+  }
   const output = canvas.getContext("2d");
   const mask = document.createElement("canvas");
   const ink = mask.getContext("2d");
   const raster = document.createElement("canvas");
   const texture = raster.getContext("2d");
   const lifetime = new AbortController();
-  const mobile = matchMedia("(pointer: coarse)").matches || Math.min(innerWidth,innerHeight)<=600;
+
   let frame=0, started=false, disposed=false, artworkReady=false;
   let origin=null, last=-Infinity, index=0, lastLength=0, width=0, height=0;
   let timeline=[], total=0;
@@ -47,7 +110,7 @@
 
   function setup() {
     const box=host.getBoundingClientRect();
-    const dpr=Math.min(devicePixelRatio||1,mobile?1.5:2);
+    const dpr=Math.min(devicePixelRatio||1,1.5);
     width=Math.max(1,Math.round(box.width*dpr));
     height=Math.max(1,Math.round(width*804/2316));
     for(const surface of [canvas,mask,raster]){surface.width=width;surface.height=height;}
@@ -101,7 +164,7 @@
   function render(now){
     if(disposed)return;
     if(origin===null)origin=now;
-    if(mobile&&now-last<14.5){frame=requestAnimationFrame(render);return;}
+    if(now-last<14.5){frame=requestAnimationFrame(render);return;}
     last=now;
     const elapsed=Math.min(total,now-origin);
     while(index<timeline.length&&elapsed>=timeline[index].to){
