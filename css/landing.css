@@ -375,7 +375,7 @@ a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #fff;
 .button--primary{background:var(--accent);color:#000}
 .button--primary:hover{filter:brightness(1.08)}
 .button--secondary{background:#000;color:#fff;border-color:rgba(255,255,255,.65)}
-.button--secondary:hover{background:#fff;color:#000}
+@media(hover:hover) and (pointer:fine){.button--secondary:hover{background:#fff;color:#000}}
 .button:active{transform:scale(.975)}
 .button:disabled{opacity:.55;cursor:not-allowed}
 .feedback{font-size:13px;line-height:1.45;color:rgba(255,255,255,.66);margin:14px 0 0}
@@ -433,7 +433,9 @@ html.voucher-modal-open{overflow:hidden}
 .confirmation__actions{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr);gap:10px;margin-top:12px;align-items:stretch}
 .confirmation__actions .button{min-width:0;padding:12px 8px;font-size:clamp(12px,2.9vw,14px);line-height:1.2;letter-spacing:-.02em}
 .confirmation .confirmation__actions .button+.button{margin-top:0}
-.confirmation__actions .button--secondary{background:transparent}
+.confirmation__actions .button--secondary{background:transparent;color:#fff;-webkit-tap-highlight-color:transparent}
+@media(hover:hover) and (pointer:fine){.confirmation__actions .button--secondary:hover{background:rgba(255,255,255,.10);color:#fff}}
+.confirmation__actions .button--secondary:active{background:rgba(255,255,255,.16);color:#fff}
 @media(prefers-reduced-motion:reduce){.code-box__button{transition:none}}
 .confirmation .button{min-height:52px}
 .confirmation .feedback{margin:10px 0 0}
