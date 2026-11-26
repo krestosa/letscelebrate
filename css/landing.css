@@ -511,7 +511,7 @@ html.voucher-modal-open{overflow:hidden}
 .proposal-guide{--guide-line:rgba(255,255,255,.17);--guide-muted:rgba(255,255,255,.7)}
 .proposal-guide .proposal__shell{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:start;gap:clamp(24px,5vw,70px)}
 .proposal-guide .proposal__header h2{font-size:clamp(52px,7.4vw,118px)}
-.guide-list{display:grid;gap:0;min-width:0;border-top:1px solid var(--guide-line)}
+.guide-list{display:grid;gap:0;min-width:0}
 .guide-list details+details{border-top:1px solid var(--guide-line)}
 .guide-list summary{min-height:72px;display:grid;grid-template-columns:44px minmax(0,1fr) 20px;align-items:center;gap:14px;cursor:pointer;list-style:none;padding:16px 0;font-size:clamp(15px,1.4vw,20px);text-transform:uppercase;font-weight:600;letter-spacing:-.02em}
 .guide-list summary::-webkit-details-marker{display:none}
@@ -522,12 +522,11 @@ html.voucher-modal-open{overflow:hidden}
 .guide-list details[open] .guide-copy{animation:guide-reveal 220ms var(--ease-out) both}
 @keyframes guide-reveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
 .guide-list summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
-.guide-terms{display:grid;gap:0;padding:0;margin:0;list-style:none}
-.guide-terms li{display:grid;grid-template-columns:10px minmax(0,1fr);align-items:start;gap:12px;padding:15px 0;font-size:clamp(14px,1.1vw,18px);line-height:1.38;text-transform:uppercase;font-weight:500}
-.guide-terms li+li{border-top:1px solid var(--guide-line)}
-.guide-terms li::before{content:"";width:5px;height:5px;background:var(--accent);border-radius:50%;margin-top:.55em}
-.guide-terms li:first-child{padding-top:0}
-.guide-terms li:last-child{padding-bottom:0}
+.terms-editorial{display:grid;gap:24px}
+.terms-editorial .terms-lead{margin:0;font-size:clamp(19px,2.1vw,31px);line-height:1.18;letter-spacing:-.035em;font-weight:550;text-transform:none}
+.terms-compact{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;list-style:none;padding:0;margin:0;min-width:0}
+.terms-compact li{display:flex;align-items:center;gap:8px;font-size:clamp(12px,1.05vw,16px);line-height:1.45;font-weight:500;letter-spacing:-.02em;color:var(--guide-muted)}
+.terms-compact li::before{content:"";display:block;width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
 @media(max-width:760px){
   .proposal-guide .proposal__shell{grid-template-columns:1fr;gap:24px;width:calc(100% - 40px)}
   .proposal-guide .proposal__header,.proposal-guide .proposal__content{grid-column:1}
@@ -535,5 +534,8 @@ html.voucher-modal-open{overflow:hidden}
   .guide-list summary{min-height:62px;grid-template-columns:36px minmax(0,1fr) 18px;gap:10px}
   .guide-number{font-size:36px}
   .guide-list .guide-copy{padding-left:46px;padding-right:0}
+  .terms-editorial{gap:18px}
+  .terms-editorial .terms-lead{font-size:22px}
+  .terms-compact{gap:10px 16px}
 }
 @media(prefers-reduced-motion:reduce){.guide-list summary svg{transition:none}.guide-list details[open] .guide-copy{animation:none}}
