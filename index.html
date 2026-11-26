@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=production-35"></script>
-  <link rel="stylesheet" href="css/landing.css?v=guided-41">
+  <link rel="stylesheet" href="css/landing.css?v=proposal-guide-46">
   <link rel="stylesheet" href="css/loading.css?v=production-35">
   <link rel="stylesheet" href="css/motion.css?v=price-breathe-44">
   <link rel="preload" href="assets/loading.jpg" as="image">
@@ -114,17 +114,35 @@
         </section>
       </div>
     </section>
-    <section class="proposal instructions" aria-labelledby="instructions-title">
-      <div class="proposal__shell"><header class="proposal__header"><h2 id="instructions-title">Cómo usarlo</h2></header>
-      <ol class="proposal__content">
-        <li>Dejá tu mail y tu celular.</li>
-        <li>Copiá tu código.</li>
-        <li>Pedilo online en un combinado Let’s Celebrate o Superstar de 60 o 100 piezas, para el 24 o el 31 de diciembre, y cargá el código al finalizar la compra en “Código promocional”.</li>
-      </ol></div>
+    <section class="proposal instructions proposal-guide" aria-labelledby="instructions-title">
+      <div class="proposal__shell">
+        <header class="proposal__header"><h2 id="instructions-title">Cómo usarlo</h2></header>
+        <div class="proposal__content guide-list">
+          <details name="proposal-guide">
+            <summary><span class="guide-number" aria-hidden="true">01</span><span>Dejá tus datos</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p class="guide-copy">Completá el formulario con tu mail y tu celular para recibir tu beneficio de $25.000.</p>
+          </details>
+          <details name="proposal-guide">
+            <summary><span class="guide-number" aria-hidden="true">02</span><span>Copiá tu código</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p class="guide-copy">Guardá el código que recibiste para tenerlo a mano al momento de finalizar tu compra.</p>
+          </details>
+          <details name="proposal-guide" open>
+            <summary><span class="guide-number" aria-hidden="true">03</span><span>Hacé tu pedido online</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p class="guide-copy">Elegí un combinado Let’s Celebrate o Superstar de 60 o 100 piezas para el 24 o el 31 de diciembre. Al finalizar tu compra online, ingresá el código en el campo “Código promocional”.</p>
+          </details>
+        </div>
+      </div>
     </section>
-    <section class="proposal conditions" aria-labelledby="conditions-title">
-      <div class="proposal__shell"><header class="proposal__header"><h2 id="conditions-title">Condiciones</h2></header>
-      <p class="proposal__content">1 código por persona · Válido en combinados Let’s Celebrate y Superstar de 60 y 100 piezas · No acumulable · Solo pedidos online</p></div>
+    <section class="proposal conditions proposal-guide" aria-labelledby="conditions-title">
+      <div class="proposal__shell">
+        <header class="proposal__header"><h2 id="conditions-title">Condiciones</h2></header>
+        <ul class="proposal__content guide-terms">
+          <li>1 código por persona</li>
+          <li>Válido en combinados Let’s Celebrate y Superstar de 60 y 100 piezas</li>
+          <li>No acumulable</li>
+          <li>Solo pedidos online</li>
+        </ul>
+      </div>
     </section>
     <footer class="legal">
       Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
