@@ -101,6 +101,11 @@
     resetCopiedState();
     delete confirmation.dataset.visible;
     document.documentElement.classList.remove("voucher-modal-open");
+    if(issuedCode && !form.hidden){
+      form.reset();
+      form.hidden=true;
+      generated.hidden=false;
+    }
     (issuedCode?viewCode:submit).focus({preventScroll:true});
   });
   viewCode.addEventListener("click",openConfirmation);
@@ -372,9 +377,6 @@
       }
       issuedCode=result.code;
       completeFormEntrance();
-      form.reset();
-      form.hidden=true;
-      generated.hidden=false;
       openConfirmation();
     } catch (error) {
       showFeedback(feedback, error?.message === "voucher-service-unconfigured"
