@@ -36,9 +36,10 @@
     return {code:"DEMO-"+suffix};
   }
   if(isPreview){
-    document.getElementById("confirmation-description").textContent = "Código de prueba · no canjeable";
-    document.getElementById("redeem-instruction").textContent = "Esta es una simulación. No se enviaron ni guardaron tus datos.";
-    document.getElementById("redeem-code").textContent = "Ver tienda online";
+    const notice = document.createElement("p");
+    notice.className = "feedback";
+    notice.textContent = "Código de prueba · no canjeable";
+    document.getElementById("redeem-instruction").after(notice);
   }
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
