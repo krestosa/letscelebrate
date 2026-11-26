@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Te regalamos $25.000 para Let’s Celebrate de Navidad o Año Nuevo.">
+  <title>Prototipo propuesta · SushiClub</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/landing.css?v=guided-41">
+  <link rel="stylesheet" href="css/loading.css?v=production-35">
+  <link rel="stylesheet" href="css/motion.css?v=price-breathe-44">
+  <link rel="preload" href="assets/loading.jpg" as="image">
+  <link rel="preload" href="assets/hero%20bg.jpg" as="image">
+  <link rel="preload" href="assets/firma.svg" as="image">
+  <link rel="preload" href="fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
+
+
+
+  <script src="js/voucher.js?v=guided-preview-45" defer></script>
+<meta name="robots" content="noindex,nofollow">
+<style>.proto-picker {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.82);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 8px 24px rgba(0, 0, 0, 0.24),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.proto-picker-highlight {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* The slide is enabled only after first paint (data-ready), so load doesn't animate. */
+.proto-picker[data-ready] .proto-picker-highlight {
+  transition:
+    transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+    width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+}
+
+.proto-picker-item {
+  position: relative; /* sits above the highlight */
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color 150ms ease-out,
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .proto-picker-item:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.proto-picker-item:active {
+  transform: scale(0.97);
+}
+
+.proto-picker-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
+}
+
+.proto-picker-item[data-active] {
+  color: #fff;
+}
+
+.proto-picker-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.proto-picker-replay {
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.proto-picker[data-position="top"] {
+  bottom: auto;
+  top: 24px;
+}
+
+
+#stage{--proposal-line:rgba(255,255,255,.17);--proposal-muted:rgba(255,255,255,.7);background:#000;color:#fff;scroll-margin-top:12px}
+#stage *{box-sizing:border-box}
+#stage .pp-shell{width:min(1500px,calc(100% - clamp(40px,6vw,128px)));margin-inline:auto;padding:clamp(44px,7vw,96px) 0}
+#stage .pp-heading{margin:0;font-family:Gazzetta,sans-serif;font-size:clamp(52px,7.4vw,118px);font-weight:700;line-height:.88;letter-spacing:normal;text-transform:uppercase}
+#stage .pp-copy{margin:0;font-size:clamp(15px,1.4vw,21px);line-height:1.38;font-weight:500;letter-spacing:-.02em;text-transform:uppercase}
+#stage .pp-number{font-family:Gazzetta,sans-serif;font-weight:900;font-size:clamp(54px,6vw,92px);color:var(--accent);line-height:.8;font-variant-numeric:tabular-nums}
+#stage .pp-conditions{border-top:1px solid var(--proposal-line)}
+#stage .pp-terms{padding:0;margin:0;list-style:none}
+#stage .pp-terms li{font-size:clamp(14px,1.1vw,18px);line-height:1.38;text-transform:uppercase;font-weight:500}
+#stage .seq-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));list-style:none;margin:42px 0 0;padding:0;gap:clamp(18px,3vw,48px)}
+#stage .seq-list li{position:relative;display:grid;align-content:start;gap:20px;border-top:1px solid var(--proposal-line);padding-top:22px}
+#stage .seq-list li::before{content:"";position:absolute;top:-2px;left:0;width:40px;height:3px;background:var(--accent)}
+#stage .seq-conditions .pp-shell{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:40px;align-items:start}
+#stage .seq-conditions .pp-terms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 24px}
+#stage .seq-conditions .pp-terms li{border-left:2px solid var(--accent);padding-left:12px}
+#stage .grid-heading{margin-bottom:clamp(24px,4vw,52px)}
+#stage .grid-list{list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:0;padding:0}
+#stage .grid-list li{min-height:clamp(120px,16vw,220px);display:grid;align-content:space-between;gap:16px;padding:clamp(18px,2.5vw,36px);border:1px solid var(--proposal-line);border-radius:12px;background:#11161b}
+#stage .grid-list li:last-child{grid-column:1/-1;grid-template-columns:auto minmax(0,1fr);align-items:center;align-content:center;gap:clamp(18px,4vw,54px);min-height:0;background:#131e2b}
+#stage .grid-list li:last-child .pp-copy{max-width:940px}
+#stage .grid-conditions .pp-heading{margin-bottom:24px}
+#stage .grid-conditions .pp-terms{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+#stage .grid-conditions .pp-terms li{border-top:1px solid var(--proposal-line);padding:14px 0}
+#stage .guide-shell{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);align-items:start;gap:clamp(24px,5vw,70px)}
+#stage .guide-list{display:grid;gap:0;min-width:0;border-top:1px solid var(--proposal-line)}
+#stage .guide-list details{border-bottom:1px solid var(--proposal-line)}
+#stage .guide-list summary{min-height:72px;display:grid;grid-template-columns:44px minmax(0,1fr) 20px;align-items:center;gap:14px;cursor:pointer;list-style:none;padding:16px 0;font-size:clamp(15px,1.4vw,20px);text-transform:uppercase;font-weight:600;letter-spacing:-.02em}
+#stage .guide-list summary::-webkit-details-marker{display:none}
+#stage .guide-list summary .pp-number{font-size:42px}
+#stage .guide-list summary svg{width:20px;height:20px;transition:transform 200ms var(--ease-out)}
+#stage .guide-list details[open] summary svg{transform:rotate(180deg)}
+#stage .guide-list .pp-copy{padding:0 24px 20px 58px;font-size:clamp(14px,1.2vw,18px);color:var(--proposal-muted);text-transform:none}
+#stage .guide-list details[open] .pp-copy{animation:guide-reveal 220ms var(--ease-out) both}
+@keyframes guide-reveal{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+#stage .guide-conditions .pp-terms{display:grid;gap:0;border-top:1px solid var(--proposal-line)}
+#stage .guide-conditions .pp-terms li{display:grid;grid-template-columns:10px minmax(0,1fr);align-items:start;gap:12px;padding:15px 0;border-bottom:1px solid var(--proposal-line)}
+#stage .guide-conditions .pp-terms li::before{content:"";width:5px;height:5px;background:var(--accent);border-radius:50%;margin-top:.55em}
+#stage summary:focus-visible{outline:2px solid var(--accent);outline-offset:4px}
+.legal{padding-bottom:max(88px,env(safe-area-inset-bottom))}
+@media(max-width:760px){
+ #stage .pp-shell{padding:36px 0;width:calc(100% - 40px)}
+ #stage .pp-heading{font-size:clamp(52px,13.8vw,74px)}
+ #stage .seq-list{grid-template-columns:1fr;gap:0;margin-top:24px}
+ #stage .seq-list li{grid-template-columns:52px minmax(0,1fr);gap:14px;align-items:start;padding:18px 0}
+ #stage .seq-list li::before{width:24px}
+ #stage .seq-list .pp-number{font-size:47px}
+ #stage .seq-conditions .pp-shell,#stage .guide-shell{grid-template-columns:1fr;gap:24px}
+ #stage .seq-conditions .pp-terms{grid-template-columns:1fr;gap:14px}
+ #stage .grid-list{gap:8px}
+ #stage .grid-list li{padding:14px;min-height:116px}
+ #stage .grid-list li:last-child{gap:12px;padding:16px}
+ #stage .grid-list .pp-number{font-size:46px}
+ #stage .grid-list li:not(:last-child) .pp-copy{font-size:13px}
+ #stage .grid-conditions .pp-terms{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ #stage .guide-list summary{min-height:62px;grid-template-columns:36px minmax(0,1fr) 18px;gap:10px}
+ #stage .guide-list summary .pp-number{font-size:36px}
+ #stage .guide-list .pp-copy{padding-left:46px}
+}
+@media(prefers-reduced-motion:reduce){#stage *{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+  
+  <main class="page" id="landing-page">
+    <section class="hero" aria-labelledby="offer-title">
+      <img class="hero__background" src="assets/hero%20bg.jpg" alt="" aria-hidden="true" decoding="async" loading="eager">
+      <div class="hero__black-filter" aria-hidden="true"></div>
+      <div class="hero__gradient" aria-hidden="true"></div>
+      <div class="hero__grain" aria-hidden="true"></div>
+      <header class="masthead">
+        <div class="masthead__brands">
+          <img class="masthead__sushiclub" src="assets/sushiclub.svg" alt="SushiClub" width="234" height="34">
+          <span class="masthead__campaign">LET’S CELEBRATE</span>
+        </div>
+      </header>
+      <div class="hero__layout">
+        <div class="hero__message">
+          <div class="title-lockup" id="offer-intro">
+            <h1 id="offer-title"><span class="title-kicker">Te regalamos</span> <span class="title-word"><span class="price-value">$25.000</span><span class="price-glow" aria-hidden="true">$25.000</span></span> <span class="title-kicker title-kicker--end"><strong class="title-celebrate">Para Let’s Celebrate</strong></span></h1>
+          </div>
+          <div class="hero-copy">
+            <p>Dejá tu mail y tu celular y usá tu código en un combinado Let’s Celebrate o Superstar de 60 o 100 piezas para Navidad o Año Nuevo.</p>
+          </div>
+        </div>
+        <section class="claim-section" aria-label="Solicitá tu código">
+          <div class="voucher">
+            <form id="voucher-form" action="" method="post" data-step="1">
+              <div class="claim-steps">
+                <span id="claim-step-label" class="claim-step-label" role="status" aria-live="polite">Paso 1 de 2</span>
+                <span class="claim-progress" aria-hidden="true"><span data-done></span><span id="claim-progress-second"></span></span>
+              </div>
+              <div class="claim-step" id="claim-step-email">
+                <div class="field">
+                  <label for="email">Mail</label>
+                  <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
+                </div>
+              </div>
+              <div class="claim-step" id="claim-step-phone" hidden>
+                <div class="field">
+                  <label for="phone">Celular</label>
+                  <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="+54 9 11 1234-1234" required disabled>
+                </div>
+                <label class="consent">
+                  <input id="terms" name="terms" type="checkbox" required disabled>
+                  <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
+                </label>
+              </div>
+              <div class="claim-step-actions">
+                <button type="button" class="claim-step-back" id="claim-back" aria-label="Volver al mail" hidden>←</button>
+                <button type="submit" class="button button--primary" id="claim-button" disabled>Continuar</button>
+              </div>
+              <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
+              <noscript>Activá JavaScript para solicitar tu código.</noscript>
+            </form>
+            <div id="claim-generated" class="claim-generated" hidden>
+              <div class="claim-generated__icon" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div>
+              <h2>Código generado</h2>
+              <button type="button" class="button button--primary" id="view-code" aria-haspopup="dialog" aria-controls="confirmation">Ver mi código</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+    <div id="stage" aria-label="Propuesta de campaña"></div>
+    <footer class="legal">
+      Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
+    </footer>
+  </main>
+  <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-description redeem-instruction">
+    <div class="confirmation__surface">
+      <div class="confirmation__drag" id="confirmation-drag" aria-hidden="true"><span></span></div>
+      <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
+      <p id="confirmation-description" class="confirmation__description">Este es tu código de $25.000:</p>
+      <div class="code-box">
+        <button type="button" id="voucher-code" class="code-box__button" aria-label="Copiar código promocional"><span id="voucher-code-text"></span><svg class="code-box__copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="code-box__check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
+        <input id="voucher-code-fallback" readonly hidden aria-label="Código para copiar manualmente" spellcheck="false">
+      </div>
+      <div class="confirmation__actions">
+        <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
+        <a id="redeem-code" class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
+      </div>
+      <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
+      <p id="redeem-instruction" class="confirmation__instruction">Cargalo al finalizar la compra en “Código promocional”.</p>
+    </div>
+  </dialog>
+<nav class="proto-picker" aria-label="Prototype variants">
+  <span class="proto-picker-highlight" aria-hidden="true"></span>
+  <button class="proto-picker-item" data-active aria-current="true">Secuencia</button>
+  <button class="proto-picker-item">Retícula</button>
+  <button class="proto-picker-item">Guía</button>
+</nav>
+
+<script>
+const instructions=["Dejá tu mail y tu celular.","Copiá tu código.","Pedilo online en un combinado Let’s Celebrate o Superstar de 60 o 100 piezas, para el 24 o el 31 de diciembre, y cargá el código al finalizar la compra en “Código promocional”."];
+const conditions=["1 código por persona","Válido en combinados Let’s Celebrate y Superstar de 60 y 100 piezas","No acumulable","Solo pedidos online"];
+const n=i=>String(i+1).padStart(2,"0");
+const heading=(id,text)=>'<h2 class="pp-heading" id="'+id+'">'+text+'</h2>';
+const number=i=>'<span class="pp-number" aria-hidden="true">'+n(i)+'</span>';
+const terms=()=>'<ul class="pp-terms">'+conditions.map(x=>'<li>'+x+'</li>').join("")+'</ul>';
+const section=(type,cls,body)=>'<section class="'+cls+'" aria-labelledby="'+type+'"><div class="pp-shell'+(cls.includes("guide")?' guide-shell':'')+'">'+body+'</div></section>';
+function sequence(){return section("instructions-title","pp-instructions seq-instructions",heading("instructions-title","Cómo usarlo")+'<ol class="seq-list">'+instructions.map((x,i)=>'<li>'+number(i)+'<p class="pp-copy">'+x+'</p></li>').join("")+'</ol>')+section("conditions-title","pp-conditions seq-conditions",heading("conditions-title","Condiciones")+terms());}
+function grid(){return section("instructions-title","pp-instructions grid-instructions",'<div class="grid-heading">'+heading("instructions-title","Cómo usarlo")+'</div><ol class="grid-list">'+instructions.map((x,i)=>'<li>'+number(i)+'<p class="pp-copy">'+x+'</p></li>').join("")+'</ol>')+section("conditions-title","pp-conditions grid-conditions",heading("conditions-title","Condiciones")+terms());}
+function guide(){
+ const labels=["Dejá tus datos","Copiá tu código","Hacé tu pedido online"];
+ const chevron='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+ return section("instructions-title","pp-instructions guide-instructions",heading("instructions-title","Cómo usarlo")+'<div class="guide-list">'+instructions.map((x,i)=>'<details name="proposal-guide" '+(i===2?'open':'')+'><summary>'+number(i)+'<span>'+labels[i]+'</span>'+chevron+'</summary><p class="pp-copy">'+x+'</p></details>').join("")+'</div>')+section("conditions-title","pp-conditions guide-conditions",heading("conditions-title","Condiciones")+terms());
+}
+const variants=[sequence,grid,guide];
+// `variants` is an array of render functions, one per variant, in picker order.
+const stage = document.getElementById('stage');
+const picker = document.querySelector('.proto-picker');
+const highlight = picker.querySelector('.proto-picker-highlight');
+const items = [...picker.querySelectorAll('.proto-picker-item:not(.proto-picker-replay)')];
+const replay = picker.querySelector('.proto-picker-replay');
+let current = 0;
+
+function moveHighlight() {
+  const el = items[current];
+  highlight.style.width = el.offsetWidth + 'px';
+  highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+}
+
+function mount(i) {
+  stage.innerHTML = '';
+  // Clear first, render next frame, so entrance animations re-run.
+  requestAnimationFrame(() => { stage.innerHTML = variants[i](); });
+}
+
+function setActive(i) {
+  if (i < 0 || i >= variants.length) return;
+  current = i;
+  items.forEach((el, j) => {
+    el.toggleAttribute('data-active', j === i);
+    if (j === i) el.setAttribute('aria-current', 'true');
+    else el.removeAttribute('aria-current');
+  });
+  moveHighlight();
+  const url = new URL(location);
+  url.searchParams.set('v', i + 1);
+  history.replaceState(null, '', url);
+  mount(i);
+}
+
+items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+replay?.addEventListener('click', () => mount(current));
+window.addEventListener('resize', moveHighlight);
+
+document.addEventListener('keydown', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= variants.length) setActive(num - 1);
+  else if (e.key === 'ArrowRight') setActive((current + 1) % variants.length);
+  else if (e.key === 'ArrowLeft') setActive((current - 1 + variants.length) % variants.length);
+  else if (e.key === 'r' || e.key === 'R') mount(current);
+});
+
+const requested = parseInt(new URLSearchParams(location.search).get('v'), 10);
+setActive(requested >= 1 && requested <= variants.length ? requested - 1 : 0);
+// Enable the slide only after first paint, so load doesn't animate.
+requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+
+stage.addEventListener("toggle",event=>{
+ const opened=event.target;
+ if(opened.tagName!=="DETAILS"||!opened.open)return;
+ stage.querySelectorAll(".guide-list details[open]").forEach(other=>{if(other!==opened)other.open=false;});
+},true);
+requestAnimationFrame(()=>requestAnimationFrame(()=>{if(!location.hash)stage.scrollIntoView({block:"start",behavior:"instant"});}));
+</script>
+</body>
+</html>
