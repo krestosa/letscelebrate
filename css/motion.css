@@ -143,3 +143,16 @@ body { position: relative; }
   .loading__signature { contain: layout; }
 }
 
+.hero .title-word{position:relative}
+.hero .title-word .price-glow{
+  position:absolute;
+  inset:0;
+  color:transparent;
+  text-shadow:0 0 5px rgba(255,255,255,.28),0 0 26px rgba(255,255,255,.25);
+  opacity:0;
+  pointer-events:none;
+  user-select:none;
+  animation:price-breathe 5.6s var(--ease-out) infinite;
+}
+@keyframes price-breathe{0%,100%{opacity:0}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.hero .title-word .price-glow{animation:none;opacity:0}}
