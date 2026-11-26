@@ -319,7 +319,7 @@
     emailStep.hidden = step !== 1;
     phoneStep.hidden = step !== 2;
     back.hidden = step !== 2;
-    stepLabel.textContent = "Paso " + step + " de 2" + (isPreview ? " · Demo" : "");
+    stepLabel.textContent = "Paso " + step + " de 2";
     progressSecond.toggleAttribute("data-done", step === 2);
     syncStepControls();
     showFeedback(feedback, "");
