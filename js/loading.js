@@ -17,8 +17,9 @@
     offsets:wheels.map(w=>parseFloat(w.style.getPropertyValue("--digit-offset"))||0)
   };
   const initialHold=entrance.delay+Math.max(...entrance.offsets)+entrance.duration;
-  const durations=[1320,1760,2200,2640];
-  const acceleration=140, braking=920;
+  const durations=[1240,1680,2120,2560];
+  const turns=[1,2,2,3], stageBoosts=[.18,.22,.25];
+  const acceleration=140, braking=240, stageRamp=140;
   const clamp = v => Math.max(0,Math.min(1,v));
   const step = Math.PI * 2 / 10;
   const radius = 1.45, camera = .65;
@@ -30,7 +31,7 @@
   let spinStarted = false;
   const drums = wheels.map((wheel, i) => {
     const start = Number(wheel.dataset.start), end = Number(wheel.dataset.end);
-    return {wheel, start, end, steps:10+(end-start+10)%10,
+    return {wheel, start, end, steps:10*turns[i]+(end-start+10)%10,
       duration:durations[i], index:i, digit:wheel.querySelector(".wheel__static"), settled:false, phase:start};
   });
   root.classList.add("loading-preparing");
@@ -247,17 +248,32 @@
     }
     return bez((lo+hi)/2,1,1);
   }
-  function motion(t,duration,steps){
-    const speed=steps/(duration-(acceleration+braking)/2);
-    if(t<acceleration){
-      const q=clamp(t/acceleration);
-      return {p:speed*acceleration*(q-Math.sin(Math.PI*q)/Math.PI)/2,
-        v:speed*(1-Math.cos(Math.PI*q))/2};
+  function ramp(t, start, span){
+    const elapsed=t-start;
+    if(elapsed<=0)return {p:0,v:0};
+    if(elapsed>=span)return {p:elapsed-span/2,v:1};
+    const q=elapsed/span;
+    return {p:span*(q-Math.sin(Math.PI*q)/Math.PI)/2,
+      v:(1-Math.cos(Math.PI*q))/2};
+  }
+  function speedProfile(t, index){
+    const duration=durations[index], time=Math.max(0,Math.min(t,duration));
+    const initial=ramp(time,0,acceleration);
+    let p=initial.p,v=initial.v,multiplier=1;
+    for(let stage=0;stage<index;stage++){
+      const rise=ramp(time,durations[stage],stageRamp), boost=stageBoosts[stage];
+      p+=boost*rise.p;v+=boost*rise.v;multiplier+=boost;
     }
-    if(t<duration-braking)return {p:speed*(t-acceleration/2),v:speed};
-    const q=clamp((duration-t)/braking);
-    return {p:steps-speed*braking*(q-Math.sin(Math.PI*q)/Math.PI)/2,
-      v:speed*(1-Math.cos(Math.PI*q))/2};
+    const stop=ramp(time,duration-braking,braking);
+    p-=multiplier*stop.p;v-=multiplier*stop.v;
+    return {p,v:Math.max(0,v)};
+  }
+  function motion(t,duration,steps,index){
+    if(t<=0)return {p:0,v:0};
+    if(t>=duration)return {p:steps,v:0};
+    const profile=speedProfile(t,index), area=speedProfile(duration,index).p;
+    const scale=steps/area;
+    return {p:Math.min(steps,profile.p*scale),v:profile.v*scale};
   }
   function render(now){
     if(finished)return;
@@ -295,7 +311,7 @@
       for(const d of drums){
         if(!d.settled && elapsed>=d.duration)settle(d);
         if(d.settled){if(renderer)renderer.draw(d,d.end,0,1,0,1);continue;}
-        const m=motion(elapsed,d.duration,d.steps);
+        const m=motion(elapsed,d.duration,d.steps,d.index);
         const remaining=clamp((d.steps-m.p)/.4);
         const landing=1-remaining*remaining*(3-2*remaining);
         const reveal=clamp(elapsed/acceleration);
