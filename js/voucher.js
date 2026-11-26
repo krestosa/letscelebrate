@@ -35,12 +35,6 @@
     const suffix = Array.from(random, value => value.toString(16).padStart(2, "0")).join("").toUpperCase();
     return {code:"DEMO-"+suffix};
   }
-  if(isPreview){
-    const notice = document.createElement("p");
-    notice.className = "feedback";
-    notice.textContent = "Código de prueba · no canjeable";
-    document.getElementById("redeem-instruction").after(notice);
-  }
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
   let busy = false, issuedCode = null;
