@@ -26,6 +26,20 @@
   const desktopDialog = matchMedia("(min-width:1025px) and (pointer:fine) and (hover:hover)");
 
   const endpoint = "/api/lets-celebrate/voucher";
+  const isPreview = location.protocol === "file:" ||
+    (["localhost","127.0.0.1","[::1]"].includes(location.hostname)) ||
+    (location.hostname === "krestosa.github.io" && /^\/letscelebrate(?:\/|$)/.test(location.pathname));
+  async function claimPreview(){
+    const random = new Uint8Array(5);
+    crypto.getRandomValues(random);
+    const suffix = Array.from(random, value => value.toString(16).padStart(2, "0")).join("").toUpperCase();
+    return {code:"DEMO-"+suffix};
+  }
+  if(isPreview){
+    document.getElementById("confirmation-description").textContent = "Código de prueba · no canjeable";
+    document.getElementById("redeem-instruction").textContent = "Esta es una simulación. No se enviaron ni guardaron tus datos.";
+    document.getElementById("redeem-code").textContent = "Ver tienda online";
+  }
   const duplicateMessage = "Ya tenés tu código. Es 1 por persona.";
   const serviceMessage = "No pudimos solicitar tu código. Intentá nuevamente.";
   let busy = false, issuedCode = null;
@@ -310,7 +324,7 @@
     emailStep.hidden = step !== 1;
     phoneStep.hidden = step !== 2;
     back.hidden = step !== 2;
-    stepLabel.textContent = "Paso " + step + " de 2";
+    stepLabel.textContent = "Paso " + step + " de 2" + (isPreview ? " · Demo" : "");
     progressSecond.toggleAttribute("data-done", step === 2);
     syncStepControls();
     showFeedback(feedback, "");
@@ -356,7 +370,7 @@
     if (!data.acceptedTerms) return;
     setBusy(true);
     try {
-      const result = await claimReal(data);
+      const result = await (isPreview ? claimPreview() : claimReal(data));
       if (result.duplicate) {
         showFeedback(feedback, duplicateMessage);
         return;
