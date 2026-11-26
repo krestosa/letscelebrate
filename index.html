@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="js/intro.js?v=production-35"></script>
-  <link rel="stylesheet" href="css/landing.css?v=mobile-copy-40">
+  <link rel="stylesheet" href="css/landing.css?v=guided-41">
   <link rel="stylesheet" href="css/loading.css?v=production-35">
   <link rel="stylesheet" href="css/motion.css?v=production-35">
   <link rel="preload" href="assets/loading.jpg" as="image">
@@ -33,7 +33,7 @@
   <script src="js/signature.js?v=production-35" defer></script>
   <script src="js/snow.js?v=production-35" defer></script>
   <script src="js/loading.js?v=production-35" defer></script>
-  <script src="js/voucher.js?v=phone-native-36" defer></script>
+  <script src="js/voucher.js?v=guided-41" defer></script>
 </head>
 <body>
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
@@ -77,20 +77,31 @@
         </div>
         <section class="claim-section" aria-label="Solicitá tu código">
           <div class="voucher">
-            <form id="voucher-form" action="" method="post">
-              <div class="field">
-                <label for="email">Mail</label>
-                <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
+            <form id="voucher-form" action="" method="post" data-step="1">
+              <div class="claim-steps">
+                <span id="claim-step-label" class="claim-step-label" role="status" aria-live="polite">Paso 1 de 2</span>
+                <span class="claim-progress" aria-hidden="true"><span data-done></span><span id="claim-progress-second"></span></span>
               </div>
-              <div class="field">
-                <label for="phone">Celular</label>
-                <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="+54 9 11 1234-1234" required>
+              <div class="claim-step" id="claim-step-email">
+                <div class="field">
+                  <label for="email">Mail</label>
+                  <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
+                </div>
               </div>
-              <label class="consent">
-                <input id="terms" name="terms" type="checkbox" required>
-                <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
-              </label>
-              <button type="submit" class="button button--primary" id="claim-button" disabled>Quiero mi código</button>
+              <div class="claim-step" id="claim-step-phone" hidden>
+                <div class="field">
+                  <label for="phone">Celular</label>
+                  <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="+54 9 11 1234-1234" required disabled>
+                </div>
+                <label class="consent">
+                  <input id="terms" name="terms" type="checkbox" required disabled>
+                  <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
+                </label>
+              </div>
+              <div class="claim-step-actions">
+                <button type="button" class="claim-step-back" id="claim-back" aria-label="Volver al mail" hidden>←</button>
+                <button type="submit" class="button button--primary" id="claim-button" disabled>Continuar</button>
+              </div>
               <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
               <noscript>Activá JavaScript para solicitar tu código.</noscript>
             </form>

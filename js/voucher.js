@@ -7,6 +7,12 @@
   const terms = document.getElementById("terms");
   const submit = document.getElementById("claim-button");
   const feedback = document.getElementById("form-feedback");
+  const emailStep = document.getElementById("claim-step-email");
+  const phoneStep = document.getElementById("claim-step-phone");
+  const stepLabel = document.getElementById("claim-step-label");
+  const progressSecond = document.getElementById("claim-progress-second");
+  const back = document.getElementById("claim-back");
+  let step = 1;
   const confirmation = document.getElementById("confirmation");
   const codeButton = document.getElementById("voucher-code");
   const codeText = document.getElementById("voucher-code-text");
@@ -290,12 +296,36 @@
     }
   }
 
+  function syncStepControls(){
+    email.disabled = busy || step !== 1;
+    phone.disabled = busy || step !== 2;
+    terms.disabled = busy || step !== 2;
+    back.disabled = busy;
+    submit.disabled = busy;
+    submit.textContent = busy ? "Solicitando código…" : step === 1 ? "Continuar" : "Quiero mi código";
+  }
+  function setStep(next, focus = true){
+    step = next;
+    form.dataset.step = String(step);
+    emailStep.hidden = step !== 1;
+    phoneStep.hidden = step !== 2;
+    back.hidden = step !== 2;
+    stepLabel.textContent = "Paso " + step + " de 2";
+    progressSecond.toggleAttribute("data-done", step === 2);
+    syncStepControls();
+    showFeedback(feedback, "");
+    if(focus){
+      form.dataset.stepMotion = "";
+      (step === 1 ? email : phone).focus({preventScroll:true});
+    }
+  }
   function setBusy(value) {
     busy = value;
     form.setAttribute("aria-busy", String(value));
-    [email, phone, terms, submit].forEach(el => { el.disabled = value; });
-    submit.textContent = value ? "Solicitando código…" : "Quiero mi código";
+    syncStepControls();
   }
+
+  back.addEventListener("click", () => { if(!busy) setStep(1); });
 
   phone.addEventListener("input",updatePhoneFormat);
   phone.addEventListener("blur",updatePhoneFormat);
@@ -313,6 +343,12 @@
     if (busy) return;
     if (issuedCode) { openConfirmation(); return; }
     showFeedback(feedback, "");
+    if(step === 1){
+      if(!email.reportValidity()) return;
+      completeFormEntrance();
+      setStep(2);
+      return;
+    }
     const normalizedPhone = normalizePhone(phone.value);
     phone.setCustomValidity(normalizedPhone ? "" : "Ingresá un número de celular válido.");
     if (!form.reportValidity()) return;
@@ -395,5 +431,5 @@
   codeButton.addEventListener("click",copyIssuedCode);
   copyButton.addEventListener("click",copyIssuedCode);
 
-  submit.disabled = false;
+  setStep(1, false);
 })();
