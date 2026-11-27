@@ -34,11 +34,20 @@
   <script src="../js/snow.js?v=production-35" defer></script>
   <script src="../js/loading.js?v=intro-pace-48" defer></script>
   <style>
-    .deli-landing .hero{justify-content:center}
-    .deli-landing .hero__layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;align-content:center;align-items:center;justify-items:center;gap:0}
-    .deli-landing .hero__message{align-items:center;text-align:center}
-    .deli-landing .hero__message .title-lockup,.deli-landing .hero__message .hero-copy,.deli-landing .hero__message .title-kicker{text-align:center}
-    .deli-landing .hero__message .title-lockup h1{align-items:center}
+    .deli-landing .hero{min-height:84svh;justify-content:center;padding-bottom:clamp(24px,4vh,48px)}
+    .deli-landing .hero__layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;align-content:center;align-items:center;justify-items:start;gap:0;flex:0 0 auto;min-height:0}
+    .deli-landing .hero__message{align-items:flex-start;text-align:left}
+    .deli-landing .hero__message .title-lockup,.deli-landing .hero__message .hero-copy,.deli-landing .hero__message .title-kicker{text-align:left}
+    .deli-landing .hero__message .title-lockup h1{align-items:flex-start}
+    .deli-landing .conditions{border-top:0;padding-top:clamp(12px,2vh,24px)}
+    @media(min-width:900px){
+      .deli-landing .hero__layout{grid-template-columns:minmax(0,1.25fr) minmax(320px,.85fr);column-gap:clamp(40px,6vw,100px)}
+    }
+    @media(max-width:760px){
+      .deli-landing .hero{min-height:84svh;justify-content:flex-start;padding-top:clamp(88px,12svh,112px);padding-bottom:20px}
+      .deli-landing .hero__message{max-width:100%}
+      .deli-landing .hero__message .hero-copy{width:min(100%,360px);margin-top:12px}
+    }
   </style>
 </head>
 <body class="deli-landing">
