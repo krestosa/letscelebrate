@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Te regalamos $25.000 para Let’s Celebrate de Navidad o Año Nuevo.">
+  <title>Let’s Celebrate · SushiClub</title>
+  <script>
+    (() => {
+      if (!window.isSecureContext || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const latest = Object.create(null), handlers = {};
+      const startedAt = performance.now();
+      const types = ["deviceorientation", "deviceorientationabsolute", "devicemotion"];
+      for (const type of types) {
+        handlers[type] = event => { latest[type] = event; };
+        window.addEventListener(type, handlers[type], { passive: true });
+      }
+      window.__snowSensorBootstrap = {startedAt, latest, stop() { for (const type of types) window.removeEventListener(type, handlers[type]); }};
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="../js/intro.js?v=production-35"></script>
+  <link rel="stylesheet" href="../css/landing.css?v=conditions-editorial-47">
+  <link rel="stylesheet" href="../css/loading.css?v=production-35">
+  <link rel="stylesheet" href="../css/motion.css?v=intro-pace-48">
+  <link rel="preload" href="../assets/loading.jpg" as="image">
+  <link rel="preload" href="../assets/hero_bg.jpg?v=51" as="image">
+  <link rel="preload" href="../assets/firma.svg" as="image">
+  <link rel="preload" href="../fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
+  <script src="../js/signature.js?v=production-35" defer></script>
+  <script src="../js/snow.js?v=production-35" defer></script>
+  <script src="../js/loading.js?v=intro-pace-48" defer></script>
+  <script src="../js/voucher.js?v=51" defer></script>
+</head>
+<body>
+  <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
+  <section class="loading" id="intro-screen" aria-label="Aniversario SushiClub">
+    <div class="year" role="status">
+      <span class="sr-only" id="year-label">2001</span>
+      <span class="year__wheels" aria-hidden="true">
+        <span class="wheel" style="--digit-offset:0ms" data-start="2" data-end="2"><span class="wheel__static">2</span></span>
+        <span class="wheel" style="--digit-offset:70ms" data-start="0" data-end="0"><span class="wheel__static">0</span></span>
+        <span class="wheel" style="--digit-offset:140ms" data-start="0" data-end="2"><span class="wheel__static">0</span></span>
+        <span class="wheel" style="--digit-offset:205ms" data-start="1" data-end="6"><span class="wheel__static">1</span></span>
+        <canvas class="year__cylinder" id="cylinder-canvas" aria-hidden="true"></canvas>
+      </span>
+    </div>
+    <div class="loading__signature" id="intro-signature" aria-hidden="true">
+      <canvas id="signature-canvas" class="signature-canvas" width="1" height="1" aria-hidden="true"></canvas>
+      <img id="signature-art" class="signature-art" src="../assets/firma.svg" width="2316" height="804" alt="" decoding="async">
+    </div>
+    <img class="loading__brand" src="../assets/sushiclub.svg" alt="SushiClub" width="234" height="34" fetchpriority="high">
+  </section>
+  <main class="page" id="landing-page">
+    <section class="hero" aria-labelledby="offer-title">
+      <img class="hero__background" src="../assets/hero_bg.jpg?v=51" alt="" aria-hidden="true" decoding="async" loading="eager">
+      <div class="hero__black-filter" aria-hidden="true"></div>
+      <div class="hero__gradient" aria-hidden="true"></div>
+      <div class="hero__grain" aria-hidden="true"></div>
+      <header class="masthead">
+        <div class="masthead__brands">
+          <img class="masthead__sushiclub" src="../assets/sushiclub.svg" alt="SushiClub" width="234" height="34">
+          <span class="masthead__campaign">LET’S CELEBRATE</span>
+        </div>
+      </header>
+      <div class="hero__layout">
+        <div class="hero__message">
+          <div class="title-lockup" id="offer-intro">
+            <h1 id="offer-title"><span class="title-kicker">Te regalamos</span> <span class="title-word"><span class="price-value">$25.000</span><span class="price-glow" aria-hidden="true">$25.000</span></span> <span class="title-kicker title-kicker--end"><strong class="title-celebrate">Para Let’s Celebrate</strong></span></h1>
+          </div>
+          <div class="hero-copy">
+            <p>Dejá tu mail y tu celular y usá tu código en un combinado Let’s Celebrate o Superstar para Navidad o Año Nuevo.</p>
+          </div>
+        </div>
+        <section class="claim-section" aria-label="Solicitá tu código">
+          <div class="voucher">
+            <form id="voucher-form" action="" method="post" data-step="1">
+              <div class="claim-steps">
+                <span id="claim-step-label" class="claim-step-label" role="status" aria-live="polite">Paso 1 de 2</span>
+                <span class="claim-progress" aria-hidden="true"><span data-done></span><span id="claim-progress-second"></span></span>
+              </div>
+              <div class="claim-step" id="claim-step-email">
+                <div class="field">
+                  <label for="email">Mail</label>
+                  <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
+                </div>
+              </div>
+              <div class="claim-step" id="claim-step-phone" hidden>
+                <div class="field">
+                  <label for="phone">Celular</label>
+                  <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="+54 9 11 1234-1234" required disabled>
+                </div>
+                <label class="consent">
+                  <input id="terms" name="terms" type="checkbox" required disabled>
+                  <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
+                </label>
+              </div>
+              <div class="claim-step-actions">
+                <button type="button" class="claim-step-back" id="claim-back" aria-label="Volver al mail" hidden>←</button>
+                <button type="submit" class="button button--primary" id="claim-button" disabled>Continuar</button>
+              </div>
+              <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
+              <noscript>Activá JavaScript para solicitar tu código.</noscript>
+            </form>
+            <div id="claim-generated" class="claim-generated" hidden>
+              <div class="claim-generated__icon" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div>
+              <h2>Código generado</h2>
+              <button type="button" class="button button--primary" id="view-code" aria-haspopup="dialog" aria-controls="confirmation">Ver mi código</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+    <section class="proposal instructions proposal-guide" aria-labelledby="instructions-title">
+      <div class="proposal__shell">
+        <header class="proposal__header"><h2 id="instructions-title">Cómo usarlo</h2></header>
+        <div class="proposal__content guide-list">
+          <details name="proposal-guide">
+            <summary><span class="guide-number" aria-hidden="true">01</span><span>Dejá tus datos</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p class="guide-copy">Completá el formulario con tu mail y tu celular para recibir tu beneficio de $25.000.</p>
+          </details>
+          <details name="proposal-guide">
+            <summary><span class="guide-number" aria-hidden="true">02</span><span>Copiá tu código</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p class="guide-copy">Guardá el código que recibiste para tenerlo a mano al momento de finalizar tu compra.</p>
+          </details>
+          <details name="proposal-guide" open>
+            <summary><span class="guide-number" aria-hidden="true">03</span><span>Usá tu código</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+            <p class="guide-copy">Elegí un combinado Let’s Celebrate o Superstar para el 24 o el 31 de diciembre, según las condiciones de cada modalidad. Si hacés tu pedido online, ingresá el código en el campo “Código promocional” al finalizar tu compra.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+    <section class="proposal conditions proposal-guide" aria-labelledby="conditions-title">
+      <div class="proposal__shell">
+        <header class="proposal__header"><h2 id="conditions-title">Condiciones</h2></header>
+        <div class="proposal__content terms-editorial">
+          <p class="terms-lead">Válido en combinados Let's Celebrate y Superstar de 60 y 100 piezas.</p>
+          <ul class="terms-compact">
+            <li>Restó: escaneá el QR de tu mesa, dejá tu mail y celular, y obtené un código de $25.000 para usar en un combinado de 60 o 100 piezas (único código de descuento por compra).</li>
+            <li>Canje en pedidos online para el 24 y el 31 de diciembre. No válido en combinados de 30 piezas.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <footer class="legal">
+      Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
+    </footer>
+  </main>
+  <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-description redeem-instruction">
+    <div class="confirmation__surface">
+      <div class="confirmation__drag" id="confirmation-drag" aria-hidden="true"><span></span></div>
+      <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
+      <p id="confirmation-description" class="confirmation__description">Este es tu código de $25.000:</p>
+      <div class="code-box">
+        <button type="button" id="voucher-code" class="code-box__button" aria-label="Copiar código promocional"><span id="voucher-code-text"></span><svg class="code-box__copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="code-box__check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
+        <input id="voucher-code-fallback" readonly hidden aria-label="Código para copiar manualmente" spellcheck="false">
+      </div>
+      <div class="confirmation__actions">
+        <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
+        <a id="redeem-code" class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
+      </div>
+      <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
+      <p id="redeem-instruction" class="confirmation__instruction">Cargalo al finalizar la compra en “Código promocional”.</p>
+    </div>
+  </dialog>
+</body>
+</html>
