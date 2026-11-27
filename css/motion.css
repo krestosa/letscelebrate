@@ -30,7 +30,7 @@
   opacity: 1;
 }
 
-.loading__signature { aspect-ratio: 2316 / 804; contain: layout paint; }
+.loading__signature { aspect-ratio: 2223.1 / 789.9; contain: layout paint; }
 .signature-canvas, .signature-art {
   position: absolute; inset: 0; display: block;
   width: 100%; height: 100%; object-fit: contain;

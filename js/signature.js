@@ -15,12 +15,16 @@
       return el;
     };
     const vector = node("svg", {
-      viewBox: "0 0 2316 804", class: "signature-vector",
+      viewBox: "85.8 6.8 2223.1 789.9", class: "signature-vector",
       "aria-hidden": "true"
     });
     const defs = node("defs", {});
     const ink = node("g", {fill: "white"});
-    vector.append(defs, ink);
+    const reveal = node("mask", {id:"signature-current-art-mask",maskUnits:"userSpaceOnUse",x:"85.8",y:"6.8",width:"2223.1",height:"789.9"});
+    reveal.append(ink);
+    defs.append(reveal);
+    const image = node("image", {href:art.src,x:"85.8",y:"6.8",width:"2223.1",height:"789.9",mask:"url(#signature-current-art-mask)"});
+    vector.append(defs, image);
     host.insertBefore(vector, art);
     const css = getComputedStyle(document.documentElement);
     const budgets = [
@@ -105,9 +109,9 @@
     const box=host.getBoundingClientRect();
     const dpr=Math.min(devicePixelRatio||1,1.5);
     width=Math.max(1,Math.round(box.width*dpr));
-    height=Math.max(1,Math.round(width*804/2316));
+    height=Math.max(1,Math.round(width*789.9/2223.1));
     for(const surface of [canvas,mask,raster]){surface.width=width;surface.height=height;}
-    ink.setTransform(width/2316,0,0,height/804,0,0);
+    ink.setTransform(width/2223.1,0,0,height/789.9,-85.8*width/2223.1,-6.8*height/789.9);
     ink.lineCap=ink.lineJoin="round";
     ink.fillStyle=ink.strokeStyle="#fff";
     makeTimeline();
