@@ -11,14 +11,13 @@ Opcional: `data-snow-density="0.7"`, `data-snow-tilt="false"`, `style="--snow-z-
 
 ## API opcional
 
-```js
-const el = document.querySelector("#popup");
-SnowEffect.mount(el);        // agrega la clase e inicia
-SnowEffect.unmount(el);      // quita la clase y libera recursos
-SnowEffect.refresh();        // reevalúa los contenedores
-SnowEffect.requestMotion(el); // permiso de inclinación, desde un clic
-```
+| Método | Función |
+| --- | --- |
+| `SnowEffect.mount(el)` | Agrega la clase y activa la nieve. |
+| `SnowEffect.unmount(el)` | Quita la clase y libera recursos. |
+| `SnowEffect.refresh()` | Reevalúa los contenedores. |
+| `SnowEffect.requestMotion(el)` | Solicita permiso de inclinación desde un clic. |
 
-La clase basta; no se necesita llamar a la API. Los sensores requieren navegador compatible y contexto seguro (HTTPS o localhost).
+`el` es el elemento HTML. La clase basta para usar el efecto. Los sensores requieren un navegador compatible y contexto seguro.
 
 Demo: `demo.html`.

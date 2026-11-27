@@ -1,4 +1,3 @@
-/* Standalone snow overlay: does not modify content or intercept input. */
 .snow[data-snow-static]{position:relative}
 .snow > .snow-effect__canvas{
   position:absolute;inset:0;display:block;
