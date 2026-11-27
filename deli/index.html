@@ -63,16 +63,17 @@
     .pricing-savings .p-details dt{font-size:11px;color:var(--muted)}
     .pricing-savings .p-details dd{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
     .pricing-savings .p-final{display:grid;gap:7px;justify-items:start;align-content:end;text-align:left;min-width:0}
+    .pricing-savings .p-final .p-label{width:0;min-width:100%;text-align:left}
     .pricing-savings .p-saving{display:grid;gap:12px}
     .pricing-savings .p-saving-hero{background:rgba(var(--accent-rgb),.10);border:1px solid rgba(var(--accent-rgb),.32);border-radius:12px;padding:clamp(18px,3vw,32px);display:grid;gap:18px}
     .pricing-savings .p-saving-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--rule)}
     .pricing-savings .p-saving-number{font-family:Gazzetta,sans-serif;font-weight:900;color:var(--accent);font-size:clamp(64px,8vw,108px);line-height:.8;white-space:nowrap}
     .pricing-savings .p-saving-summary{display:grid;gap:5px}
     .pricing-savings .p-saving-main{display:block;min-width:0}
-    .pricing-savings .p-saving-hero .p-price{color:var(--accent);font-size:clamp(32px,15cqi,100px);font-weight:900}
+    .pricing-savings .p-saving-hero .p-price{color:var(--accent);font-size:clamp(32px,12cqi,82px);font-weight:900}
     .pricing-savings .p-saving-other{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .pricing-savings .p-saving-other article{display:grid;gap:8px;border:1px solid var(--rule);padding:16px;border-radius:12px;min-width:0}
-    .pricing-savings .p-saving-other .p-price{font-size:clamp(27px,13cqi,72px)}
+    .pricing-savings .p-saving-other .p-price{font-size:clamp(27px,12cqi,62px)}
     .pricing-savings .proposal__content{container:pricing-panel / inline-size}
     .pricing-savings .p-saving-hero,.pricing-savings .p-saving-other article{container:price-card / inline-size}
     @media(max-width:560px){
@@ -91,14 +92,16 @@
       .deli-landing .proposal-guide .proposal__header,.deli-landing .proposal-guide .proposal__content{grid-column:1;min-width:0}
     }
     /* Éminent — costo neto después del reintegro. */
-    .pricing-savings .p-price-pair{display:grid;grid-template-columns:max-content max-content;justify-content:start;align-items:end;gap:clamp(12px,4cqi,26px);min-width:0;max-width:100%}
+    .pricing-savings .p-price-pair{display:inline-grid;grid-template-columns:max-content max-content;justify-self:start;justify-content:start;align-items:end;column-gap:12px;width:max-content;max-width:100%;min-width:0;text-align:left}
     .pricing-savings .p-bank{display:grid;justify-items:start;align-content:end;gap:7px;min-width:0}
     .pricing-savings .p-bank-logo{display:block;width:clamp(76px,31cqi,122px);max-width:100%;height:auto;align-self:end}
-    .pricing-savings .p-saving-hero .p-price-pair{margin-top:2px}
+    .pricing-savings .p-saving-hero .p-price-pair{margin-top:2px;padding-top:18px;position:relative}
+    .pricing-savings .p-saving-hero .p-price-pair::before{content:"";position:absolute;top:0;left:0;width:100cqi;max-width:100cqi;border-top:1px solid var(--rule)}
     .pricing-savings .p-saving-hero .p-bank-logo{width:clamp(90px,30cqi,148px)}
-    .pricing-savings .p-bank-price{font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(26px,11.5cqi,64px);line-height:.88;white-space:nowrap;color:#fff}
-    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(29px,13cqi,86px)}
-    .pricing-savings .p-saving-other article .p-price-pair{margin-top:auto;padding-top:8px}
+    .pricing-savings .p-bank-price{font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(25px,10.5cqi,54px);line-height:.88;white-space:nowrap;color:#fff}
+    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(29px,10.5cqi,68px)}
+    .pricing-savings .p-saving-other article .p-price-pair{margin-top:auto;padding-top:14px;position:relative}
+    .pricing-savings .p-saving-other article .p-price-pair::before{content:"";position:absolute;top:0;left:0;width:100cqi;border-top:1px solid var(--rule)}
     .pricing-savings .p-saving-other article:last-child{grid-column:1/-1}
     .pricing-savings .p-saving-other .p-details{padding-top:0}
     .pricing-savings .p-price-legal{font-size:11px;line-height:1.5;color:var(--muted)}
@@ -109,31 +112,14 @@
     }
     @container pricing-panel (max-width:480px){
       .pricing-savings .p-saving-other article:last-child{grid-column:auto}
-      .pricing-savings .p-price-pair{gap:clamp(12px,4cqi,22px)}
-    }
-    @container pricing-panel (max-width:600px){
-      .pricing-savings .p-saving-other{grid-template-columns:1fr}
-      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+      .pricing-savings .p-price-pair{column-gap:12px}
     }
     @container price-card (max-width:260px){
-      .pricing-savings .p-price-pair{gap:10px}
+      .pricing-savings .p-price-pair{column-gap:10px}
       .pricing-savings .p-final .p-label{font-size:10px}
       .pricing-savings .p-price,.pricing-savings .p-saving-hero .p-price,.pricing-savings .p-saving-other .p-price{font-size:clamp(24px,12.5cqi,33px)}
       .pricing-savings .p-bank-price,.pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(23px,11.5cqi,30px)}
       .pricing-savings .p-bank-logo,.pricing-savings .p-saving-hero .p-bank-logo{width:clamp(70px,34cqi,90px)}
-    }
-    /* Prices start at the section's left margin, never in the right editorial column. */
-    .deli-landing .pricing-savings .proposal__shell{grid-template-columns:minmax(0,1fr);justify-items:start;gap:26px}
-    .deli-landing .pricing-savings .proposal__header,.deli-landing .pricing-savings .proposal__content{grid-column:1;min-width:0;justify-self:start;width:100%;text-align:left}
-    .deli-landing .pricing-savings .proposal__content{max-width:940px}
-    .deli-landing .pricing-savings .p-saving-hero,.deli-landing .pricing-savings .p-saving-other article{justify-items:stretch;text-align:left}
-    .deli-landing .pricing-savings .p-name,.deli-landing .pricing-savings .p-details{justify-content:flex-start;text-align:left}
-    .deli-landing .pricing-savings .p-price-pair{display:flex;flex-wrap:nowrap;justify-self:start;justify-content:flex-start;align-items:flex-end;width:fit-content;max-width:100%;margin-left:0;margin-right:auto;text-align:left;gap:clamp(12px,3cqi,24px)}
-    .deli-landing .pricing-savings .p-final,.deli-landing .pricing-savings .p-bank{flex:0 1 auto;justify-items:start;align-content:end;text-align:left;min-width:0}
-    .deli-landing .pricing-savings .p-final .p-label{width:0;min-width:100%;text-align:left}
-    .deli-landing .pricing-savings .p-price,.deli-landing .pricing-savings .p-bank-price{justify-self:start;text-align:left;margin:0}
-    @container price-card (max-width:260px){
-      .deli-landing .pricing-savings .p-price-pair{gap:10px}
     }
   </style>
 </head>
