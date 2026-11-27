@@ -93,6 +93,26 @@
       .deli-landing .proposal-guide .proposal__shell{grid-template-columns:minmax(0,1fr);gap:26px}
       .deli-landing .proposal-guide .proposal__header,.deli-landing .proposal-guide .proposal__content{grid-column:1;min-width:0}
     }
+    /* Éminent — costo neto después del reintegro. */
+    .pricing-savings .p-bank-brand{border-top:1px solid var(--rule);padding-top:18px}
+    .pricing-savings .p-bank-brand img{display:block;width:min(245px,100%);height:auto}
+    .pricing-savings .p-bank{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;min-width:0}
+    .pricing-savings .p-bank-note{font-size:11px;color:var(--muted);line-height:1.4}
+    .pricing-savings .p-bank-price{font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(36px,4.5vw,66px);line-height:.9;white-space:nowrap;color:#fff}
+    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(48px,5.5vw,86px)}
+    .pricing-savings .p-saving-other article .p-bank{border-top:1px solid var(--rule);padding-top:14px;margin-top:auto}
+    .pricing-savings .p-saving-other article:last-child{grid-column:1/-1}
+    .pricing-savings .p-saving-other .p-details{padding-top:0}
+    .pricing-savings .p-price-legal{font-size:11px;line-height:1.5;color:var(--muted)}
+    .pricing-savings [hidden]{display:none!important}
+    @container(min-width:780px){
+      .pricing-savings .p-saving-other{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+    }
+    @container(max-width:480px){
+      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+      .pricing-savings .p-bank-price{font-size:clamp(36px,9vw,58px)}
+    }
   </style>
 </head>
 <body class="deli-landing">
@@ -137,14 +157,45 @@
         </div>
       </div>
     </section>
-    <section class="proposal proposal-guide pricing-savings" aria-labelledby="pricing-title"><div class="proposal__shell"><header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header><div class="proposal__content"><div class="p-saving"><article class="p-saving-hero"><div class="p-saving-top"><strong class="p-saving-number">40%</strong><div class="p-saving-summary"><h3>OFF en preventa</h3><p class="p-label">Let’s Celebrate · 100 piezas</p><p class="p-label">Sumá 2 vouchers de $25.000</p></div></div><div class="p-saving-main"><div><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$383.700</del></dd></div><div><dt>Preventa 40% OFF</dt><dd>$230.220</dd></div></dl></div><div class="p-final"><p class="p-label">Precio final</p><strong class="p-price">$180.220</strong></div></div></article><div class="p-saving-other"><article><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price">$128.480</strong></article><article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><p class="p-label">Precio promocional</p><strong class="p-price">$159.700</strong></article></div></div></div></div></section>
+    <section class="proposal proposal-guide pricing-savings" aria-labelledby="pricing-title">
+      <div class="proposal__shell">
+        <header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header>
+        <div class="proposal__content">
+          <div class="p-saving" id="deli-prices">
+            <article class="p-saving-hero">
+              <div class="p-saving-top">
+                <strong class="p-saving-number" data-stage1="40%" data-stage2="30%">40%</strong>
+                <div class="p-saving-summary">
+                  <h3>OFF en preventa</h3>
+                  <p class="p-label" data-stage1="Del 1 al 20 de diciembre" data-stage2="Del 21 al 31 de diciembre">Del 1 al 20 de diciembre</p>
+                  <p class="p-label">Sumá hasta 2 vouchers de $25.000</p>
+                </div>
+              </div>
+              <div class="p-saving-main">
+                <div><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$383.700</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$230.200" data-stage2="$268.600">$230.200</dd></div></dl></div>
+                <div class="p-final"><p class="p-label">Con 2 vouchers</p><strong class="p-price" data-stage1="$180.200" data-stage2="$218.600">$180.200</strong></div>
+              </div>
+              <div class="p-bank-brand"><img src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div>
+              <div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$135.150" data-stage2="$163.950">$135.150</strong></div>
+            </article>
+            <div class="p-saving-other">
+              <article><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$255.800</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$153.500" data-stage2="$179.100">$153.500</dd></div></dl><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price" data-stage1="$128.500" data-stage2="$154.100">$128.500</strong><div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$96.375" data-stage2="$115.575">$96.375</strong></div></article>
+              <article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$233.000</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$139.800" data-stage2="$163.100">$139.800</dd></div></dl><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price" data-stage1="$114.800" data-stage2="$138.100">$114.800</strong><div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$86.100" data-stage2="$103.575">$86.100</strong></div></article>
+              <article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$349.500</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$209.700" data-stage2="$244.700">$209.700</dd></div></dl><p class="p-label">Con 2 vouchers de $25.000</p><strong class="p-price" data-stage1="$159.700" data-stage2="$194.700">$159.700</strong><div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$119.775" data-stage2="$146.025">$119.775</strong></div></article>
+            </div>
+            <p class="p-price-legal">Precios base Caballito, Delivery y Take Away. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado después del 25% de reintegro, no el importe a pagar; no contemplan tope de reintegro.</p>
+          </div>
+          <p class="p-label" id="deli-prices-ended" hidden>La promoción finalizó el 31 de diciembre de 2026.</p>
+        </div>
+      </div>
+    </section>
     <section class="proposal conditions proposal-guide" aria-labelledby="conditions-title">
       <div class="proposal__shell">
         <header class="proposal__header"><h2 id="conditions-title">Condiciones</h2></header>
         <div class="proposal__content terms-editorial">
           <p class="terms-lead">Válido en combinados Let's Celebrate y Superstar de 60 y 100 piezas.</p>
           <ul class="terms-compact">
-            <li>Deli&amp;Take: con cada compra de diciembre te ganás un voucher de $25.000. Usá 1 por combinado de 60 piezas y hasta 2 por combinado de 100 piezas.</li>
+            <li>Deli&amp;Take: con cada compra de diciembre te ganás un voucher de $25.000. Usá hasta 1 por combinado de 60 piezas y hasta 2 por combinado de 100 piezas.</li>
             <li>Canje en pedidos online para el 24 y el 31 de diciembre. No válido en combinados de 30 piezas.</li>
           </ul>
         </div>
@@ -154,5 +205,35 @@
       Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
     </footer>
   </main>
+  <script>
+    (() => {
+      // Argentina: UTC−03:00, independent of visitor timezone.
+      const start = Date.parse("2026-12-01T00:00:00-03:00");
+      const second = Date.parse("2026-12-21T00:00:00-03:00");
+      const end = Date.parse("2027-01-01T00:00:00-03:00");
+      const prices = document.getElementById("deli-prices");
+      const ended = document.getElementById("deli-prices-ended");
+      const fields = [...prices.querySelectorAll("[data-stage1][data-stage2]")];
+      let previous = "", timer;
+      function refresh() {
+        clearTimeout(timer);
+        const now = Date.now();
+        const state = now >= end ? "ended" : now >= second ? "stage2" : "stage1";
+        if (state !== previous) {
+          previous = state;
+          prices.hidden = state === "ended";
+          ended.hidden = state !== "ended";
+          if (state !== "ended") for (const field of fields) field.textContent = field.dataset[state];
+        }
+        if (now < end) {
+          const next = now < start ? start : now < second ? second : end;
+          timer = setTimeout(refresh, Math.max(1, Math.min(60000, next - now)));
+        }
+      }
+      refresh();
+      document.addEventListener("visibilitychange", refresh);
+      window.addEventListener("pageshow", refresh);
+    })();
+  </script>
 </body>
 </html>
