@@ -3,36 +3,56 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Nieve · Demo independiente</title>
+  <meta name="color-scheme" content="dark">
+  <title>Snow · Demo</title>
   <link rel="stylesheet" href="snow.css">
   <script src="snow.js" defer></script>
   <style>
     *{box-sizing:border-box}
-    body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#15171b;color:#fff;font:16px/1.5 system-ui,sans-serif}
-    button{font:inherit;color:#fff;background:#343b46;border:1px solid #777;border-radius:6px;padding:10px 18px;cursor:pointer}
-    button:focus-visible{outline:2px solid #fff;outline-offset:3px}
-    dialog{position:fixed;width:min(480px,calc(100% - 40px));border:1px solid #ffffff35;border-radius:16px;background:linear-gradient(150deg,#23334d,#090d15);color:#fff;padding:32px;box-shadow:0 20px 80px #0008}
+    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color-scheme:dark;background:#121214;color:#f5f5f7}
+    body{margin:0;min-height:100dvh;display:grid;place-items:center;padding:20px}
+    button{appearance:none;border:0;border-radius:10px;padding:12px 18px;min-height:44px;font-family:inherit;font-size:14px;font-weight:600;line-height:1.3;cursor:pointer;color:inherit;background:#39393d}
+    button:focus-visible{outline:2px solid #80b5ff;outline-offset:3px}
+    button:active{transform:scale(.98)}
+    @media(hover:hover){button:hover{background:#48484d}.primary:hover{background:#0a72e8}}
+    .primary{background:#007aff;color:#fff}
+    dialog{position:fixed;inset:0;margin:auto;width:min(392px,calc(100% - 40px));max-height:calc(100dvh - 40px);padding:0;border:1px solid #3c3c40;border-radius:24px;background:#202024;color:#f5f5f7;overflow:auto;box-shadow:0 20px 60px #0005;--snow-z-index:1}
     dialog::backdrop{background:#0009}
-    h1{font-size:32px;line-height:1.1;margin:0 0 16px;letter-spacing:-.04em}
-    p{color:#d1d5db;margin:0 0 24px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
+    .surface{position:relative;z-index:2;padding:36px 28px 24px;text-align:center;display:grid;gap:24px}
+    .heading{display:grid;gap:9px;justify-items:center}
+    .symbol{width:40px;height:40px;color:#d1e7ff;margin-bottom:4px}
+    h1{font-size:24px;line-height:1.17;font-weight:650;letter-spacing:-.035em;margin:0}
+    p{font-size:14px;line-height:1.5;letter-spacing:-.01em;color:#b8b8bd;margin:0;max-width:28ch}
+    .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .actions button{font-family:inherit;font-size:13px;padding-inline:8px}
+    @media(max-width:340px){.surface{padding:28px 20px 20px}.actions{grid-template-columns:1fr}}
+    @media(prefers-reduced-motion:reduce){button:active{transform:none}}
   </style>
 </head>
 <body>
-  <button id="open" type="button">Abrir popup</button>
-  <dialog id="popup" class="snow">
-    <h1>Nieve en el popup</h1>
-    <p>El canvas se adapta al tamaño de este elemento y no bloquea la interacción.</p>
-    <div class="actions">
-      <button id="close" type="button">Cerrar</button>
-      <button id="tilt" type="button">Activar inclinación</button>
+  <button id="open" class="primary" type="button">Abrir popup</button>
+  <dialog id="popup" class="snow" aria-labelledby="popup-title" aria-describedby="popup-description">
+    <div class="surface">
+      <div class="heading">
+        <svg class="symbol" viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M20 4v32M6.14 12l27.72 16M6.14 28l27.72-16M15 8l5 5 5-5M15 32l5-5 5 5M6.6 18.3l6.8-1.8-1.8-6.8M28.4 30.3l-1.8-6.8 6.8-1.8M6.6 21.7l6.8 1.8-1.8 6.8M28.4 9.7l-1.8 6.8 6.8 1.8"/>
+        </svg>
+        <h1 id="popup-title">Felices fiestas</h1>
+        <p id="popup-description">Un poco de nieve para celebrar.</p>
+      </div>
+      <div class="actions">
+        <button id="tilt" type="button">Activar inclinación</button>
+        <button id="close" class="primary" type="button" autofocus>Continuar</button>
+      </div>
     </div>
   </dialog>
   <script>
     const popup = document.getElementById("popup");
-    document.getElementById("open").onclick = () => popup.showModal();
-    document.getElementById("close").onclick = () => popup.close();
-    document.getElementById("tilt").onclick = () => window.SnowEffect?.requestMotion(popup);
+    const opener = document.getElementById("open");
+    opener.addEventListener("click", () => { if (!popup.open) popup.showModal(); });
+    document.getElementById("close").addEventListener("click", () => popup.close());
+    document.getElementById("tilt").addEventListener("click", () => window.SnowEffect?.requestMotion(popup));
+    popup.addEventListener("close", () => opener.focus());
     popup.showModal();
   </script>
 </body>
