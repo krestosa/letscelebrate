@@ -17,7 +17,7 @@
   const particles=[];
   const dragFactors=[0,0,0];
   let paintedTop=0,paintedBottom=0;
-  const genericSources=["gravity","accelerometer"],legacySources=["orientation","absolute","motion"],allSources=[...genericSources,...legacySources];
+  const genericSources=["gravity","accelerometer"],legacySources=["orientation","absolute","motion"];
   const radians=Math.PI/180;
   function orientationGravity(beta,gamma){
     return {x:Math.cos(beta*radians)*Math.sin(gamma*radians),y:Math.sin(beta*radians)};
@@ -38,7 +38,7 @@
   const samples=Object.create(null), sensors=new Map();
   const sensorCounts={orientation:0,absolute:0,gravity:0,accelerometer:0,motion:0};
   const sensorErrors=Object.create(null), permissionStates=Object.create(null);
-  let sensorSource="none",sensorCount=0,sensorStatus="waiting",permissionRequestRunning=false;
+  let sensorSource="none",sensorCount=0,sensorStatus="waiting";
   let firstDirectionApplied=false;
   const screenAngle=()=>Number(screen.orientation?.angle??window.orientation??0)||0;
   function noteSample(source,x,y,z){
@@ -88,9 +88,7 @@
       const sample=samples[source];
       if(sample&&now-sample.at<1800)return {source,sample};
     }
-    let latest=null,source=null;
-    for(const key of allSources){const sample=samples[key];if(sample&&(!latest||sample.at>latest.at)){latest=sample;source=key;}}
-    return latest?{source,sample:latest}:null;
+    return null;
   }
   function getGravity(){
     const selected=chooseGravity();
@@ -100,7 +98,7 @@
     return snowDirection(g.x,g.y);
   }
   function startSensor(name,source){
-    if(disposed||document.hidden||permissionStates.accelerometer==="denied"||sensors.has(source)||typeof window[name]!=="function")return;
+    if(disposed||document.hidden||permissionStates.accelerometer!=="granted"||sensors.has(source)||typeof window[name]!=="function")return;
     let sensor;
     try{
       sensor=new window[name]({frequency:30,referenceFrame:"device"});
@@ -124,67 +122,57 @@
     startSensor("Accelerometer","accelerometer");
   }
   function attachLegacy(){
+    if(disposed||!tilt||!window.isSecureContext)return;
     window.removeEventListener("deviceorientation",sampleOrientation);
     window.removeEventListener("deviceorientationabsolute",sampleAbsolute);
     window.removeEventListener("devicemotion",sampleMotion);
-    window.addEventListener("deviceorientation",sampleOrientation,options);
-    window.addEventListener("deviceorientationabsolute",sampleAbsolute,options);
-    window.addEventListener("devicemotion",sampleMotion,options);
-  }
-  async function requestExistingPermission(){
-    if(disposed||permissionRequestRunning||chooseGravity())return;
-    const apis=[["orientation",window.DeviceOrientationEvent],["motion",window.DeviceMotionEvent]]
-      .filter(([,api])=>typeof api?.requestPermission==="function");
-    if(!apis.length)return;
-    if(["accelerometer","gyroscope"].some(name=>permissionStates[name]==="denied"))return;
-    permissionRequestRunning=true;
-    const results=await Promise.allSettled(apis.map(async([name,api])=>{
-      try{
-        const result=await api.requestPermission();
-        permissionStates[name]=result;
-        return result;
-      }catch(error){
-        permissionStates[name]=error?.name||"unavailable";
-        return null;
-      }
-    }));
-    permissionRequestRunning=false;
-    if(disposed)return;
-    if(results.some(r=>r.status==="fulfilled"&&r.value==="granted")){
-      attachLegacy();
-      startGenericSensors();
+    const available=name=>["granted","unsupported"].includes(permissionStates[name]);
+    if(available("accelerometer")&&available("gyroscope")){
+      window.addEventListener("deviceorientation",sampleOrientation,options);
+      window.addEventListener("deviceorientationabsolute",sampleAbsolute,options);
+    }else{
+      delete samples.orientation;
+      delete samples.absolute;
     }
+    if(available("accelerometer")){
+      window.addEventListener("devicemotion",sampleMotion,options);
+    }else delete samples.motion;
+  }
+  function syncSensors(){
+    if(disposed||!tilt||!window.isSecureContext)return;
+    if(permissionStates.accelerometer!=="granted"){
+      for(const [source,sensor] of sensors){
+        try{sensor.stop();}catch{}
+        delete samples[source];
+      }
+      sensors.clear();
+    }
+    attachLegacy();
+    startGenericSensors();
   }
   async function inspectPermission(name){
+    if(!navigator.permissions?.query){
+      permissionStates[name]="unsupported";
+      return;
+    }
     try{
       const permission=await navigator.permissions.query({name});
       if(disposed)return;
       permissionStates[name]=permission.state;
       permission.addEventListener("change",()=>{
+        if(disposed)return;
         permissionStates[name]=permission.state;
-        if(permission.state==="granted"){
-          attachLegacy();
-          startGenericSensors();
-        }else if(permission.state==="denied"){
-          if(name==="accelerometer"){
-            for(const [source,sensor] of sensors){try{sensor.stop();}catch{} sensors.delete(source);}
-            for(const source of Object.keys(samples))delete samples[source];
-          }else{
-            delete samples.orientation;
-            delete samples.absolute;
-          }
-          sensorStatus="denied";
-        }
+        syncSensors();
       },options);
-    }catch{permissionStates[name]="unsupported";}
+    }catch{
+      permissionStates[name]="unsupported";
+    }
   }
   function initSensors(){
-    if(!tilt || !window.isSecureContext){sensorStatus="disabled";return;}
-    attachLegacy();
-    startGenericSensors();
-    if(navigator.permissions) Promise.all(["accelerometer","gyroscope"].map(inspectPermission));
-    window.addEventListener("focus",startGenericSensors,options);
-    window.addEventListener("pageshow",startGenericSensors,options);
+    if(!tilt||!window.isSecureContext){sensorStatus="disabled";return;}
+    Promise.all(["accelerometer","gyroscope"].map(inspectPermission)).then(syncSensors);
+    window.addEventListener("focus",syncSensors,options);
+    window.addEventListener("pageshow",syncSensors,options);
   }
   const sprites = [0,1,2].map(layer => {
     const image = document.createElement("canvas");
@@ -359,7 +347,7 @@
     cancelAnimationFrame(frame);
     resetClock();
     if(!document.hidden){
-      if(tilt && window.isSecureContext){attachLegacy();startGenericSensors();}
+      if(tilt && window.isSecureContext)syncSensors();
       frame=requestAnimationFrame(render);
     }
   },options);
@@ -367,7 +355,7 @@
   initSensors();
   if(sensorCount){const target=getGravity();gravityX=target.x;gravityY=target.y;firstDirectionApplied=true;}
   start();
-  return {dispose, requestMotion: () => tilt && window.isSecureContext ? requestExistingPermission() : Promise.resolve()};
+  return {dispose};
   }
 
   const selector = ".snow";
@@ -476,11 +464,7 @@
   window.SnowEffect = Object.freeze({
     mount(host) {host.classList.add("snow"); attach(host); return host;},
     unmount(host) {host.classList.remove("snow"); detach(host);},
-    refresh,
-    async requestMotion(host) {
-      const entry = entries.get(host);
-      if (entry?.engine) await entry.engine.requestMotion();
-    }
+    refresh
   });
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded",init,{once:true});
   else init();

@@ -9,34 +9,30 @@
   <script src="snow.js" defer></script>
   <style>
     *{box-sizing:border-box}
-    :root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color-scheme:dark;background:#161618;color:#f5f5f7}
+    :root{font-family:system-ui,sans-serif;color-scheme:dark;background:#161719;color:#f4f4f5}
     body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:20px}
-    button{appearance:none;border:0;font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
-    button:focus-visible{outline:3px solid #9acaff;outline-offset:3px}
-    button:disabled{opacity:.38;cursor:default}
-    .primary{background:#007aff;color:white;font-size:15px;font-weight:600;border-radius:12px;min-height:48px;padding:12px 22px}
-    .primary:active{background:#0069db}
-    dialog{position:fixed;inset:0;margin:auto;width:min(390px,calc(100% - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:0;border:1px solid #ffffff18;border-radius:26px;background:#252527;color:#f5f5f7;overflow:hidden;box-shadow:0 20px 80px #0006;--snow-z-index:1}
+    button{appearance:none;font:inherit;cursor:pointer;border:1px solid transparent;color:inherit;border-radius:6px}
+    button:focus-visible{outline:2px solid #b5b5bd;outline-offset:3px}
+    button:disabled{opacity:.4;cursor:default}
+    .primary{background:#f2f2f3;color:#171719;font-size:14px;font-weight:650;min-height:44px;padding:12px 20px}
+    .primary:active{background:#d5d5d8}
+    dialog{position:fixed;inset:0;margin:auto;width:min(420px,calc(100% - 32px));max-width:none;max-height:calc(100dvh - 32px);padding:0;border:1px solid #ffffff26;border-radius:12px;background:#242528;color:#f4f4f5;overflow:hidden;box-shadow:0 18px 60px #0005}
     dialog::backdrop{background:#000a}
-    .surface{position:relative;z-index:2;max-height:calc(100dvh - 34px);overflow:auto;padding:32px 24px 24px;display:grid;gap:24px;scrollbar-width:thin}
-    .heading{display:grid;justify-items:center;text-align:center;gap:8px;padding:4px 0 0}
-    .symbol{display:grid;place-items:center;width:64px;height:64px;border-radius:19px;background:#34383f;color:#d5eaff;margin-bottom:8px}
-    .symbol svg{width:36px;height:36px}
-    h1{font-size:25px;line-height:1.16;font-weight:650;letter-spacing:-.035em;margin:0}
-    p{font-size:14px;line-height:1.5;color:#b8b8bd;margin:0}
-    .settings{display:grid;background:#303033;border-radius:14px;overflow:hidden}
-    .setting{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:16px;width:100%;min-height:54px;padding:12px 15px;background:transparent;font-size:14px;font-weight:500}
-    .setting+.setting{border-top:1px solid #ffffff12}
-    .switch{flex:none;width:42px;height:25px;padding:3px;border-radius:20px;background:#55555b;display:flex;align-items:center;transition:background .18s ease}
-    .switch::after{content:"";width:19px;height:19px;border-radius:50%;background:white;box-shadow:0 1px 3px #0003;transform:translateX(0);transition:transform .18s ease}
-    [aria-pressed="true"] .switch{background:#30a85b}
-    [aria-pressed="true"] .switch::after{transform:translateX(17px)}
-    .chevron{flex:none;width:7px;height:7px;border-top:1.5px solid #a1a1a6;border-right:1.5px solid #a1a1a6;transform:rotate(45deg);margin-right:4px}
-    .setting:focus-visible{outline-offset:-3px}
+    .surface{position:relative;z-index:1;max-height:calc(100dvh - 34px);overflow:auto;padding:28px;display:grid;gap:24px;scrollbar-width:thin}
+    .heading{display:grid;justify-items:start;text-align:left;gap:10px}
+    .symbol{display:grid;place-items:center;width:44px;height:44px;color:#e5e5e8;margin-bottom:6px}
+    .symbol svg{width:40px;height:40px}
+    h1{font-size:28px;line-height:1.12;font-weight:650;letter-spacing:-.045em;margin:0}
+    p{font-size:14px;line-height:1.5;color:#aeb0b7;margin:0}
+    .settings{display:grid;border-block:1px solid #ffffff1c}
+    .setting{display:flex;align-items:center;justify-content:space-between;text-align:left;gap:12px;width:100%;min-height:48px;padding:12px 0;background:transparent;border:0;border-radius:0;font-size:14px;font-weight:500}
+    .switch{flex:none;width:16px;height:16px;border:1px solid #92949b;border-radius:3px;display:grid;place-items:center;color:#242528}
+    .switch::after{content:"";width:8px;height:5px;border-left:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg);opacity:0;margin-top:-2px}
+    [aria-pressed="true"] .switch{background:#ededf0;border-color:#ededf0}
+    [aria-pressed="true"] .switch::after{opacity:1}
     .surface>.primary{width:100%}
-    @media(hover:hover){.primary:hover{background:#0a72e8}.setting:not(:disabled):hover{background:#ffffff08}}
-    @media(max-width:340px){.surface{padding:24px 18px 18px;gap:20px}.setting{padding-inline:12px}}
-    @media(prefers-reduced-motion:reduce){.switch,.switch::after{transition:none}}
+    @media(hover:hover){.primary:hover{background:#dedee2}.setting:not(:disabled):hover{color:#fff;background:#ffffff06}}
+    @media(max-width:340px){.surface{padding:20px;gap:20px}.heading h1{font-size:25px}}
   </style>
 </head>
 <body>
@@ -56,9 +52,6 @@
         <button id="snow-toggle" class="setting" type="button" aria-label="Nieve" aria-pressed="true">
           <span id="snow-label">Apagar nieve</span><span class="switch" aria-hidden="true"></span>
         </button>
-        <button id="tilt" class="setting" type="button">
-          <span>Activar inclinación</span><span class="chevron" aria-hidden="true"></span>
-        </button>
       </div>
       <button id="close" class="primary" type="button" autofocus>Continuar</button>
     </div>
@@ -68,10 +61,8 @@
     const opener = document.getElementById("open");
     const snowToggle = document.getElementById("snow-toggle");
     const snowLabel = document.getElementById("snow-label");
-    const tilt = document.getElementById("tilt");
     opener.addEventListener("click", () => { if (!popup.open) popup.showModal(); });
     document.getElementById("close").addEventListener("click", () => popup.close());
-    tilt.addEventListener("click", () => window.SnowEffect?.requestMotion(popup));
     snowToggle.addEventListener("click", () => {
       if (!window.SnowEffect) return;
       const enabled = !popup.classList.contains("snow");
@@ -79,7 +70,6 @@
       else window.SnowEffect.unmount(popup);
       snowLabel.textContent = enabled ? "Apagar nieve" : "Encender nieve";
       snowToggle.setAttribute("aria-pressed", String(enabled));
-      tilt.disabled = !enabled;
     });
     popup.addEventListener("close", () => opener.focus());
     popup.showModal();
