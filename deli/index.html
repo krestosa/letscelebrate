@@ -22,7 +22,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="../js/intro.js?v=production-35"></script>
+  <script src="../js/intro-dev.js?v=1"></script>
   <link rel="stylesheet" href="../css/landing.css?v=pricing-54">
   <link rel="stylesheet" href="../css/loading.css?v=production-35">
   <link rel="stylesheet" href="../css/motion.css?v=signature-53">
@@ -94,10 +94,10 @@
       .deli-landing .proposal-guide .proposal__header,.deli-landing .proposal-guide .proposal__content{grid-column:1;min-width:0}
     }
     /* Éminent — costo neto después del reintegro. */
-    .pricing-savings .p-bank-brand{border-top:1px solid var(--rule);padding-top:18px}
-    .pricing-savings .p-bank-brand img{display:block;width:min(245px,100%);height:auto}
     .pricing-savings .p-bank{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 12px;min-width:0}
-    .pricing-savings .p-bank-note{font-size:11px;color:var(--muted);line-height:1.4}
+    .pricing-savings .p-bank-logo{display:block;width:min(148px,100%);height:auto;flex:0 1 148px;align-self:center}
+    .pricing-savings .p-saving-hero .p-bank{border-top:1px solid var(--rule);padding-top:18px}
+    .pricing-savings .p-saving-hero .p-bank-logo{width:min(180px,100%);flex-basis:180px}
     .pricing-savings .p-bank-price{font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(36px,4.5vw,66px);line-height:.9;white-space:nowrap;color:#fff}
     .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(48px,5.5vw,86px)}
     .pricing-savings .p-saving-other article .p-bank{border-top:1px solid var(--rule);padding-top:14px;margin-top:auto}
@@ -134,6 +134,11 @@
     </div>
     <img class="loading__brand" src="../assets/sushiclub.svg" alt="SushiClub" width="234" height="34" fetchpriority="high">
   </section>
+  <script>
+    if (document.documentElement.hasAttribute("data-dev-skip-intro")) {
+      document.getElementById("intro-screen")?.remove();
+    }
+  </script>
   <main class="page" id="landing-page">
     <section class="hero" aria-labelledby="offer-title">
       <img class="hero__background" src="../assets/hero_bg.jpg?v=51" alt="" aria-hidden="true" decoding="async" loading="eager">
@@ -175,13 +180,12 @@
                 <div><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$383.700</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$230.200" data-stage2="$268.600">$230.200</dd></div></dl></div>
                 <div class="p-final"><p class="p-label">Con 2 vouchers</p><strong class="p-price" data-stage1="$180.200" data-stage2="$218.600">$180.200</strong></div>
               </div>
-              <div class="p-bank-brand"><img src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div>
-              <div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$135.150" data-stage2="$163.950">$135.150</strong></div>
+              <div class="p-bank"><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"><strong class="p-bank-price" data-stage1="$135.150" data-stage2="$163.950">$135.150</strong></div>
             </article>
             <div class="p-saving-other">
-              <article><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$255.800</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$153.500" data-stage2="$179.100">$153.500</dd></div></dl><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price" data-stage1="$128.500" data-stage2="$154.100">$128.500</strong><div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$96.375" data-stage2="$115.575">$96.375</strong></div></article>
-              <article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$233.000</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$139.800" data-stage2="$163.100">$139.800</dd></div></dl><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price" data-stage1="$114.800" data-stage2="$138.100">$114.800</strong><div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$86.100" data-stage2="$103.575">$86.100</strong></div></article>
-              <article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$349.500</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$209.700" data-stage2="$244.700">$209.700</dd></div></dl><p class="p-label">Con 2 vouchers de $25.000</p><strong class="p-price" data-stage1="$159.700" data-stage2="$194.700">$159.700</strong><div class="p-bank"><div><p class="p-label">Con Éminent</p><p class="p-bank-note">25% de reintegro</p></div><strong class="p-bank-price" data-stage1="$119.775" data-stage2="$146.025">$119.775</strong></div></article>
+              <article><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$255.800</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$153.500" data-stage2="$179.100">$153.500</dd></div></dl><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price" data-stage1="$128.500" data-stage2="$154.100">$128.500</strong><div class="p-bank"><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"><strong class="p-bank-price" data-stage1="$96.375" data-stage2="$115.575">$96.375</strong></div></article>
+              <article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$233.000</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$139.800" data-stage2="$163.100">$139.800</dd></div></dl><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price" data-stage1="$114.800" data-stage2="$138.100">$114.800</strong><div class="p-bank"><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"><strong class="p-bank-price" data-stage1="$86.100" data-stage2="$103.575">$86.100</strong></div></article>
+              <article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$349.500</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$209.700" data-stage2="$244.700">$209.700</dd></div></dl><p class="p-label">Con 2 vouchers de $25.000</p><strong class="p-price" data-stage1="$159.700" data-stage2="$194.700">$159.700</strong><div class="p-bank"><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"><strong class="p-bank-price" data-stage1="$119.775" data-stage2="$146.025">$119.775</strong></div></article>
             </div>
             <p class="p-price-legal">Precios base Caballito, Delivery y Take Away. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado después del 25% de reintegro, no el importe a pagar; no contemplan tope de reintegro.</p>
           </div>
