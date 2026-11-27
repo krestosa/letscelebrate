@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <meta name="description" content="Te regalamos $25.000 para Let’s Celebrate de Navidad o Año Nuevo.">
+  <title>Let’s Celebrate · Exploración de precios 2</title>
+  <script>
+    (() => {
+      if (!window.isSecureContext || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      const latest = Object.create(null), handlers = {};
+      const startedAt = performance.now();
+      const types = ["deviceorientation", "deviceorientationabsolute", "devicemotion"];
+      for (const type of types) {
+        handlers[type] = event => { latest[type] = event; };
+        window.addEventListener(type, handlers[type], { passive: true });
+      }
+      window.__snowSensorBootstrap = {startedAt, latest, stop() { for (const type of types) window.removeEventListener(type, handlers[type]); }};
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/landing.css?v=pricing-54">
+  <link rel="stylesheet" href="../css/loading.css?v=production-35">
+  <link rel="stylesheet" href="../css/motion.css?v=signature-53">
+  <link rel="preload" href="../assets/loading.jpg" as="image">
+  <link rel="preload" href="../assets/hero_bg.jpg?v=51" as="image">
+  <link rel="preload" href="../assets/firma.svg?v=signature-52" as="image">
+  <link rel="preload" href="../fonts/Gazzetta Black.otf" as="font" type="font/otf" crossorigin>
+  <script src="../js/snow.js?v=production-35" defer></script>
+  <style>
+    .deli-landing .conditions{border-top:0}
+    @media(max-width:760px){
+      .deli-landing .hero{min-height:86svh}
+      .deli-landing .hero__layout{flex:0 0 auto;min-height:0;grid-template-rows:auto;align-content:start;align-items:start;row-gap:0}
+      .deli-landing .hero__background{height:max(100%,111svh)}
+      .deli-landing .hero__message{align-items:center;text-align:center}
+      .deli-landing .hero__message .title-lockup,.deli-landing .hero__message .hero-copy,.deli-landing .hero__message .title-kicker{text-align:center}
+      .deli-landing .hero__message .title-lockup h1{align-items:center}
+      .deli-landing .conditions{padding-top:12px}
+    }
+    @media(max-width:620px){
+      .deli-landing .hero__background{object-position:50% center}
+      .deli-landing .masthead__campaign{font-size:15px}
+    }
+    /* Deli&Take — selected Ahorro pricing composition. */
+    .deli-landing .pricing-savings{padding-block:clamp(36px,6vh,76px)}
+    .pricing-savings{--rule:rgba(255,255,255,.17);--muted:rgba(255,255,255,.68)}
+    .pricing-savings h3,.pricing-savings p,.pricing-savings dl{margin:0}
+    .pricing-savings h3{font-size:clamp(17px,2vw,24px);font-weight:650;letter-spacing:-.04em;line-height:1.1}
+    .pricing-savings .p-label{color:var(--muted);font-size:12px;font-weight:550;line-height:1.4}
+    .pricing-savings .p-kicker{font-size:12px;color:rgba(255,255,255,.56);font-weight:500;letter-spacing:0;white-space:nowrap}
+    .pricing-savings .p-price{display:block;color:var(--accent);font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(46px,6vw,90px);line-height:.88;white-space:nowrap}
+    .pricing-savings .p-old{color:var(--muted)}
+    .pricing-savings .p-name{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;min-width:0}
+    .pricing-savings .p-details{display:flex;flex-wrap:wrap;gap:10px 20px;padding-top:10px}
+    .pricing-savings .p-details div{display:grid;gap:4px}
+    .pricing-savings .p-details dt{font-size:11px;color:var(--muted)}
+    .pricing-savings .p-details dd{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
+    .pricing-savings .p-final{display:grid;gap:8px;text-align:left;justify-items:start;align-items:end;min-width:0}
+    .pricing-savings .p-saving{display:grid;gap:12px}
+    .pricing-savings .p-saving-hero{background:rgba(var(--accent-rgb),.10);border:1px solid rgba(var(--accent-rgb),.32);border-radius:12px;padding:clamp(18px,3vw,32px);display:grid;gap:18px}
+    .pricing-savings .p-saving-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+    .pricing-savings .p-saving-number{font-family:Gazzetta,sans-serif;font-weight:900;color:var(--accent);font-size:clamp(64px,8vw,108px);line-height:.8;white-space:nowrap}
+    .pricing-savings .p-saving-summary{display:grid;gap:5px}
+    .pricing-savings .p-saving-main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+    .pricing-savings .p-saving-main .p-price{color:var(--accent);font-size:clamp(54px,16cqi,92px);font-weight:900}
+    .pricing-savings .p-saving-other{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .pricing-savings .p-saving-other article{display:grid;gap:8px;border:1px solid var(--rule);padding:16px;border-radius:12px;min-width:0}
+    .pricing-savings .p-saving-other .p-price{font-size:clamp(40px,19cqi,72px)}
+    .pricing-savings .proposal__content{container:pricing-panel / inline-size}
+    .pricing-savings .p-saving-hero,.pricing-savings .p-saving-other article{container:price-card / inline-size}
+    @media(max-width:560px){
+      .pricing-savings .p-saving-main{grid-template-columns:minmax(0,1fr);gap:20px}
+      .pricing-savings .p-saving-main .p-final{text-align:left;justify-items:start}
+      .pricing-savings .p-saving-other{grid-template-columns:1fr;gap:16px}
+      .pricing-savings .p-saving-top{gap:12px}
+      .pricing-savings .p-saving-number{font-size:72px}
+    }
+    @container pricing-panel (max-width:480px){
+      .pricing-savings .p-saving-main{grid-template-columns:minmax(0,1fr);gap:20px}
+      .pricing-savings .p-saving-main .p-final{text-align:left;justify-items:start}
+      .pricing-savings .p-saving-other{grid-template-columns:1fr;gap:16px}
+      .pricing-savings .p-saving-top{gap:12px}
+      .pricing-savings .p-saving-number{font-size:72px}
+    }
+    /* Tablet: the guide grid must collapse together with its children at 980px. */
+    @media(min-width:761px) and (max-width:980px){
+      .deli-landing .proposal-guide .proposal__shell{grid-template-columns:minmax(0,1fr);gap:26px}
+      .deli-landing .proposal-guide .proposal__header,.deli-landing .proposal-guide .proposal__content{grid-column:1;min-width:0}
+    }
+    /* Éminent — costo neto después del reintegro. */
+    .pricing-savings .p-bank{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:10px 12px;min-width:0;text-align:left}
+    .pricing-savings .p-bank-logo{display:block;width:clamp(150px,45cqi,205px);max-width:100%;height:auto;flex:0 0 auto;align-self:center}
+    .pricing-savings .p-saving-hero .p-bank{border-top:1px solid var(--rule);padding-top:16px}
+    .pricing-savings .p-saving-hero .p-bank-logo{width:clamp(170px,40cqi,245px)}
+    .pricing-savings .p-bank-price{display:block;flex:0 0 auto;font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(40px,19cqi,72px);line-height:.88;white-space:nowrap;color:#fff}
+    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(54px,16cqi,92px);font-weight:700}
+    .pricing-savings .p-saving-other article .p-bank{border-top:1px solid var(--rule);padding-top:14px;margin-top:auto}
+    .pricing-savings .p-saving-other article:last-child{grid-column:1/-1}
+    .pricing-savings .p-saving-other .p-details{padding-top:0}
+    .pricing-savings .p-price-legal{font-size:11px;line-height:1.5;color:var(--muted)}
+    .pricing-savings [hidden]{display:none!important}
+    @container pricing-panel (min-width:780px){
+      .pricing-savings .p-saving-other{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+    }
+    @container pricing-panel (max-width:480px){
+      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+      .pricing-savings .p-bank-price{font-size:clamp(40px,19cqi,72px)}
+    }
+    @container price-card (max-width:280px){
+      .pricing-savings .p-bank{align-items:flex-start;flex-direction:column;gap:8px}
+      .pricing-savings .p-bank-logo{width:min(190px,100%);align-self:start}
+    }
+  </style>
+  <style>
+
+#stage{min-width:0}
+.proto-picker{max-width:calc(100% - 16px)}
+body{padding-bottom:64px}
+.pricing-savings .price-info{display:grid;gap:8px;min-width:0}
+.pricing-savings .price-info .p-details{padding:0}
+.pricing-savings .p-saving-hero,.pricing-savings .p-saving-other article{min-width:0;container:price-card / inline-size}
+.pricing-savings .price-composition{display:grid;gap:12px;min-width:0}
+.pricing-savings .voucher-price,.pricing-savings .bank-price{display:grid;justify-items:start;align-content:start;gap:7px;min-width:0}
+.pricing-savings .p-price,.pricing-savings .p-bank-price{margin:0;font-size:clamp(34px,18cqi,72px);line-height:.88}
+.pricing-savings .p-saving-other .p-price{font-size:clamp(34px,18cqi,72px)}
+.pricing-savings .p-saving-hero .p-price,.pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(46px,15cqi,92px)}
+.pricing-savings .p-saving-hero .p-price{font-weight:900}
+.pricing-savings .p-bank-logo,.pricing-savings .p-saving-hero .p-bank-logo{width:clamp(146px,44cqi,245px);height:auto;max-width:100%;display:block;align-self:center}
+.pricing-savings .bank-price{border-top:1px solid var(--rule);padding-top:12px}
+.variant-1 .bank-price{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-start;column-gap:12px;row-gap:8px}
+.variant-1 .bank-price .p-bank-price{flex:0 0 auto}
+.variant-1 .bank-price .p-bank-logo{flex:0 0 auto}
+.variant-2 .price-composition{grid-template-columns:max-content max-content;justify-content:start;align-items:end;column-gap:12px;row-gap:12px}
+.variant-2 .bank-price{border:0;padding:0}
+.variant-2 .voucher-price{align-content:end}
+.variant-2 .bank-price .p-bank-logo{grid-row:1;width:clamp(88px,29cqi,155px)}
+.variant-2 .bank-price .p-bank-price{grid-row:2}
+.variant-2 .p-price,.variant-2 .p-saving-other .p-price{font-size:clamp(24px,11.5cqi,60px)}
+.variant-2 .p-bank-price{font-size:clamp(24px,11.5cqi,60px)}
+.variant-2 .p-saving-hero .p-price,.variant-2 .p-saving-hero .p-bank-price{font-size:clamp(32px,12cqi,82px)}
+.variant-2 .voucher-price .p-label{width:0;min-width:100%}
+.variant-2 .p-saving-hero .bank-price .p-bank-logo{width:clamp(110px,27cqi,205px)}
+.variant-3 .price-composition{gap:14px}
+.variant-3 .voucher-price .p-price,.variant-3 .p-saving-other .voucher-price .p-price{font-size:clamp(34px,15cqi,62px)}
+.variant-3 .p-saving-hero .voucher-price .p-price{font-size:clamp(44px,13cqi,80px)}
+.variant-3 .bank-price{gap:10px}
+.variant-3 .bank-price .p-bank-logo{width:clamp(165px,60cqi,245px)}
+.variant-3 .bank-price .p-bank-price{font-size:clamp(42px,20cqi,82px);font-weight:700}
+.variant-3 .p-saving-hero .bank-price .p-bank-price{font-size:clamp(58px,17cqi,104px)}
+@container price-card (max-width:220px){
+  .variant-2 .price-composition{column-gap:8px}
+  .variant-2 .p-price,.variant-2 .p-saving-other .p-price,.variant-2 .p-bank-price{font-size:clamp(21px,11cqi,26px)}
+  .variant-2 .bank-price .p-bank-logo{width:min(88px,100%)}
+}
+
+
+.variant-4 .price-composition{gap:0}
+.variant-4 .voucher-price,.variant-4 .bank-price{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);align-items:center;justify-content:start;justify-items:start;column-gap:12px;row-gap:6px;padding-block:12px;border-top:1px solid var(--rule)}
+.variant-4 .voucher-price .p-label{max-width:15ch;text-align:left;line-height:1.35}
+.variant-4 .p-price,.variant-4 .p-saving-other .p-price,.variant-4 .p-bank-price{font-size:clamp(28px,13cqi,65px)}
+.variant-4 .p-saving-hero .p-price,.variant-4 .p-saving-hero .p-bank-price{font-size:clamp(34px,13cqi,82px)}
+.variant-4 .bank-price .p-bank-logo{width:clamp(100px,35cqi,205px);max-width:100%}
+.variant-4 .price-info .p-details{gap:8px 20px}
+.variant-4 .bank-price{padding-bottom:0}
+@container price-card (max-width:270px){
+  .variant-4 .voucher-price,.variant-4 .bank-price{grid-template-columns:1fr;gap:8px}
+  .variant-4 .voucher-price .p-label{grid-row:1;max-width:none}
+  .variant-4 .bank-price .p-bank-logo{width:min(185px,100%)}
+}
+.variant-5 .price-composition{gap:14px}
+.variant-5 .voucher-price{gap:6px}
+.variant-5 .bank-price{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:10px 12px;padding:14px;background:rgba(255,255,255,.045);border:1px solid var(--rule);border-radius:8px}
+.variant-5 .bank-price .p-bank-price{flex:0 0 auto;font-weight:700;font-size:clamp(33px,15cqi,72px)}
+.variant-5 .p-saving-hero .bank-price .p-bank-price{font-size:clamp(40px,14cqi,88px)}
+.variant-5 .bank-price .p-bank-logo{width:clamp(130px,39cqi,225px);flex:0 1 auto;max-width:100%}
+.variant-5 .p-price,.variant-5 .p-saving-other .p-price{font-size:clamp(34px,16cqi,76px)}
+.variant-5 .p-saving-hero .p-price{font-size:clamp(46px,15cqi,92px)}
+@container price-card (max-width:280px){
+  .variant-5 .bank-price{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding:10px}
+  .variant-5 .bank-price .p-bank-logo{width:min(190px,100%)}
+}
+.variant-6 .p-saving-hero,.variant-6 .p-saving-other article{gap:12px}
+.variant-6 .price-info{gap:6px}
+.variant-6 .price-composition{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.variant-6 .voucher-price{gap:5px}
+.variant-6 .bank-price{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:flex-start;gap:8px 12px;padding-top:10px}
+.variant-6 .bank-brand{display:grid;align-self:center;gap:4px;min-width:0;flex:0 1 auto}
+.variant-6 .bank-price .p-bank-logo{width:clamp(145px,42cqi,230px);max-width:100%}
+.variant-6 .p-price,.variant-6 .p-saving-other .p-price,.variant-6 .p-bank-price{font-size:clamp(34px,17cqi,74px)}
+.variant-6 .p-saving-hero .p-price,.variant-6 .p-saving-hero .p-bank-price{font-size:clamp(44px,14cqi,88px)}
+@container price-card (min-width:480px){
+  .variant-6 .price-info{grid-template-columns:minmax(0,1fr) max-content;align-items:start;gap:12px}
+  .variant-6 .price-info .p-details{gap:10px 14px;justify-content:flex-start}
+  .variant-6 .price-info .p-details div{gap:3px}
+}
+@container price-card (max-width:280px){
+  .variant-6 .bank-price{display:grid;gap:8px}
+  .variant-6 .bank-price .p-bank-logo{width:min(190px,100%)}
+}
+
+.proto-picker {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2147483647;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(10, 10, 10, 0.82);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 8px 24px rgba(0, 0, 0, 0.24),
+    0 2px 6px rgba(0, 0, 0, 0.12);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.proto-picker-highlight {
+  position: absolute;
+  top: 4px;
+  left: 0;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* The slide is enabled only after first paint (data-ready), so load doesn't animate. */
+.proto-picker[data-ready] .proto-picker-highlight {
+  transition:
+    transform 250ms cubic-bezier(0.23, 1, 0.32, 1),
+    width 250ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .proto-picker[data-ready] .proto-picker-highlight { transition: none; }
+}
+
+.proto-picker-item {
+  position: relative; /* sits above the highlight */
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    color 150ms ease-out,
+    transform 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .proto-picker-item:hover {
+    color: rgba(255, 255, 255, 0.85);
+  }
+}
+
+.proto-picker-item:active {
+  transform: scale(0.97);
+}
+
+.proto-picker-item:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.4);
+  outline-offset: 2px;
+}
+
+.proto-picker-item[data-active] {
+  color: #fff;
+}
+
+.proto-picker-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 4px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.proto-picker-replay {
+  padding: 0 10px;
+  font-size: 14px;
+}
+
+.proto-picker[data-position="top"] {
+  bottom: auto;
+  top: 24px;
+}
+  </style>
+</head>
+<body class="deli-landing">
+  <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
+  <main class="page" id="landing-page">
+    <section class="hero" aria-labelledby="offer-title">
+      <img class="hero__background" src="../assets/hero_bg.jpg?v=51" alt="" aria-hidden="true" decoding="async" loading="eager">
+      <div class="hero__black-filter" aria-hidden="true"></div>
+      <div class="hero__gradient" aria-hidden="true"></div>
+      <div class="hero__grain" aria-hidden="true"></div>
+      <header class="masthead">
+        <div class="masthead__brands">
+          <img class="masthead__sushiclub" src="../assets/sushiclub.svg" alt="SushiClub" width="234" height="34">
+          <span class="masthead__campaign">LET’S CELEBRATE</span>
+        </div>
+      </header>
+      <div class="hero__layout">
+        <div class="hero__message">
+          <div class="title-lockup" id="offer-intro">
+            <h1 id="offer-title"><span class="title-kicker">Te regalamos</span> <span class="title-word"><span class="price-value">$25.000</span><span class="price-glow" aria-hidden="true">$25.000</span></span> <span class="title-kicker title-kicker--end"><strong class="title-celebrate">Para Let’s Celebrate</strong></span></h1>
+          </div>
+          <div class="hero-copy">
+            <p>Con cada compra de diciembre en Deli&amp;Take, te ganás un voucher de $25.000 para Navidad o Año Nuevo.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div id="stage"><section class="proposal proposal-guide pricing-savings variant-4" aria-labelledby="pricing-title"><div class="proposal__shell"><header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header><div class="proposal__content"><div class="p-saving" id="deli-prices"><article class="p-saving-hero"><div class="p-saving-top">
+                <strong class="p-saving-number" data-stage1="40%" data-stage2="30%">40%</strong>
+                <div class="p-saving-summary">
+                  <h3>OFF en preventa</h3>
+                  <p class="p-label" data-stage1="Del 1 al 20 de diciembre" data-stage2="Del 21 al 31 de diciembre">Del 1 al 20 de diciembre</p>
+                  <p class="p-label">Sumá hasta 2 vouchers de $25.000</p>
+                </div>
+              </div><div class="price-info"><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$383.700</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$230.200" data-stage2="$268.600">$230.200</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$180.200" data-stage2="$218.600">$180.200</strong><p class="p-label">Con 2 vouchers</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$135.150" data-stage2="$163.950">$135.150</strong><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article><div class="p-saving-other"><article class="price-card"><div class="price-info"><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$255.800</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$153.500" data-stage2="$179.100">$153.500</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$128.500" data-stage2="$154.100">$128.500</strong><p class="p-label">Con 1 voucher de $25.000</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$96.375" data-stage2="$115.575">$96.375</strong><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article>
+<article class="price-card"><div class="price-info"><div class="p-name"><h3>Superstar</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$233.000</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$139.800" data-stage2="$163.100">$139.800</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$114.800" data-stage2="$138.100">$114.800</strong><p class="p-label">Con 1 voucher de $25.000</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$86.100" data-stage2="$103.575">$86.100</strong><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article>
+<article class="price-card"><div class="price-info"><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$349.500</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$209.700" data-stage2="$244.700">$209.700</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$159.700" data-stage2="$194.700">$159.700</strong><p class="p-label">Con 2 vouchers de $25.000</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$119.775" data-stage2="$146.025">$119.775</strong><img class="p-bank-logo" src="../assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article></div><p class="p-price-legal">Precios base Caballito, Delivery y Take Away. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado después del 25% de reintegro, no el importe a pagar; no contemplan tope de reintegro.</p></div><p class="p-label" id="deli-prices-ended" hidden>La promoción finalizó el 31 de diciembre de 2026.</p></div></div></section></div>
+    <section class="proposal conditions proposal-guide" aria-labelledby="conditions-title">
+      <div class="proposal__shell">
+        <header class="proposal__header"><h2 id="conditions-title">Condiciones</h2></header>
+        <div class="proposal__content terms-editorial">
+          <p class="terms-lead">Válido en combinados Let's Celebrate y Superstar de 60 y 100 piezas.</p>
+          <ul class="terms-compact">
+            <li>Deli&amp;Take: con cada compra de diciembre te ganás un voucher de $25.000. Usá hasta 1 por combinado de 60 piezas y hasta 2 por combinado de 100 piezas.</li>
+            <li>Canje en pedidos online para el 24 y el 31 de diciembre. No válido en combinados de 30 piezas.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <footer class="legal">
+      Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
+    </footer>
+  </main>
+<nav class="proto-picker" aria-label="Prototype variants">
+  <span class="proto-picker-highlight" aria-hidden="true"></span>
+  <button class="proto-picker-item" data-active aria-current="true">Filas</button>
+  <button class="proto-picker-item">Banda</button>
+  <button class="proto-picker-item">Compacta</button>
+</nav>
+<script>
+const variants = ["<section class=\"proposal proposal-guide pricing-savings variant-4\" aria-labelledby=\"pricing-title\"><div class=\"proposal__shell\"><header class=\"proposal__header\"><h2 id=\"pricing-title\">Tu beneficio</h2></header><div class=\"proposal__content\"><div class=\"p-saving\" id=\"deli-prices\"><article class=\"p-saving-hero\"><div class=\"p-saving-top\">\n                <strong class=\"p-saving-number\" data-stage1=\"40%\" data-stage2=\"30%\">40%</strong>\n                <div class=\"p-saving-summary\">\n                  <h3>OFF en preventa</h3>\n                  <p class=\"p-label\" data-stage1=\"Del 1 al 20 de diciembre\" data-stage2=\"Del 21 al 31 de diciembre\">Del 1 al 20 de diciembre</p>\n                  <p class=\"p-label\">Sumá hasta 2 vouchers de $25.000</p>\n                </div>\n              </div><div class=\"price-info\"><div class=\"p-name\"><h3>Let’s Celebrate</h3><p class=\"p-kicker\">100 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$383.700</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$230.200\" data-stage2=\"$268.600\">$230.200</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><strong class=\"p-price\" data-stage1=\"$180.200\" data-stage2=\"$218.600\">$180.200</strong><p class=\"p-label\">Con 2 vouchers</p></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$135.150\" data-stage2=\"$163.950\">$135.150</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article><div class=\"p-saving-other\"><article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Let’s Celebrate</h3><p class=\"p-kicker\">60 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$255.800</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$153.500\" data-stage2=\"$179.100\">$153.500</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><strong class=\"p-price\" data-stage1=\"$128.500\" data-stage2=\"$154.100\">$128.500</strong><p class=\"p-label\">Con 1 voucher de $25.000</p></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$96.375\" data-stage2=\"$115.575\">$96.375</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article>\n<article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Superstar</h3><p class=\"p-kicker\">60 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$233.000</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$139.800\" data-stage2=\"$163.100\">$139.800</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><strong class=\"p-price\" data-stage1=\"$114.800\" data-stage2=\"$138.100\">$114.800</strong><p class=\"p-label\">Con 1 voucher de $25.000</p></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$86.100\" data-stage2=\"$103.575\">$86.100</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article>\n<article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Superstar</h3><p class=\"p-kicker\">100 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$349.500</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$209.700\" data-stage2=\"$244.700\">$209.700</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><strong class=\"p-price\" data-stage1=\"$159.700\" data-stage2=\"$194.700\">$159.700</strong><p class=\"p-label\">Con 2 vouchers de $25.000</p></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$119.775\" data-stage2=\"$146.025\">$119.775</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article></div><p class=\"p-price-legal\">Precios base Caballito, Delivery y Take Away. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado después del 25% de reintegro, no el importe a pagar; no contemplan tope de reintegro.</p></div><p class=\"p-label\" id=\"deli-prices-ended\" hidden>La promoción finalizó el 31 de diciembre de 2026.</p></div></div></section>","<section class=\"proposal proposal-guide pricing-savings variant-5\" aria-labelledby=\"pricing-title\"><div class=\"proposal__shell\"><header class=\"proposal__header\"><h2 id=\"pricing-title\">Tu beneficio</h2></header><div class=\"proposal__content\"><div class=\"p-saving\" id=\"deli-prices\"><article class=\"p-saving-hero\"><div class=\"p-saving-top\">\n                <strong class=\"p-saving-number\" data-stage1=\"40%\" data-stage2=\"30%\">40%</strong>\n                <div class=\"p-saving-summary\">\n                  <h3>OFF en preventa</h3>\n                  <p class=\"p-label\" data-stage1=\"Del 1 al 20 de diciembre\" data-stage2=\"Del 21 al 31 de diciembre\">Del 1 al 20 de diciembre</p>\n                  <p class=\"p-label\">Sumá hasta 2 vouchers de $25.000</p>\n                </div>\n              </div><div class=\"price-info\"><div class=\"p-name\"><h3>Let’s Celebrate</h3><p class=\"p-kicker\">100 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$383.700</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$230.200\" data-stage2=\"$268.600\">$230.200</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 2 vouchers</p><strong class=\"p-price\" data-stage1=\"$180.200\" data-stage2=\"$218.600\">$180.200</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$135.150\" data-stage2=\"$163.950\">$135.150</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article><div class=\"p-saving-other\"><article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Let’s Celebrate</h3><p class=\"p-kicker\">60 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$255.800</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$153.500\" data-stage2=\"$179.100\">$153.500</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 1 voucher de $25.000</p><strong class=\"p-price\" data-stage1=\"$128.500\" data-stage2=\"$154.100\">$128.500</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$96.375\" data-stage2=\"$115.575\">$96.375</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article>\n<article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Superstar</h3><p class=\"p-kicker\">60 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$233.000</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$139.800\" data-stage2=\"$163.100\">$139.800</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 1 voucher de $25.000</p><strong class=\"p-price\" data-stage1=\"$114.800\" data-stage2=\"$138.100\">$114.800</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$86.100\" data-stage2=\"$103.575\">$86.100</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article>\n<article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Superstar</h3><p class=\"p-kicker\">100 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$349.500</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$209.700\" data-stage2=\"$244.700\">$209.700</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 2 vouchers de $25.000</p><strong class=\"p-price\" data-stage1=\"$159.700\" data-stage2=\"$194.700\">$159.700</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$119.775\" data-stage2=\"$146.025\">$119.775</strong><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></div></div></article></div><p class=\"p-price-legal\">Precios base Caballito, Delivery y Take Away. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado después del 25% de reintegro, no el importe a pagar; no contemplan tope de reintegro.</p></div><p class=\"p-label\" id=\"deli-prices-ended\" hidden>La promoción finalizó el 31 de diciembre de 2026.</p></div></div></section>","<section class=\"proposal proposal-guide pricing-savings variant-6\" aria-labelledby=\"pricing-title\"><div class=\"proposal__shell\"><header class=\"proposal__header\"><h2 id=\"pricing-title\">Tu beneficio</h2></header><div class=\"proposal__content\"><div class=\"p-saving\" id=\"deli-prices\"><article class=\"p-saving-hero\"><div class=\"p-saving-top\">\n                <strong class=\"p-saving-number\" data-stage1=\"40%\" data-stage2=\"30%\">40%</strong>\n                <div class=\"p-saving-summary\">\n                  <h3>OFF en preventa</h3>\n                  <p class=\"p-label\" data-stage1=\"Del 1 al 20 de diciembre\" data-stage2=\"Del 21 al 31 de diciembre\">Del 1 al 20 de diciembre</p>\n                  <p class=\"p-label\">Sumá hasta 2 vouchers de $25.000</p>\n                </div>\n              </div><div class=\"price-info\"><div class=\"p-name\"><h3>Let’s Celebrate</h3><p class=\"p-kicker\">100 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$383.700</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$230.200\" data-stage2=\"$268.600\">$230.200</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 2 vouchers</p><strong class=\"p-price\" data-stage1=\"$180.200\" data-stage2=\"$218.600\">$180.200</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$135.150\" data-stage2=\"$163.950\">$135.150</strong><span class=\"bank-brand\"><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></span></div></div></article><div class=\"p-saving-other\"><article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Let’s Celebrate</h3><p class=\"p-kicker\">60 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$255.800</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$153.500\" data-stage2=\"$179.100\">$153.500</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 1 voucher de $25.000</p><strong class=\"p-price\" data-stage1=\"$128.500\" data-stage2=\"$154.100\">$128.500</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$96.375\" data-stage2=\"$115.575\">$96.375</strong><span class=\"bank-brand\"><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></span></div></div></article>\n<article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Superstar</h3><p class=\"p-kicker\">60 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$233.000</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$139.800\" data-stage2=\"$163.100\">$139.800</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 1 voucher de $25.000</p><strong class=\"p-price\" data-stage1=\"$114.800\" data-stage2=\"$138.100\">$114.800</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$86.100\" data-stage2=\"$103.575\">$86.100</strong><span class=\"bank-brand\"><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></span></div></div></article>\n<article class=\"price-card\"><div class=\"price-info\"><div class=\"p-name\"><h3>Superstar</h3><p class=\"p-kicker\">100 piezas</p></div><dl class=\"p-details\"><div><dt>Precio full</dt><dd><del class=\"p-old\">$349.500</del></dd></div><div><dt data-stage1=\"Preventa 40% OFF\" data-stage2=\"Preventa 30% OFF\">Preventa 40% OFF</dt><dd data-stage1=\"$209.700\" data-stage2=\"$244.700\">$209.700</dd></div></dl></div><div class=\"price-composition\"><div class=\"voucher-price\"><p class=\"p-label\">Con 2 vouchers de $25.000</p><strong class=\"p-price\" data-stage1=\"$159.700\" data-stage2=\"$194.700\">$159.700</strong></div><div class=\"bank-price\"><strong class=\"p-bank-price\" data-stage1=\"$119.775\" data-stage2=\"$146.025\">$119.775</strong><span class=\"bank-brand\"><img class=\"p-bank-logo\" src=\"../assets/galicia-eminent-visa.svg\" alt=\"Galicia Éminent Visa\" width=\"245\" height=\"32\" loading=\"lazy\" decoding=\"async\"></span></div></div></article></div><p class=\"p-price-legal\">Precios base Caballito, Delivery y Take Away. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado después del 25% de reintegro, no el importe a pagar; no contemplan tope de reintegro.</p></div><p class=\"p-label\" id=\"deli-prices-ended\" hidden>La promoción finalizó el 31 de diciembre de 2026.</p></div></div></section>"].map(html=>()=>html);
+// `variants` is an array of render functions, one per variant, in picker order.
+const stage = document.getElementById('stage');
+const picker = document.querySelector('.proto-picker');
+const highlight = picker.querySelector('.proto-picker-highlight');
+const items = [...picker.querySelectorAll('.proto-picker-item:not(.proto-picker-replay)')];
+const replay = picker.querySelector('.proto-picker-replay');
+let current = 0;
+
+function moveHighlight() {
+  const el = items[current];
+  highlight.style.width = el.offsetWidth + 'px';
+  highlight.style.transform = `translateX(${el.offsetLeft}px)`;
+}
+
+function mount(i) {
+  stage.innerHTML = '';
+  // Clear first, render next frame, so entrance animations re-run.
+  requestAnimationFrame(() => { stage.innerHTML = variants[i](); });
+}
+
+function setActive(i) {
+  if (i < 0 || i >= variants.length) return;
+  current = i;
+  items.forEach((el, j) => {
+    el.toggleAttribute('data-active', j === i);
+    if (j === i) el.setAttribute('aria-current', 'true');
+    else el.removeAttribute('aria-current');
+  });
+  moveHighlight();
+  const url = new URL(location);
+  url.searchParams.set('v', i + 1);
+  history.replaceState(null, '', url);
+  mount(i);
+}
+
+items.forEach((el, i) => el.addEventListener('click', () => setActive(i)));
+replay?.addEventListener('click', () => mount(current));
+window.addEventListener('resize', moveHighlight);
+
+document.addEventListener('keydown', (e) => {
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const num = parseInt(e.key, 10);
+  if (num >= 1 && num <= variants.length) setActive(num - 1);
+  else if (e.key === 'ArrowRight') setActive((current + 1) % variants.length);
+  else if (e.key === 'ArrowLeft') setActive((current - 1 + variants.length) % variants.length);
+  else if (e.key === 'r' || e.key === 'R') mount(current);
+});
+
+const requested = parseInt(new URLSearchParams(location.search).get('v'), 10);
+setActive(requested >= 1 && requested <= variants.length ? requested - 1 : 0);
+// Enable the slide only after first paint, so load doesn't animate.
+requestAnimationFrame(() => requestAnimationFrame(() => picker.setAttribute('data-ready', '')));
+</script>
+<script>
+(() => {
+  const stage=document.getElementById('stage');
+  const refresh=()=>{
+    const now=Date.now();
+    const state=now>=Date.parse('2027-01-01T00:00:00-03:00')?'ended':now>=Date.parse('2026-12-21T00:00:00-03:00')?'stage2':'stage1';
+    const prices=stage.querySelector('#deli-prices'),ended=stage.querySelector('#deli-prices-ended');
+    if(!prices||!ended)return;
+    prices.hidden=state==='ended';ended.hidden=state!=='ended';
+    if(state!=='ended')for(const f of prices.querySelectorAll('[data-stage1][data-stage2]'))if(f.textContent!==f.dataset[state])f.textContent=f.dataset[state];
+  };
+  new MutationObserver(refresh).observe(stage,{childList:true});
+  window.addEventListener('pageshow',refresh);
+  document.addEventListener('visibilitychange',refresh);
+  setInterval(refresh,60000);
+  refresh();
+})();
+</script>
+</body>
+</html>
