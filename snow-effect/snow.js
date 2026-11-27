@@ -372,7 +372,7 @@
   return {dispose, requestMotion: () => tilt && window.isSecureContext ? requestExistingPermission() : Promise.resolve()};
   }
 
-  const selector = ".snow-effect";
+  const selector = ".snow";
   const entries = new Map();
   let pending = false;
   let observer, intersections, sizes;
@@ -477,8 +477,8 @@
     refresh();
   }
   window.SnowEffect = Object.freeze({
-    mount(host) {host.classList.add("snow-effect"); attach(host); return host;},
-    unmount(host) {host.classList.remove("snow-effect"); detach(host);},
+    mount(host) {host.classList.add("snow"); attach(host); return host;},
+    unmount(host) {host.classList.remove("snow"); detach(host);},
     refresh,
     async requestMotion(host) {
       const entry = entries.get(host);

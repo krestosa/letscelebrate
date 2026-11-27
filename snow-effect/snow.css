@@ -1,6 +1,6 @@
 /* Standalone snow overlay: does not modify content or intercept input. */
-.snow-effect[data-snow-static]{position:relative}
-.snow-effect > .snow-effect__canvas{
+.snow[data-snow-static]{position:relative}
+.snow > .snow-effect__canvas{
   position:absolute;inset:0;display:block;
   width:100%;height:100%;max-width:none;max-height:none;
   border:0;padding:0;margin:0;box-sizing:border-box;
@@ -8,7 +8,7 @@
   z-index:var(--snow-z-index,2);
   contain:strict;opacity:0;transition:opacity 520ms ease-out;
 }
-.snow-effect > .snow-effect__canvas--active{opacity:1}
+.snow > .snow-effect__canvas--active{opacity:1}
 @media(prefers-reduced-motion:reduce){
-  .snow-effect > .snow-effect__canvas{display:none;transition:none}
+  .snow > .snow-effect__canvas{display:none;transition:none}
 }

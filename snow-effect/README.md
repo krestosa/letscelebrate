@@ -14,7 +14,7 @@ Copiar `snow.js` y `snow.css` a tu proyecto. Agregar una sola vez:
 Agregar la clase al contenedor del popup:
 
 ```html
-<div class="snow-effect">
+<div class="snow">
   <!-- Contenido existente -->
 </div>
 ```
