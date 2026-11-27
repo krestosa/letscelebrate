@@ -239,7 +239,7 @@
           if (state !== "ended") for (const field of fields) field.textContent = field.dataset[state];
         }
         const boundary = now < start ? start : now < second ? second : now < end ? end : Infinity;
-        const interval = document.hidden ? 1000 : 250;
+        const interval = 60000;
         timer = setTimeout(refresh, Math.max(1, Math.min(interval, boundary - now)));
       }
       refresh();
