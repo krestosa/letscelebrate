@@ -1,8 +1,8 @@
 "use strict";
 (() => {
   const root = document.documentElement;
-  // Development only: skip by default, ?intro=1 restores the complete sequence.
-  if (new URLSearchParams(location.search).get("intro") !== "1") {
+  // Development only: ?intro=0 explicitly skips the opening sequence (HTTPS and local files).
+  if (new URLSearchParams(location.search).get("intro") === "0") {
     root.setAttribute("data-dev-skip-intro", "");
     return;
   }
