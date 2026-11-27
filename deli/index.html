@@ -122,6 +122,19 @@
       .pricing-savings .p-bank-price,.pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(23px,11.5cqi,30px)}
       .pricing-savings .p-bank-logo,.pricing-savings .p-saving-hero .p-bank-logo{width:clamp(70px,34cqi,90px)}
     }
+    /* Prices start at the section's left margin, never in the right editorial column. */
+    .deli-landing .pricing-savings .proposal__shell{grid-template-columns:minmax(0,1fr);justify-items:start;gap:26px}
+    .deli-landing .pricing-savings .proposal__header,.deli-landing .pricing-savings .proposal__content{grid-column:1;min-width:0;justify-self:start;width:100%;text-align:left}
+    .deli-landing .pricing-savings .proposal__content{max-width:940px}
+    .deli-landing .pricing-savings .p-saving-hero,.deli-landing .pricing-savings .p-saving-other article{justify-items:stretch;text-align:left}
+    .deli-landing .pricing-savings .p-name,.deli-landing .pricing-savings .p-details{justify-content:flex-start;text-align:left}
+    .deli-landing .pricing-savings .p-price-pair{display:flex;flex-wrap:nowrap;justify-self:start;justify-content:flex-start;align-items:flex-end;width:fit-content;max-width:100%;margin-left:0;margin-right:auto;text-align:left;gap:clamp(12px,3cqi,24px)}
+    .deli-landing .pricing-savings .p-final,.deli-landing .pricing-savings .p-bank{flex:0 1 auto;justify-items:start;align-content:end;text-align:left;min-width:0}
+    .deli-landing .pricing-savings .p-final .p-label{width:0;min-width:100%;text-align:left}
+    .deli-landing .pricing-savings .p-price,.deli-landing .pricing-savings .p-bank-price{justify-self:start;text-align:left;margin:0}
+    @container price-card (max-width:260px){
+      .deli-landing .pricing-savings .p-price-pair{gap:10px}
+    }
   </style>
 </head>
 <body class="deli-landing">
