@@ -5,9 +5,9 @@
   --counter-size: min(37vw, 65svh, 620px);
   --year-reading-time: 450ms;
   --signature-handoff: 180ms;
-  --signature-write-first: 1300ms;
-  --signature-write-second: 900ms;
-  --signature-reading-time: 1000ms;
+  --signature-write-first: 1200ms;
+  --signature-write-second: 850ms;
+  --signature-reading-time: 800ms;
   --intro-exit: 480ms;
 }
 .loading { transition: opacity var(--intro-exit) var(--ease-soft); }
