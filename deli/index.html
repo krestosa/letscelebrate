@@ -238,14 +238,14 @@
           ended.hidden = state !== "ended";
           if (state !== "ended") for (const field of fields) field.textContent = field.dataset[state];
         }
-        if (now < end) {
-          const next = now < start ? start : now < second ? second : end;
-          timer = setTimeout(refresh, Math.max(1, Math.min(60000, next - now)));
-        }
+        const boundary = now < start ? start : now < second ? second : now < end ? end : Infinity;
+        const interval = document.hidden ? 1000 : 250;
+        timer = setTimeout(refresh, Math.max(1, Math.min(interval, boundary - now)));
       }
       refresh();
       document.addEventListener("visibilitychange", refresh);
       window.addEventListener("pageshow", refresh);
+      window.addEventListener("focus", refresh);
     })();
   </script>
 </body>
