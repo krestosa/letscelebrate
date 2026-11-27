@@ -88,6 +88,11 @@
       .pricing-savings .p-saving-top{gap:12px}
       .pricing-savings .p-saving-number{font-size:72px}
     }
+    /* Tablet: the guide grid must collapse together with its children at 980px. */
+    @media(min-width:761px) and (max-width:980px){
+      .deli-landing .proposal-guide .proposal__shell{grid-template-columns:minmax(0,1fr);gap:26px}
+      .deli-landing .proposal-guide .proposal__header,.deli-landing .proposal-guide .proposal__content{grid-column:1;min-width:0}
+    }
   </style>
 </head>
 <body class="deli-landing">
