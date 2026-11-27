@@ -34,6 +34,103 @@
   <script src="js/snow.js?v=production-35" defer></script>
   <script src="js/loading.js?v=intro-pace-48" defer></script>
   <script src="js/voucher.js?v=51" defer></script>
+  <style>
+    /* Restó — same pricing rows as Deli&Take. */
+    .pricing-savings{padding-block:clamp(36px,6vh,76px)}
+    .pricing-savings{--rule:rgba(255,255,255,.17);--muted:rgba(255,255,255,.68)}
+    .pricing-savings h3,.pricing-savings p,.pricing-savings dl{margin:0}
+    .pricing-savings h3{font-size:clamp(17px,2vw,24px);font-weight:650;letter-spacing:-.04em;line-height:1.1}
+    .pricing-savings .p-label{color:var(--muted);font-size:12px;font-weight:550;line-height:1.4}
+    .pricing-savings .p-kicker{font-size:12px;color:rgba(255,255,255,.56);font-weight:500;letter-spacing:0;white-space:nowrap}
+    .pricing-savings .p-price{display:block;color:var(--accent);font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(46px,6vw,90px);line-height:.88;white-space:nowrap}
+    .pricing-savings .p-old{color:var(--muted)}
+    .pricing-savings .p-name{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 8px;min-width:0}
+    .pricing-savings .p-details{display:flex;flex-wrap:wrap;gap:10px 20px;padding-top:10px}
+    .pricing-savings .p-details div{display:grid;gap:4px}
+    .pricing-savings .p-details dt{font-size:11px;color:var(--muted)}
+    .pricing-savings .p-details dd{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
+    .pricing-savings .p-final{display:grid;gap:8px;text-align:left;justify-items:start;align-items:end;min-width:0}
+    .pricing-savings .p-saving{display:grid;gap:12px}
+    .pricing-savings .p-saving-hero{background:rgba(var(--accent-rgb),.10);border:1px solid rgba(var(--accent-rgb),.32);border-radius:12px;padding:clamp(18px,3vw,32px);display:grid;gap:18px}
+    .pricing-savings .p-saving-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+    .pricing-savings .p-saving-number{font-family:Gazzetta,sans-serif;font-weight:900;color:var(--accent);font-size:clamp(64px,8vw,108px);line-height:.8;white-space:nowrap}
+    .pricing-savings .p-saving-summary{display:grid;gap:5px}
+    .pricing-savings .p-saving-main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+    .pricing-savings .p-saving-main .p-price{color:var(--accent);font-size:clamp(54px,16cqi,92px);font-weight:900}
+    .pricing-savings .p-saving-other{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .pricing-savings .p-saving-other article{display:grid;gap:8px;border:1px solid var(--rule);padding:16px;border-radius:12px;min-width:0}
+    .pricing-savings .p-saving-other .p-price{font-size:clamp(40px,19cqi,72px)}
+    .pricing-savings .proposal__content{container:pricing-panel / inline-size}
+    .pricing-savings .p-saving-hero,.pricing-savings .p-saving-other article{container:price-card / inline-size}
+    @media(max-width:560px){
+      .pricing-savings .p-saving-main{grid-template-columns:minmax(0,1fr);gap:20px}
+      .pricing-savings .p-saving-main .p-final{text-align:left;justify-items:start}
+      .pricing-savings .p-saving-other{grid-template-columns:1fr;gap:16px}
+      .pricing-savings .p-saving-top{gap:12px}
+      .pricing-savings .p-saving-number{font-size:72px}
+    }
+    @container pricing-panel (max-width:480px){
+      .pricing-savings .p-saving-main{grid-template-columns:minmax(0,1fr);gap:20px}
+      .pricing-savings .p-saving-main .p-final{text-align:left;justify-items:start}
+      .pricing-savings .p-saving-other{grid-template-columns:1fr;gap:16px}
+      .pricing-savings .p-saving-top{gap:12px}
+      .pricing-savings .p-saving-number{font-size:72px}
+    }
+    /* Tablet: the guide grid must collapse together with its children at 980px. */
+    @media(min-width:761px) and (max-width:980px){
+      .pricing-savings.proposal-guide .proposal__shell{grid-template-columns:minmax(0,1fr);gap:26px}
+      .pricing-savings.proposal-guide .proposal__header,.pricing-savings.proposal-guide .proposal__content{grid-column:1;min-width:0}
+    }
+    /* Éminent — costo neto después del reintegro. */
+    .pricing-savings .p-bank{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:10px 12px;min-width:0;text-align:left}
+    .pricing-savings .p-bank-logo{display:block;width:clamp(150px,45cqi,205px);max-width:100%;height:auto;flex:0 0 auto;align-self:center}
+    .pricing-savings .p-saving-hero .p-bank{border-top:1px solid var(--rule);padding-top:16px}
+    .pricing-savings .p-saving-hero .p-bank-logo{width:clamp(170px,40cqi,245px)}
+    .pricing-savings .p-bank-price{display:block;flex:0 0 auto;font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(40px,19cqi,72px);line-height:.88;white-space:nowrap;color:#fff}
+    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(54px,16cqi,92px);font-weight:700}
+    .pricing-savings .p-saving-other article .p-bank{border-top:1px solid var(--rule);padding-top:14px;margin-top:auto}
+    .pricing-savings .p-saving-other article:last-child{grid-column:1/-1}
+    .pricing-savings .p-saving-other .p-details{padding-top:0}
+    .pricing-savings .p-price-legal{font-size:11px;line-height:1.5;color:var(--muted)}
+    .pricing-savings [hidden]{display:none!important}
+    @container pricing-panel (min-width:780px){
+      .pricing-savings .p-saving-other{grid-template-columns:repeat(3,minmax(0,1fr))}
+      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+    }
+    @container pricing-panel (max-width:480px){
+      .pricing-savings .p-saving-other article:last-child{grid-column:auto}
+      .pricing-savings .p-bank-price{font-size:clamp(40px,19cqi,72px)}
+    }
+    @container price-card (max-width:280px){
+      .pricing-savings .p-bank{align-items:flex-start;flex-direction:column;gap:8px}
+      .pricing-savings .p-bank-logo{width:min(190px,100%);align-self:start}
+    }
+
+    .pricing-savings .price-info{display:grid;gap:8px;min-width:0}
+    .pricing-savings .price-info .p-details{padding:0}
+    .pricing-savings .p-saving-hero,.pricing-savings .p-saving-other article{min-width:0;container:price-card / inline-size}
+    .pricing-savings .price-composition{display:grid;gap:12px;min-width:0}
+    .pricing-savings .voucher-price,.pricing-savings .bank-price{display:grid;justify-items:start;align-content:start;gap:7px;min-width:0}
+    .pricing-savings .p-price,.pricing-savings .p-bank-price{margin:0;font-size:clamp(34px,18cqi,72px);line-height:.88}
+    .pricing-savings .p-saving-other .p-price{font-size:clamp(34px,18cqi,72px)}
+    .pricing-savings .p-saving-hero .p-price,.pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(46px,15cqi,92px)}
+    .pricing-savings .p-saving-hero .p-price{font-weight:900}
+    .pricing-savings .p-bank-logo,.pricing-savings .p-saving-hero .p-bank-logo{width:clamp(146px,44cqi,245px);height:auto;max-width:100%;display:block;align-self:center}
+    .pricing-savings .bank-price{border-top:1px solid var(--rule);padding-top:12px}
+    .pricing-rows .price-composition{gap:0}
+    .pricing-rows .voucher-price,.pricing-rows .bank-price{display:grid;grid-template-columns:minmax(0,max-content) minmax(0,1fr);align-items:center;justify-content:start;justify-items:start;column-gap:12px;row-gap:6px;padding-block:12px;border-top:1px solid var(--rule)}
+    .pricing-rows .voucher-price .p-label{max-width:15ch;text-align:left;line-height:1.35}
+    .pricing-rows .p-price,.pricing-rows .p-saving-other .p-price,.pricing-rows .p-bank-price{font-size:clamp(28px,13cqi,65px)}
+    .pricing-rows .p-saving-hero .p-price,.pricing-rows .p-saving-hero .p-bank-price{font-size:clamp(34px,13cqi,82px)}
+    .pricing-rows .bank-price .p-bank-logo{width:clamp(100px,35cqi,205px);max-width:100%}
+    .pricing-rows .price-info .p-details{gap:8px 20px}
+    .pricing-rows .bank-price{padding-bottom:0}
+    @container price-card (max-width:270px){
+      .pricing-rows .voucher-price,.pricing-rows .bank-price{grid-template-columns:1fr;gap:8px}
+      .pricing-rows .voucher-price .p-label{grid-row:1;max-width:none}
+      .pricing-rows .bank-price .p-bank-logo{width:min(185px,100%)}
+    }
+  </style>
 </head>
 <body>
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
@@ -114,28 +211,16 @@
         </section>
       </div>
     </section>
-    <section class="proposal pricing proposal-guide" aria-labelledby="pricing-title">
-      <div class="proposal__shell">
-        <header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header>
-        <div class="proposal__content pricing-grid">
-          <article class="pricing-card pricing-card--main">
-            <div class="pricing-card__heading"><h3>Let’s Celebrate</h3><span class="pricing-card__size">100 piezas</span></div>
-            <dl class="pricing-card__breakdown">
-              <div><dt>Precio full</dt><dd><del>$383.700</del></dd></div>
-              <div><dt>Preventa 40% OFF</dt><dd>$230.220</dd></div>
-            </dl>
-            <div class="pricing-card__result">
-              <p class="pricing-card__label">Con 1 voucher de $25.000</p>
-              <strong class="pricing-card__price">$205.220</strong>
-            </div>
-          </article>
-          <article class="pricing-card pricing-card--single">
-            <div class="pricing-card__heading"><h3>Let’s Celebrate</h3><span class="pricing-card__size">60 piezas</span></div>
-            <div class="pricing-card__result"><p class="pricing-card__label">Con 1 voucher de $25.000</p><strong class="pricing-card__price">$128.480</strong></div>
-          </article>
-        </div>
-      </div>
-    </section>
+    <section class="proposal proposal-guide pricing-savings pricing-rows" aria-labelledby="pricing-title"><div class="proposal__shell"><header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header><div class="proposal__content"><div class="p-saving" id="resto-prices"><article class="p-saving-hero"><div class="p-saving-top">
+                <strong class="p-saving-number" data-stage1="40%" data-stage2="30%">40%</strong>
+                <div class="p-saving-summary">
+                  <h3>OFF en preventa</h3>
+                  <p class="p-label" data-stage1="Del 1 al 20 de diciembre" data-stage2="Del 21 al 31 de diciembre">Del 1 al 20 de diciembre</p>
+                  <p class="p-label">Sumá 1 voucher de $25.000</p>
+                </div>
+              </div><div class="price-info"><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$383.700</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$230.200" data-stage2="$268.600">$230.200</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$205.200" data-stage2="$243.600">$205.200</strong><p class="p-label">Con 1 voucher</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$153.900" data-stage2="$182.700">$153.900</strong><img class="p-bank-logo" src="assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article><div class="p-saving-other"><article class="price-card"><div class="price-info"><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$255.800</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$153.500" data-stage2="$179.100">$153.500</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$128.500" data-stage2="$154.100">$128.500</strong><p class="p-label">Con 1 voucher</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$96.375" data-stage2="$115.575">$96.375</strong><img class="p-bank-logo" src="assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article>
+<article class="price-card"><div class="price-info"><div class="p-name"><h3>Superstar</h3><p class="p-kicker">60 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$233.000</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$139.800" data-stage2="$163.100">$139.800</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$114.800" data-stage2="$138.100">$114.800</strong><p class="p-label">Con 1 voucher</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$86.100" data-stage2="$103.575">$86.100</strong><img class="p-bank-logo" src="assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article>
+<article class="price-card"><div class="price-info"><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$349.500</del></dd></div><div><dt data-stage1="Preventa 40% OFF" data-stage2="Preventa 30% OFF">Preventa 40% OFF</dt><dd data-stage1="$209.700" data-stage2="$244.700">$209.700</dd></div></dl></div><div class="price-composition"><div class="voucher-price"><strong class="p-price" data-stage1="$184.700" data-stage2="$219.700">$184.700</strong><p class="p-label">Con 1 voucher</p></div><div class="bank-price"><strong class="p-bank-price" data-stage1="$138.525" data-stage2="$164.775">$138.525</strong><img class="p-bank-logo" src="assets/galicia-eminent-visa.svg" alt="Galicia Éminent Visa" width="245" height="32" loading="lazy" decoding="async"></div></div></article></div><p class="p-price-legal">Bases, condiciones y locales adheridos en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>. Precios base de Caballito para Delivery y Take Away. Los precios e importes pueden variar según el local. Los importes con voucher consideran el máximo permitido por combinado. Los valores con Galicia Éminent representan el costo estimado tras el 25% de reintegro, no el importe a pagar, y no contemplan el tope de reintegro.</p></div><p class="p-label" id="resto-prices-ended" hidden>La promoción finalizó el 31 de diciembre de 2026.</p></div></div></section>
     <section class="proposal instructions proposal-guide" aria-labelledby="instructions-title">
       <div class="proposal__shell">
         <header class="proposal__header"><h2 id="instructions-title">Cómo usarlo</h2></header>
@@ -188,5 +273,35 @@
       <p id="redeem-instruction" class="confirmation__instruction">Cargalo al finalizar la compra en “Código promocional”.</p>
     </div>
   </dialog>
+  <script>
+    (() => {
+      // Argentina: UTC−03:00, independent of visitor timezone.
+      const start = Date.parse("2026-12-01T00:00:00-03:00");
+      const second = Date.parse("2026-12-21T00:00:00-03:00");
+      const end = Date.parse("2027-01-01T00:00:00-03:00");
+      const prices = document.getElementById("resto-prices");
+      const ended = document.getElementById("resto-prices-ended");
+      const fields = [...prices.querySelectorAll("[data-stage1][data-stage2]")];
+      let previous = "", timer;
+      function refresh() {
+        clearTimeout(timer);
+        const now = Date.now();
+        const state = now >= end ? "ended" : now >= second ? "stage2" : "stage1";
+        if (state !== previous) {
+          previous = state;
+          prices.hidden = state === "ended";
+          ended.hidden = state !== "ended";
+          if (state !== "ended") for (const field of fields) field.textContent = field.dataset[state];
+        }
+        const boundary = now < start ? start : now < second ? second : now < end ? end : Infinity;
+        const interval = 60000;
+        timer = setTimeout(refresh, Math.max(1, Math.min(interval, boundary - now)));
+      }
+      refresh();
+      document.addEventListener("visibilitychange", refresh);
+      window.addEventListener("pageshow", refresh);
+      window.addEventListener("focus", refresh);
+    })();
+  </script>
 </body>
 </html>
