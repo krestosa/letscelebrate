@@ -39,6 +39,9 @@
       .deli-landing .hero{min-height:86svh}
       .deli-landing .hero__layout{flex:0 0 auto;min-height:0;grid-template-rows:auto;align-content:start;align-items:start;row-gap:0}
       .deli-landing .hero__background{height:max(100%,100svh)}
+      .deli-landing .hero__message{align-items:center;text-align:center}
+      .deli-landing .hero__message .title-lockup,.deli-landing .hero__message .hero-copy,.deli-landing .hero__message .title-kicker{text-align:center}
+      .deli-landing .hero__message .title-lockup h1{align-items:center}
       .deli-landing .conditions{padding-top:12px}
     }
   </style>
@@ -101,5 +104,67 @@
       Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
     </footer>
   </main>
+  <script>
+    (() => {
+      const url = new URL(location.href);
+      if (url.searchParams.get("encuadre") !== "1") return;
+      const hero = document.querySelector(".hero"), image = hero.querySelector(".hero__background");
+      const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
+      const original = getComputedStyle(image).objectPosition.split(/\s+/).map(parseFloat);
+      const value = (key, fallback, min, max) => { const raw = url.searchParams.get(key); return raw !== null && raw !== "" && Number.isFinite(Number(raw)) ? clamp(Number(raw), min, max) : fallback; };
+      const defaults = {x: Number.isFinite(original[0]) ? original[0] : 50, y: Number.isFinite(original[1]) ? original[1] : 50, z: 100};
+      const state = {x:value("x",defaults.x,0,100),y:value("y",defaults.y,0,100),z:value("z",100,100,200)};
+      const panel = document.createElement("aside");
+      panel.setAttribute("aria-label","Ajustar encuadre de la imagen");
+      panel.style.cssText = "position:fixed;z-index:100000;right:12px;bottom:max(12px,env(safe-area-inset-bottom));width:min(320px,calc(100% - 24px));box-sizing:border-box;background:#141414ed;color:#fff;border:1px solid #ffffff40;border-radius:12px;padding:12px;font:13px/1.4 system-ui,sans-serif;box-shadow:0 8px 28px #0008";
+      panel.innerHTML = '<strong>Ajustar encuadre</strong><p style="margin:4px 0 8px;color:#ccc">Arrastrá la imagen o usá los controles.</p><div data-controls></div><input aria-label="Enlace del encuadre" readonly style="width:100%;margin:6px 0;padding:6px;color:#fff;background:#252525;border:1px solid #777;border-radius:4px"><div style="display:flex;gap:8px"><button type="button" data-copy>Copiar enlace</button><button type="button" data-reset>Restablecer</button><button type="button" data-close>Cerrar</button></div>';
+      const controls = panel.querySelector("[data-controls]"), output = panel.querySelector("input"), inputs = {};
+      for (const [key,label,min,max] of [["x","Horizontal",0,100],["y","Vertical",0,100],["z","Zoom",100,200]]) {
+        const row = document.createElement("label");
+        row.style.cssText = "display:grid;grid-template-columns:76px 1fr 42px;align-items:center;gap:6px;margin:5px 0";
+        row.innerHTML = '<span>'+label+'</span><input type="range" min="'+min+'" max="'+max+'" step="1" style="width:100%;min-width:0"><span style="text-align:right"></span>';
+        const input = row.querySelector("input"), labelValue = row.lastElementChild;
+        inputs[key] = {input,labelValue};
+        input.addEventListener("input", () => { state[key] = Number(input.value); apply(); });
+        controls.append(row);
+      }
+      function apply() {
+        const position = state.x+"% "+state.y+"%";
+        image.style.objectPosition = position;
+        image.style.transformOrigin = position;
+        image.style.transform = "scale("+(state.z/100)+")";
+        for (const key of ["x","y","z"]) {
+          const n = Math.round(state[key]); inputs[key].input.value = n; inputs[key].labelValue.textContent = n+"%";
+        }
+        const share = new URL(url.href);
+        for (const key of ["x","y","z"]) share.searchParams.set(key,Math.round(state[key]));
+        output.value = share.href;
+      }
+      panel.querySelector("[data-copy]").addEventListener("click", async () => {
+        output.focus(); output.select();
+        try { await navigator.clipboard.writeText(output.value); panel.querySelector("[data-copy]").textContent = "Copiado"; }
+        catch { document.execCommand("copy"); }
+      });
+      panel.querySelector("[data-reset]").addEventListener("click", () => { Object.assign(state,defaults); apply(); });
+      panel.querySelector("[data-close]").addEventListener("click", () => { location.href = location.pathname; });
+      hero.style.touchAction = "none"; hero.style.cursor = "grab";
+      let drag = null;
+      hero.addEventListener("pointerdown", e => {
+        if (e.button !== 0 || !image.naturalWidth || !image.naturalHeight) return;
+        const w=image.clientWidth,h=image.clientHeight, scale=Math.max(w/image.naturalWidth,h/image.naturalHeight)*state.z/100;
+        drag={id:e.pointerId,x:e.clientX,y:e.clientY,sx:state.x,sy:state.y,dx:Math.max(0,image.naturalWidth*scale-w),dy:Math.max(0,image.naturalHeight*scale-h)};
+        hero.setPointerCapture(e.pointerId); hero.style.cursor="grabbing"; e.preventDefault();
+      });
+      hero.addEventListener("pointermove", e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        if (drag.dx>1) state.x=clamp(drag.sx-(e.clientX-drag.x)*100/drag.dx,0,100);
+        if (drag.dy>1) state.y=clamp(drag.sy-(e.clientY-drag.y)*100/drag.dy,0,100);
+        apply();
+      });
+      const stop = e => { if(drag && e.pointerId===drag.id){drag=null;hero.style.cursor="grab";} };
+      hero.addEventListener("pointerup",stop); hero.addEventListener("pointercancel",stop); hero.addEventListener("lostpointercapture",stop);
+      document.body.append(panel); apply();
+    })();
+  </script>
 </body>
 </html>
