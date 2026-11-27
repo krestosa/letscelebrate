@@ -62,17 +62,17 @@
     .pricing-savings .p-details div{display:grid;gap:4px}
     .pricing-savings .p-details dt{font-size:11px;color:var(--muted)}
     .pricing-savings .p-details dd{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
-    .pricing-savings .p-final{display:grid;gap:9px;text-align:right;align-items:end}
+    .pricing-savings .p-final{display:grid;gap:8px;text-align:left;justify-items:start;align-items:end;min-width:0}
     .pricing-savings .p-saving{display:grid;gap:12px}
     .pricing-savings .p-saving-hero{background:rgba(var(--accent-rgb),.10);border:1px solid rgba(var(--accent-rgb),.32);border-radius:12px;padding:clamp(18px,3vw,32px);display:grid;gap:18px}
     .pricing-savings .p-saving-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--rule)}
     .pricing-savings .p-saving-number{font-family:Gazzetta,sans-serif;font-weight:900;color:var(--accent);font-size:clamp(64px,8vw,108px);line-height:.8;white-space:nowrap}
     .pricing-savings .p-saving-summary{display:grid;gap:5px}
-    .pricing-savings .p-saving-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end}
-    .pricing-savings .p-saving-main .p-price{color:var(--accent);font-size:clamp(58px,7vw,100px);font-weight:900}
+    .pricing-savings .p-saving-main{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start}
+    .pricing-savings .p-saving-main .p-price{color:var(--accent);font-size:clamp(54px,16cqi,92px);font-weight:900}
     .pricing-savings .p-saving-other{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
     .pricing-savings .p-saving-other article{display:grid;gap:8px;border:1px solid var(--rule);padding:16px;border-radius:12px;min-width:0}
-    .pricing-savings .p-saving-other .p-price{font-size:clamp(44px,5vw,72px)}
+    .pricing-savings .p-saving-other .p-price{font-size:clamp(40px,19cqi,72px)}
     .pricing-savings .proposal__content{container:pricing-panel / inline-size}
     .pricing-savings .p-saving-hero,.pricing-savings .p-saving-other article{container:price-card / inline-size}
     @media(max-width:560px){
@@ -95,12 +95,12 @@
       .deli-landing .proposal-guide .proposal__header,.deli-landing .proposal-guide .proposal__content{grid-column:1;min-width:0}
     }
     /* Éminent — costo neto después del reintegro. */
-    .pricing-savings .p-bank{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:8px 12px;min-width:0;text-align:left}
-    .pricing-savings .p-bank-logo{display:block;width:clamp(80px,27cqi,148px);max-width:100%;height:auto;flex:0 1 auto;align-self:center}
-    .pricing-savings .p-saving-hero .p-bank{border-top:1px solid var(--rule);padding-top:18px}
-    .pricing-savings .p-saving-hero .p-bank-logo{width:clamp(110px,25cqi,180px)}
-    .pricing-savings .p-bank-price{font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(30px,13cqi,66px);line-height:.9;white-space:nowrap;color:#fff}
-    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(48px,5.5vw,86px)}
+    .pricing-savings .p-bank{display:flex;align-items:center;justify-content:flex-start;flex-wrap:wrap;gap:10px 12px;min-width:0;text-align:left}
+    .pricing-savings .p-bank-logo{display:block;width:clamp(150px,45cqi,205px);max-width:100%;height:auto;flex:0 0 auto;align-self:center}
+    .pricing-savings .p-saving-hero .p-bank{border-top:1px solid var(--rule);padding-top:16px}
+    .pricing-savings .p-saving-hero .p-bank-logo{width:clamp(170px,40cqi,245px)}
+    .pricing-savings .p-bank-price{display:block;flex:0 0 auto;font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(40px,19cqi,72px);line-height:.88;white-space:nowrap;color:#fff}
+    .pricing-savings .p-saving-hero .p-bank-price{font-size:clamp(54px,16cqi,92px);font-weight:700}
     .pricing-savings .p-saving-other article .p-bank{border-top:1px solid var(--rule);padding-top:14px;margin-top:auto}
     .pricing-savings .p-saving-other article:last-child{grid-column:1/-1}
     .pricing-savings .p-saving-other .p-details{padding-top:0}
@@ -112,7 +112,11 @@
     }
     @container pricing-panel (max-width:480px){
       .pricing-savings .p-saving-other article:last-child{grid-column:auto}
-      .pricing-savings .p-bank-price{font-size:clamp(30px,13cqi,58px)}
+      .pricing-savings .p-bank-price{font-size:clamp(40px,19cqi,72px)}
+    }
+    @container price-card (max-width:280px){
+      .pricing-savings .p-bank{align-items:flex-start;flex-direction:column;gap:8px}
+      .pricing-savings .p-bank-logo{width:min(190px,100%);align-self:start}
     }
   </style>
 </head>
