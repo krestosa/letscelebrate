@@ -33,9 +33,15 @@
   <script src="../js/signature.js?v=production-35" defer></script>
   <script src="../js/snow.js?v=production-35" defer></script>
   <script src="../js/loading.js?v=intro-pace-48" defer></script>
-  <script src="../js/voucher.js?v=51" defer></script>
+  <style>
+    .deli-landing .hero{justify-content:center}
+    .deli-landing .hero__layout{grid-template-columns:minmax(0,1fr);grid-template-rows:auto;align-content:center;align-items:center;justify-items:center;gap:0}
+    .deli-landing .hero__message{align-items:center;text-align:center}
+    .deli-landing .hero__message .title-lockup,.deli-landing .hero__message .hero-copy,.deli-landing .hero__message .title-kicker{text-align:center}
+    .deli-landing .hero__message .title-lockup h1{align-items:center}
+  </style>
 </head>
-<body>
+<body class="deli-landing">
   <canvas class="site-snow" id="intro-snow" aria-hidden="true"></canvas>
   <section class="loading" id="intro-screen" aria-label="Aniversario SushiClub">
     <div class="year" role="status">
@@ -72,64 +78,8 @@
             <h1 id="offer-title"><span class="title-kicker">Te regalamos</span> <span class="title-word"><span class="price-value">$25.000</span><span class="price-glow" aria-hidden="true">$25.000</span></span> <span class="title-kicker title-kicker--end"><strong class="title-celebrate">Para Let’s Celebrate</strong></span></h1>
           </div>
           <div class="hero-copy">
-            <p>Dejá tu mail y tu celular y usá tu código en un combinado Let’s Celebrate o Superstar para Navidad o Año Nuevo.</p>
+            <p>Con cada compra de diciembre en Deli&amp;Take, te ganás un voucher de $25.000 para Navidad o Año Nuevo.</p>
           </div>
-        </div>
-        <section class="claim-section" aria-label="Solicitá tu código">
-          <div class="voucher">
-            <form id="voucher-form" action="" method="post" data-step="1">
-              <div class="claim-steps">
-                <span id="claim-step-label" class="claim-step-label" role="status" aria-live="polite">Paso 1 de 2</span>
-                <span class="claim-progress" aria-hidden="true"><span data-done></span><span id="claim-progress-second"></span></span>
-              </div>
-              <div class="claim-step" id="claim-step-email">
-                <div class="field">
-                  <label for="email">Mail</label>
-                  <input id="email" name="email" type="email" autocomplete="email" maxlength="254" placeholder="nombre@ejemplo.com" required>
-                </div>
-              </div>
-              <div class="claim-step" id="claim-step-phone" hidden>
-                <div class="field">
-                  <label for="phone">Celular</label>
-                  <input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="40" placeholder="+54 9 11 1234-1234" required disabled>
-                </div>
-                <label class="consent">
-                  <input id="terms" name="terms" type="checkbox" required disabled>
-                  <span>Acepto las <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">bases y condiciones</a></span>
-                </label>
-              </div>
-              <div class="claim-step-actions">
-                <button type="button" class="claim-step-back" id="claim-back" aria-label="Volver al mail" hidden>←</button>
-                <button type="submit" class="button button--primary" id="claim-button" disabled>Continuar</button>
-              </div>
-              <p class="feedback" id="form-feedback" role="status" aria-live="polite" hidden></p>
-              <noscript>Activá JavaScript para solicitar tu código.</noscript>
-            </form>
-            <div id="claim-generated" class="claim-generated" hidden>
-              <div class="claim-generated__icon" aria-hidden="true"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></div>
-              <h2>Código generado</h2>
-              <button type="button" class="button button--primary" id="view-code" aria-haspopup="dialog" aria-controls="confirmation">Ver mi código</button>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
-    <section class="proposal instructions proposal-guide" aria-labelledby="instructions-title">
-      <div class="proposal__shell">
-        <header class="proposal__header"><h2 id="instructions-title">Cómo usarlo</h2></header>
-        <div class="proposal__content guide-list">
-          <details name="proposal-guide">
-            <summary><span class="guide-number" aria-hidden="true">01</span><span>Dejá tus datos</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
-            <p class="guide-copy">Completá el formulario con tu mail y tu celular para recibir tu beneficio de $25.000.</p>
-          </details>
-          <details name="proposal-guide">
-            <summary><span class="guide-number" aria-hidden="true">02</span><span>Copiá tu código</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
-            <p class="guide-copy">Guardá el código que recibiste para tenerlo a mano al momento de finalizar tu compra.</p>
-          </details>
-          <details name="proposal-guide" open>
-            <summary><span class="guide-number" aria-hidden="true">03</span><span>Usá tu código</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
-            <p class="guide-copy">Elegí un combinado Let’s Celebrate o Superstar para el 24 o el 31 de diciembre, según las condiciones de cada modalidad. Si hacés tu pedido online, ingresá el código en el campo “Código promocional” al finalizar tu compra.</p>
-          </details>
         </div>
       </div>
     </section>
@@ -149,22 +99,5 @@
       Bases y condiciones en <a href="https://www.sushiclub.com.ar/beneficios" target="_blank" rel="noopener noreferrer">sushiclub.com.ar/beneficios</a>
     </footer>
   </main>
-  <dialog id="confirmation" class="confirmation" aria-labelledby="confirmation-title" aria-describedby="confirmation-description redeem-instruction">
-    <div class="confirmation__surface">
-      <div class="confirmation__drag" id="confirmation-drag" aria-hidden="true"><span></span></div>
-      <h2 id="confirmation-title" tabindex="-1">¡Listo!</h2>
-      <p id="confirmation-description" class="confirmation__description">Este es tu código de $25.000:</p>
-      <div class="code-box">
-        <button type="button" id="voucher-code" class="code-box__button" aria-label="Copiar código promocional"><span id="voucher-code-text"></span><svg class="code-box__copy-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg><svg class="code-box__check-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 4 4L19 6"/></svg></button>
-        <input id="voucher-code-fallback" readonly hidden aria-label="Código para copiar manualmente" spellcheck="false">
-      </div>
-      <div class="confirmation__actions">
-        <button type="button" id="copy-code" class="button button--secondary">Copiar código</button>
-        <a id="redeem-code" class="button button--primary" href="https://www.sushiclub.com.ar/PedidosOnline">Pedir mi Let’s Celebrate</a>
-      </div>
-      <p id="copy-feedback" class="feedback" role="status" aria-live="polite" hidden></p>
-      <p id="redeem-instruction" class="confirmation__instruction">Cargalo al finalizar la compra en “Código promocional”.</p>
-    </div>
-  </dialog>
 </body>
 </html>
