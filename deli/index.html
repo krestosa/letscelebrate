@@ -48,6 +48,46 @@
       .deli-landing .hero__background{object-position:50% center}
       .deli-landing .masthead__campaign{font-size:15px}
     }
+    /* Deli&Take — selected Ahorro pricing composition. */
+    .deli-landing .pricing-savings{padding-block:clamp(36px,6vh,76px)}
+    .pricing-savings{--rule:rgba(255,255,255,.17);--muted:rgba(255,255,255,.68)}
+    .pricing-savings h3,.pricing-savings p,.pricing-savings dl{margin:0}
+    .pricing-savings h3{font-size:clamp(17px,2vw,24px);font-weight:650;letter-spacing:-.04em;line-height:1.1}
+    .pricing-savings .p-label{color:var(--muted);font-size:12px;font-weight:550;line-height:1.4}
+    .pricing-savings .p-kicker{font-size:12px;color:var(--accent);font-weight:650;letter-spacing:.06em;text-transform:uppercase}
+    .pricing-savings .p-price{display:block;color:var(--accent);font-family:Gazzetta,sans-serif;font-weight:700;font-size:clamp(46px,6vw,90px);line-height:.88;white-space:nowrap}
+    .pricing-savings .p-old{color:var(--muted)}
+    .pricing-savings .p-name{display:grid;gap:7px;min-width:0}
+    .pricing-savings .p-details{display:flex;flex-wrap:wrap;gap:10px 20px;padding-top:10px}
+    .pricing-savings .p-details div{display:grid;gap:4px}
+    .pricing-savings .p-details dt{font-size:11px;color:var(--muted)}
+    .pricing-savings .p-details dd{font-size:15px;font-weight:600;margin:0;white-space:nowrap}
+    .pricing-savings .p-final{display:grid;gap:9px;text-align:right;align-items:end}
+    .pricing-savings .p-saving{display:grid;gap:12px}
+    .pricing-savings .p-saving-hero{background:rgba(var(--accent-rgb),.10);border:1px solid rgba(var(--accent-rgb),.32);border-radius:12px;padding:clamp(18px,3vw,32px);display:grid;gap:18px}
+    .pricing-savings .p-saving-top{display:grid;grid-template-columns:auto minmax(0,1fr);gap:16px;align-items:center;padding-bottom:18px;border-bottom:1px solid var(--rule)}
+    .pricing-savings .p-saving-number{font-family:Gazzetta,sans-serif;font-weight:900;color:var(--accent);font-size:clamp(64px,8vw,108px);line-height:.8;white-space:nowrap}
+    .pricing-savings .p-saving-summary{display:grid;gap:5px}
+    .pricing-savings .p-saving-main{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:end}
+    .pricing-savings .p-saving-main .p-price{color:#fff;font-size:clamp(58px,7vw,100px)}
+    .pricing-savings .p-saving-other{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .pricing-savings .p-saving-other article{display:grid;gap:8px;border:1px solid var(--rule);padding:16px;border-radius:12px;min-width:0}
+    .pricing-savings .p-saving-other .p-price{font-size:clamp(44px,5vw,72px)}
+    .pricing-savings .proposal__content{container-type:inline-size}
+    @media(max-width:560px){
+      .pricing-savings .p-saving-main{grid-template-columns:minmax(0,1fr);gap:20px}
+      .pricing-savings .p-saving-main .p-final{text-align:left;justify-items:start}
+      .pricing-savings .p-saving-other{grid-template-columns:1fr;gap:16px}
+      .pricing-savings .p-saving-top{gap:12px}
+      .pricing-savings .p-saving-number{font-size:72px}
+    }
+    @container(max-width:480px){
+      .pricing-savings .p-saving-main{grid-template-columns:minmax(0,1fr);gap:20px}
+      .pricing-savings .p-saving-main .p-final{text-align:left;justify-items:start}
+      .pricing-savings .p-saving-other{grid-template-columns:1fr;gap:16px}
+      .pricing-savings .p-saving-top{gap:12px}
+      .pricing-savings .p-saving-number{font-size:72px}
+    }
   </style>
 </head>
 <body class="deli-landing">
@@ -92,32 +132,7 @@
         </div>
       </div>
     </section>
-    <section class="proposal pricing proposal-guide" aria-labelledby="pricing-title">
-      <div class="proposal__shell">
-        <header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header>
-        <div class="proposal__content pricing-grid">
-          <article class="pricing-card pricing-card--main">
-            <div class="pricing-card__heading"><h3>Let’s Celebrate</h3><span class="pricing-card__size">100 piezas</span></div>
-            <dl class="pricing-card__breakdown">
-              <div><dt>Precio full</dt><dd><del>$383.700</del></dd></div>
-              <div><dt>Preventa 40% OFF</dt><dd>$230.220</dd></div>
-            </dl>
-            <div class="pricing-card__result">
-              <p class="pricing-card__label">Con 2 vouchers de $25.000</p>
-              <strong class="pricing-card__price">$180.220</strong>
-            </div>
-          </article>
-          <article class="pricing-card">
-            <div class="pricing-card__heading"><h3>Let’s Celebrate</h3><span class="pricing-card__size">60 piezas</span></div>
-            <div class="pricing-card__result"><p class="pricing-card__label">Con 1 voucher de $25.000</p><strong class="pricing-card__price">$128.480</strong></div>
-          </article>
-          <article class="pricing-card">
-            <div class="pricing-card__heading"><h3>Superstar</h3><span class="pricing-card__size">100 piezas</span></div>
-            <div class="pricing-card__result"><p class="pricing-card__label">Precio promocional</p><strong class="pricing-card__price">$159.700</strong></div>
-          </article>
-        </div>
-      </div>
-    </section>
+    <section class="proposal proposal-guide pricing-savings" aria-labelledby="pricing-title"><div class="proposal__shell"><header class="proposal__header"><h2 id="pricing-title">Tu beneficio</h2></header><div class="proposal__content"><div class="p-saving"><article class="p-saving-hero"><div class="p-saving-top"><strong class="p-saving-number">40%</strong><div class="p-saving-summary"><h3>OFF en preventa</h3><p class="p-label">Let’s Celebrate · 100 piezas</p><p class="p-label">Sumá 2 vouchers de $25.000</p></div></div><div class="p-saving-main"><div><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">100 piezas</p></div><dl class="p-details"><div><dt>Precio full</dt><dd><del class="p-old">$383.700</del></dd></div><div><dt>Preventa 40% OFF</dt><dd>$230.220</dd></div></dl></div><div class="p-final"><p class="p-label">Precio final</p><strong class="p-price">$180.220</strong></div></div></article><div class="p-saving-other"><article><div class="p-name"><h3>Let’s Celebrate</h3><p class="p-kicker">60 piezas</p></div><p class="p-label">Con 1 voucher de $25.000</p><strong class="p-price">$128.480</strong></article><article><div class="p-name"><h3>Superstar</h3><p class="p-kicker">100 piezas</p></div><p class="p-label">Precio promocional</p><strong class="p-price">$159.700</strong></article></div></div></div></div></section>
     <section class="proposal conditions proposal-guide" aria-labelledby="conditions-title">
       <div class="proposal__shell">
         <header class="proposal__header"><h2 id="conditions-title">Condiciones</h2></header>
